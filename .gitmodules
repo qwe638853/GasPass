@@ -1,0 +1,6 @@
+[submodule "gas_pass/lib/forge-std"]
+	path = gas_pass/lib/forge-std
+	url = https://github.com/foundry-rs/forge-std
+[submodule "gas_pass/lib/erc-3525"]
+	path = gas_pass/lib/erc-3525
+	url = https://github.com/solv-finance/erc-3525
