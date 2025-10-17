@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vincent SDK 測試頁</title>
+    <style>
+      body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Noto Sans, Ubuntu, Cantarell, Helvetica Neue, Arial, "Apple Color Emoji", "Segoe UI Emoji"; margin: 24px; }
+      .row { display: flex; gap: 16px; align-items: center; margin-bottom: 12px; flex-wrap: wrap; }
+      label { min-width: 140px; font-weight: 600; }
+      input, select { padding: 8px 10px; font-size: 14px; width: 320px; }
+      button { padding: 8px 14px; font-size: 14px; cursor: pointer; }
+      .actions { display: flex; gap: 12px; margin-top: 16px; }
+      .log { margin-top: 20px; white-space: pre-wrap; background: #f7f7f9; padding: 12px; border-radius: 8px; border: 1px solid #e4e4e7; }
+      .ok { color: #166534; }
+      .err { color: #991b1b; }
+    </style>
+  </head>
+  <body>
+    <h1>Vincent SDK 測試頁</h1>
+    <div class="row">
+      <button id="btn-connect">連接錢包</button>
+      <span id="account"></span>
+    </div>
+
+    <h2>Vincent 登入</h2>
+    <div class="row">
+      <label for="appId">Vincent App ID</label>
+      <input id="appId" placeholder="從 Vincent Dashboard 取得" />
+    </div>
+    <div class="actions">
+      <button id="btn-login-vincent">登入 Vincent</button>
+    </div>
+
+    <div class="row">
+      <label for="delegator">Delegator PKP Address</label>
+      <input id="delegator" placeholder="登入 Vincent 後自動帶入" readonly />
+    </div>
+    <div class="row">
+      <label for="rpcUrl">RPC URL</label>
+      <input id="rpcUrl" placeholder="https://yellowstone-rpc.litprotocol.com/" value="https://yellowstone-rpc.litprotocol.com/" />
+    </div>
+    <div class="row">
+      <label for="op">Operation</label>
+      <select id="op">
+        <option value="BRIDGE" selected>BRIDGE</option>
+      </select>
+    </div>
+    <div class="row">
+      <label for="sourceChain">Source Chain</label>
+      <input id="sourceChain" placeholder="421614 (Arbitrum)" value="421614" />
+    </div>
+    <div class="row">
+      <label for="destinationChain">Destination Chain</label>
+      <input id="destinationChain" placeholder="84532 (Base)" value="84532" />
+    </div>
+    <div class="row">
+      <label for="sourceToken">Source Token</label>
+      <input id="sourceToken" placeholder="0x000...000 (native)" value="0x0000000000000000000000000000000000000000" />
+    </div>
+    <div class="row">
+      <label for="destinationToken">Destination Token</label>
+      <input id="destinationToken" placeholder="0x000...000 (native)" value="0x0000000000000000000000000000000000000000" />
+    </div>
+    <div class="row">
+      <label for="amount">Amount (wei)</label>
+      <input id="amount" placeholder="100000000000000000 (0.1 ETH)" value="100000000000000000" />
+    </div>
+    <div class="row">
+      <label for="slippageBps">Slippage (bps)</label>
+      <input id="slippageBps" placeholder="100 (1%)" value="100" />
+    </div>
+
+    <div class="actions">
+      <button id="btn-precheck">Precheck</button>
+      <button id="btn-quote">Get Signed Bridge Quote</button>
+      <button id="btn-exec">Execute</button>
+    </div>
+
+    <hr />
+    <h2>JWT 驗證</h2>
+    <div class="row">
+      <label for="jwtStr">Vincent JWT</label>
+      <input id="jwtStr" placeholder="從 Connect 流程取得的 JWT" />
+    </div>
+    <div class="row">
+      <label for="audience">Audience</label>
+      <input id="audience" placeholder="例如 http://127.0.0.1:5173 或 http://localhost:5173" />
+    </div>
+    <div class="actions">
+      <button id="btn-verify-jwt">送出後端驗證</button>
+    </div>
+
+    <div class="log" id="log"></div>
+
+    <script type="module" src="/src/ui.js"></script>
+  </body>
+  </html>
+
+
