@@ -110,24 +110,15 @@
               </div>
             </div>
             
-            <!-- Wallet Connection Button -->
-            <button 
-              v-if="!isConnected" 
-              @click="connectWallet"
-              class="connect-btn group relative overflow-hidden"
-            >
-              <!-- Glow effect -->
-              <div class="absolute inset-0 bg-gradient-to-r from-amber-400 to-orange-500 rounded-xl blur-lg opacity-75 group-hover:opacity-100 transition-opacity duration-300"></div>
-              <!-- Button content -->
-              <span class="relative flex items-center gap-2 z-10">
-                <svg class="w-4 h-4 group-hover:rotate-12 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <!-- Web3Modal Button -->
+            <div v-if="!isConnected" class="web3modal-container">
+              <button @click="connectWallet" class="custom-connect-btn">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path>
                 </svg>
                 連接錢包
-              </span>
-              <!-- Shimmer effect -->
-              <div class="absolute inset-0 -top-2 -left-2 bg-gradient-to-r from-transparent via-white/20 to-transparent skew-x-12 group-hover:animate-shimmer"></div>
-            </button>
+              </button>
+            </div>
             
             <!-- Connected Wallet -->
             <div v-else class="wallet-info">
@@ -348,7 +339,15 @@ watch([isConnected, isArbitrum], () => {
 
 /* Wallet Connection */
 .connect-btn {
-  @apply flex items-center gap-2 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white font-semibold py-2 px-4 rounded-xl transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-amber-500/30 focus:ring-offset-2 shadow-lg hover:shadow-xl hover:scale-105;
+  @apply flex items-center gap-2 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-amber-500/30 focus:ring-offset-2 shadow-lg hover:shadow-xl hover:scale-105;
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);
+}
+
+.connect-btn:hover {
+  background: linear-gradient(135deg, #d97706, #b45309);
+  box-shadow: 0 6px 20px rgba(245, 158, 11, 0.4);
+  transform: translateY(-2px) scale(1.02);
 }
 
 .wallet-info {
@@ -415,6 +414,14 @@ watch([isConnected, isArbitrum], () => {
 
 .mobile-connect-btn {
   @apply flex items-center justify-center gap-2 w-full bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white font-semibold py-3 px-4 rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl;
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);
+}
+
+.mobile-connect-btn:hover {
+  background: linear-gradient(135deg, #d97706, #b45309);
+  box-shadow: 0 6px 20px rgba(245, 158, 11, 0.4);
+  transform: translateY(-2px) scale(1.02);
 }
 
 .mobile-wallet-info {
@@ -471,5 +478,74 @@ watch([isConnected, isArbitrum], () => {
 
 .mobile-disconnect-btn {
   @apply w-full bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-2 px-4 rounded-xl transition-all duration-300;
+}
+
+/* Web3Modal 樣式 - 完全重寫 */
+.web3modal-container {
+  @apply relative;
+}
+
+/* 完全覆蓋 Web3Modal 按鈕樣式 */
+.web3modal-container :deep(w3m-button) {
+  background: linear-gradient(135deg, #f59e0b, #d97706) !important;
+  border: none !important;
+  border-radius: 12px !important;
+  padding: 12px 24px !important;
+  font-weight: 600 !important;
+  color: white !important;
+  box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3) !important;
+  transition: all 0.3s ease !important;
+  position: relative !important;
+  overflow: hidden !important;
+}
+
+.web3modal-container :deep(w3m-button):hover {
+  background: linear-gradient(135deg, #d97706, #b45309) !important;
+  box-shadow: 0 6px 20px rgba(245, 158, 11, 0.4) !important;
+  transform: translateY(-2px) scale(1.02) !important;
+}
+
+/* 移除所有內層元素樣式 */
+.web3modal-container :deep(w3m-button) * {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  color: white !important;
+  font-weight: 600 !important;
+}
+
+/* 確保按鈕內容樣式 */
+.web3modal-container :deep(w3m-button) span,
+.web3modal-container :deep(w3m-button) div,
+.web3modal-container :deep(w3m-button) p {
+  color: white !important;
+  font-weight: 600 !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1) !important;
+  background: transparent !important;
+  border: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* 移除任何可能的內層容器 */
+.web3modal-container :deep(w3m-button) > div,
+.web3modal-container :deep(w3m-button) > span {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  display: inline !important;
+}
+
+/* 自定義連接按鈕樣式 */
+.custom-connect-btn {
+  @apply flex items-center justify-center gap-2 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-amber-500/30 focus:ring-offset-2 shadow-lg hover:shadow-xl hover:scale-105;
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);
+}
+
+.custom-connect-btn:hover {
+  background: linear-gradient(135deg, #d97706, #b45309);
+  box-shadow: 0 6px 20px rgba(245, 158, 11, 0.4);
+  transform: translateY(-2px) scale(1.02);
 }
 </style>
