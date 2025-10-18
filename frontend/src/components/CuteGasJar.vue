@@ -2,11 +2,18 @@
   <div class="cute-gas-jar-container">
     <!-- 可愛的儲值罐 -->
     <div class="gas-jar" :class="{ 'wiggle': isWiggling, 'filling': isFilling }">
+      <!-- 背景光效 -->
+      <div class="jar-glow"></div>
+      
       <!-- 罐子主體 -->
       <div class="jar-body">
         <!-- 液體填充效果 -->
         <div class="liquid" :style="{ height: liquidHeight + '%' }">
           <div class="liquid-wave"></div>
+          <!-- 氣泡效果 -->
+          <div class="bubbles">
+            <div class="bubble" v-for="n in 5" :key="n" :style="getBubbleStyle(n)"></div>
+          </div>
         </div>
         
         <!-- 可愛的表情 -->
@@ -317,6 +324,25 @@ const sparkleStyle = (index) => {
   return {
     transform: `translate(${x}px, ${y}px)`,
     animationDelay: `${index * 0.1}s`
+  }
+}
+
+const getBubbleStyle = (index) => {
+  const size = Math.random() * 8 + 4
+  const x = Math.random() * 80 + 10
+  const delay = Math.random() * 3
+  const duration = Math.random() * 4 + 3
+  
+  return {
+    position: 'absolute',
+    width: `${size}px`,
+    height: `${size}px`,
+    left: `${x}%`,
+    bottom: '0',
+    background: 'rgba(255, 255, 255, 0.6)',
+    borderRadius: '50%',
+    animation: `bubble-rise ${duration}s ${delay}s infinite ease-out`,
+    pointerEvents: 'none'
   }
 }
 
@@ -740,5 +766,49 @@ watch(amount, (newValue) => {
 @keyframes pulse-slow {
   0%, 100% { transform: scale(1); }
   50% { transform: scale(1.1); }
+}
+
+@keyframes bubble-rise {
+  0% { 
+    transform: translateY(0) scale(0.8);
+    opacity: 0.8;
+  }
+  50% { 
+    transform: translateY(-50px) scale(1);
+    opacity: 0.6;
+  }
+  100% { 
+    transform: translateY(-100px) scale(0.6);
+    opacity: 0;
+  }
+}
+
+/* Jar glow effect */
+.jar-glow {
+  position: absolute;
+  top: -20px;
+  left: -20px;
+  right: -20px;
+  bottom: -20px;
+  background: radial-gradient(circle, rgba(245, 158, 11, 0.3) 0%, transparent 70%);
+  border-radius: 50%;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+.gas-jar:hover .jar-glow {
+  opacity: 1;
+}
+
+/* Bubbles container */
+.bubbles {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  overflow: hidden;
 }
 </style>

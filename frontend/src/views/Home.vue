@@ -2,11 +2,24 @@
   <Layout>
     <!-- Hero Section -->
     <section class="relative min-h-screen bg-gradient-to-br from-gray-100 to-gray-200 overflow-hidden">
-      <!-- Subtle Background Elements -->
+      <!-- Enhanced Background Elements -->
       <div class="absolute inset-0 overflow-hidden">
-        <div class="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-amber-200/30 to-orange-300/30 rounded-full blur-3xl"></div>
-        <div class="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-br from-yellow-200/20 to-amber-300/20 rounded-full blur-3xl"></div>
-        <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-gradient-to-br from-orange-100/10 to-amber-200/10 rounded-full blur-3xl"></div>
+        <!-- Animated gradient orbs -->
+        <div class="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-amber-200/30 to-orange-300/30 rounded-full blur-3xl animate-float-slow"></div>
+        <div class="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-br from-yellow-200/20 to-amber-300/20 rounded-full blur-3xl animate-float-reverse"></div>
+        <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-gradient-to-br from-orange-100/10 to-amber-200/10 rounded-full blur-3xl animate-pulse-slow"></div>
+        
+        <!-- Additional floating elements -->
+        <div class="absolute top-20 left-20 w-32 h-32 bg-gradient-to-br from-amber-300/20 to-orange-400/20 rounded-full blur-2xl animate-float-delayed"></div>
+        <div class="absolute bottom-20 right-20 w-24 h-24 bg-gradient-to-br from-yellow-300/25 to-amber-400/25 rounded-full blur-xl animate-float-slow"></div>
+        
+        <!-- Particle system -->
+        <div class="particles-container">
+          <div class="particle" v-for="n in 20" :key="n" :style="getParticleStyle(n)"></div>
+        </div>
+        
+        <!-- Grid pattern overlay -->
+        <div class="absolute inset-0 bg-grid-pattern opacity-5"></div>
       </div>
 
       <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
@@ -32,20 +45,28 @@
 
           <!-- CTA Buttons -->
           <div class="flex flex-col sm:flex-row gap-6 justify-center mb-16">
-            <router-link to="/card-management" class="btn-primary-hero group">
-              <span class="flex items-center justify-center gap-3">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <router-link to="/card-management" class="btn-primary-hero group relative overflow-hidden">
+              <!-- Glow effect -->
+              <div class="absolute inset-0 bg-gradient-to-r from-amber-400 to-orange-500 rounded-xl blur-lg opacity-75 group-hover:opacity-100 transition-opacity duration-300"></div>
+              <!-- Button content -->
+              <span class="relative flex items-center justify-center gap-3 z-10">
+                <svg class="w-6 h-6 group-hover:rotate-12 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
                 </svg>
                 開始使用 GasPass
-                <svg class="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="w-5 h-5 group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
                 </svg>
               </span>
+              <!-- Shimmer effect -->
+              <div class="absolute inset-0 -top-2 -left-2 bg-gradient-to-r from-transparent via-white/20 to-transparent skew-x-12 group-hover:animate-shimmer"></div>
             </router-link>
-            <router-link to="/gas-exchange" class="btn-secondary-hero group">
-              <span class="flex items-center justify-center gap-3">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <router-link to="/gas-exchange" class="btn-secondary-hero group relative overflow-hidden">
+              <!-- Subtle glow effect -->
+              <div class="absolute inset-0 bg-gradient-to-r from-amber-100 to-orange-100 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              <!-- Button content -->
+              <span class="relative flex items-center justify-center gap-3 z-10">
+                <svg class="w-6 h-6 group-hover:scale-110 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
                 </svg>
                 兌換 Gas
@@ -55,17 +76,23 @@
 
           <!-- Stats -->
           <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto">
-            <div class="stat-card">
-              <div class="stat-number">ERC-3525</div>
+            <div class="stat-card group">
+              <div class="stat-card-glow"></div>
+              <div class="stat-number group-hover:scale-110 transition-transform duration-300">ERC-3525</div>
               <div class="stat-label">創新儲值卡技術</div>
+              <div class="stat-icon">💎</div>
             </div>
-            <div class="stat-card">
-              <div class="stat-number">0 Gas</div>
+            <div class="stat-card group">
+              <div class="stat-card-glow"></div>
+              <div class="stat-number group-hover:scale-110 transition-transform duration-300">0 Gas</div>
               <div class="stat-label">無 Gas 操作體驗</div>
+              <div class="stat-icon">⚡</div>
             </div>
-            <div class="stat-card">
-              <div class="stat-number">AI Agent</div>
+            <div class="stat-card group">
+              <div class="stat-card-glow"></div>
+              <div class="stat-number group-hover:scale-110 transition-transform duration-300">AI Agent</div>
               <div class="stat-label">智能自動管理</div>
+              <div class="stat-icon">🤖</div>
             </div>
           </div>
         </div>
@@ -86,16 +113,23 @@
         
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           <!-- Feature 1 -->
-          <div class="feature-card-modern group">
-            <div class="feature-icon-modern bg-gradient-to-br from-amber-400 to-orange-500">
-              <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
-              </svg>
+          <div class="feature-card-modern group relative overflow-hidden">
+            <!-- Card glow effect -->
+            <div class="absolute inset-0 bg-gradient-to-br from-amber-100/50 to-orange-100/50 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+            <!-- Card content -->
+            <div class="relative z-10">
+              <div class="feature-icon-modern bg-gradient-to-br from-amber-400 to-orange-500 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
+                <svg class="w-8 h-8 text-white group-hover:animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
+                </svg>
+              </div>
+              <h3 class="text-xl font-bold text-gray-900 mb-3 group-hover:text-amber-600 transition-colors duration-300">ERC-3525 儲值卡</h3>
+              <p class="text-gray-600 leading-relaxed group-hover:text-gray-700 transition-colors duration-300">
+                基於最新 ERC-3525 標準的創新儲值卡設計，支援轉贈和靈活的價值管理
+              </p>
             </div>
-            <h3 class="text-xl font-bold text-gray-900 mb-3">ERC-3525 儲值卡</h3>
-            <p class="text-gray-600 leading-relaxed">
-              基於最新 ERC-3525 標準的創新儲值卡設計，支援轉贈和靈活的價值管理
-            </p>
+            <!-- Shimmer effect -->
+            <div class="absolute inset-0 -top-2 -left-2 bg-gradient-to-r from-transparent via-white/10 to-transparent skew-x-12 group-hover:animate-shimmer opacity-0 group-hover:opacity-100"></div>
           </div>
           
           <!-- Feature 2 -->
@@ -249,7 +283,34 @@
 </template>
 
 <script setup>
+import { ref, onMounted } from 'vue'
 import Layout from '../components/Layout.vue'
+
+// Particle system
+const getParticleStyle = (index) => {
+  const size = Math.random() * 4 + 2
+  const x = Math.random() * 100
+  const y = Math.random() * 100
+  const delay = Math.random() * 5
+  const duration = Math.random() * 10 + 10
+  
+  return {
+    position: 'absolute',
+    width: `${size}px`,
+    height: `${size}px`,
+    left: `${x}%`,
+    top: `${y}%`,
+    background: 'linear-gradient(45deg, #f59e0b, #d97706)',
+    borderRadius: '50%',
+    opacity: Math.random() * 0.6 + 0.2,
+    animation: `float-particle ${duration}s ${delay}s infinite linear`,
+    pointerEvents: 'none'
+  }
+}
+
+onMounted(() => {
+  // Add any initialization logic here
+})
 </script>
 
 <style scoped>
@@ -302,13 +363,99 @@ import Layout from '../components/Layout.vue'
   @apply bg-white/20 backdrop-blur-sm border-2 border-white/30 hover:border-white/50 text-white font-bold py-4 px-8 rounded-xl text-lg transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-white/30 focus:ring-offset-2 hover:bg-white/30;
 }
 
-/* Animations */
+/* Enhanced Animations */
 @keyframes float {
   0%, 100% { transform: translateY(0px); }
   50% { transform: translateY(-10px); }
 }
 
+@keyframes float-slow {
+  0%, 100% { transform: translateY(0px) translateX(0px); }
+  33% { transform: translateY(-15px) translateX(10px); }
+  66% { transform: translateY(-5px) translateX(-5px); }
+}
+
+@keyframes float-reverse {
+  0%, 100% { transform: translateY(0px) translateX(0px); }
+  33% { transform: translateY(15px) translateX(-10px); }
+  66% { transform: translateY(5px) translateX(5px); }
+}
+
+@keyframes float-delayed {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-20px) rotate(180deg); }
+}
+
+@keyframes pulse-slow {
+  0%, 100% { transform: scale(1); opacity: 0.1; }
+  50% { transform: scale(1.1); opacity: 0.2; }
+}
+
+@keyframes shimmer {
+  0% { transform: translateX(-100%) skewX(-12deg); }
+  100% { transform: translateX(200%) skewX(-12deg); }
+}
+
+@keyframes float-particle {
+  0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { transform: translateY(-100px) rotate(360deg); opacity: 0; }
+}
+
 .animate-float {
   animation: float 3s ease-in-out infinite;
+}
+
+.animate-float-slow {
+  animation: float-slow 8s ease-in-out infinite;
+}
+
+.animate-float-reverse {
+  animation: float-reverse 6s ease-in-out infinite;
+}
+
+.animate-float-delayed {
+  animation: float-delayed 10s ease-in-out infinite;
+}
+
+.animate-pulse-slow {
+  animation: pulse-slow 4s ease-in-out infinite;
+}
+
+.animate-shimmer {
+  animation: shimmer 2s ease-in-out;
+}
+
+/* Grid pattern */
+.bg-grid-pattern {
+  background-image: 
+    linear-gradient(rgba(245, 158, 11, 0.1) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(245, 158, 11, 0.1) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+/* Particle container */
+.particles-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+/* Enhanced stat cards */
+.stat-card {
+  @apply bg-white/80 backdrop-blur-sm border border-white/20 rounded-2xl p-6 text-center hover:shadow-2xl transition-all duration-500 hover:border-amber-300 relative overflow-hidden;
+}
+
+.stat-card-glow {
+  @apply absolute inset-0 bg-gradient-to-br from-amber-100/30 to-orange-100/30 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500;
+}
+
+.stat-icon {
+  @apply text-2xl mb-2 group-hover:scale-125 transition-transform duration-300;
 }
 </style>

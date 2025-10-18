@@ -1,7 +1,7 @@
 <template>
   <div class="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
     <!-- Navigation -->
-    <nav class="bg-white/80 backdrop-blur-md shadow-lg border-b border-gray-200 sticky top-0 z-40">
+    <nav class="bg-white/90 backdrop-blur-xl shadow-xl border-b border-gray-200/50 sticky top-0 z-40 transition-all duration-300 hover:shadow-2xl">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between h-16">
           <!-- Logo -->
@@ -20,33 +20,55 @@
           <div class="hidden md:flex items-center space-x-1">
             <router-link 
               to="/" 
-              class="nav-link"
+              class="nav-link group relative overflow-hidden"
               :class="{ 'nav-link-active': $route.name === 'Home' }"
             >
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
-              </svg>
-              首頁
+              <div class="absolute inset-0 bg-gradient-to-r from-amber-100/50 to-orange-100/50 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              <span class="relative flex items-center gap-2 z-10">
+                <svg class="w-4 h-4 group-hover:scale-110 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+                </svg>
+                首頁
+              </span>
             </router-link>
             <router-link 
               to="/card-management" 
-              class="nav-link"
+              class="nav-link group relative overflow-hidden"
               :class="{ 'nav-link-active': $route.name === 'CardManagement' }"
             >
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
-              </svg>
-              儲值卡管理
+              <div class="absolute inset-0 bg-gradient-to-r from-amber-100/50 to-orange-100/50 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              <span class="relative flex items-center gap-2 z-10">
+                <svg class="w-4 h-4 group-hover:scale-110 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
+                </svg>
+                儲值卡管理
+              </span>
             </router-link>
             <router-link 
               to="/gas-exchange" 
-              class="nav-link"
+              class="nav-link group relative overflow-hidden"
               :class="{ 'nav-link-active': $route.name === 'GasExchange' }"
             >
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
-              </svg>
-              兌換Gas
+              <div class="absolute inset-0 bg-gradient-to-r from-amber-100/50 to-orange-100/50 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              <span class="relative flex items-center gap-2 z-10">
+                <svg class="w-4 h-4 group-hover:scale-110 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                </svg>
+                兌換Gas
+              </span>
+            </router-link>
+            <router-link 
+              to="/gift-cards" 
+              class="nav-link group relative overflow-hidden"
+              :class="{ 'nav-link-active': $route.name === 'GiftCards' }"
+            >
+              <div class="absolute inset-0 bg-gradient-to-r from-amber-100/50 to-orange-100/50 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              <span class="relative flex items-center gap-2 z-10">
+                <svg class="w-4 h-4 group-hover:scale-110 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"></path>
+                </svg>
+                贈送儲值卡
+              </span>
             </router-link>
           </div>
 
@@ -92,12 +114,19 @@
             <button 
               v-if="!isConnected" 
               @click="connectWallet"
-              class="connect-btn"
+              class="connect-btn group relative overflow-hidden"
             >
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path>
-              </svg>
-              連接錢包
+              <!-- Glow effect -->
+              <div class="absolute inset-0 bg-gradient-to-r from-amber-400 to-orange-500 rounded-xl blur-lg opacity-75 group-hover:opacity-100 transition-opacity duration-300"></div>
+              <!-- Button content -->
+              <span class="relative flex items-center gap-2 z-10">
+                <svg class="w-4 h-4 group-hover:rotate-12 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path>
+                </svg>
+                連接錢包
+              </span>
+              <!-- Shimmer effect -->
+              <div class="absolute inset-0 -top-2 -left-2 bg-gradient-to-r from-transparent via-white/20 to-transparent skew-x-12 group-hover:animate-shimmer"></div>
             </button>
             
             <!-- Connected Wallet -->
