@@ -39,24 +39,29 @@
         <!-- Connected State -->
         <div v-else>
           <!-- User Info -->
-          <div class="bg-white rounded-2xl shadow-lg p-6 mb-8">
-            <div class="flex items-center justify-between">
+          <div class="bg-white/80 backdrop-blur-xl rounded-2xl shadow-xl border border-white/20 p-6 mb-8 relative overflow-hidden group">
+            <!-- Glow effect -->
+            <div class="absolute inset-0 bg-gradient-to-br from-amber-100/30 to-orange-100/30 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+            <!-- Content -->
+            <div class="relative z-10 flex items-center justify-between">
               <div class="flex items-center gap-4">
-                <div class="w-12 h-12 bg-gradient-to-br from-amber-400 to-orange-500 rounded-full flex items-center justify-center">
-                  <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div class="w-12 h-12 bg-gradient-to-br from-amber-400 to-orange-500 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-lg">
+                  <svg class="w-6 h-6 text-white group-hover:rotate-12 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
                   </svg>
                 </div>
                 <div>
-                  <h3 class="text-lg font-bold text-gray-900">錢包已連接</h3>
-                  <p class="text-gray-600">{{ formatAddress(account) }}</p>
+                  <h3 class="text-lg font-bold text-gray-900 group-hover:text-amber-600 transition-colors duration-300">錢包已連接</h3>
+                  <p class="text-gray-600 group-hover:text-gray-700 transition-colors duration-300">{{ formatAddress(account) }}</p>
                 </div>
               </div>
               <div class="text-right">
-                <div class="text-sm text-gray-500">USDC 餘額</div>
-                <div class="text-lg font-bold text-gray-900">{{ usdcBalance }} USDC</div>
+                <div class="text-sm text-gray-500 group-hover:text-gray-600 transition-colors duration-300">USDC 餘額</div>
+                <div class="text-lg font-bold text-gray-900 group-hover:text-amber-600 transition-colors duration-300">{{ usdcBalance }} USDC</div>
               </div>
             </div>
+            <!-- Shimmer effect -->
+            <div class="absolute inset-0 -top-2 -left-2 bg-gradient-to-r from-transparent via-white/10 to-transparent skew-x-12 group-hover:animate-shimmer opacity-0 group-hover:opacity-100"></div>
           </div>
 
           <!-- Card Status -->
@@ -133,25 +138,36 @@
                 <div class="bg-white rounded-2xl shadow-lg p-6">
                   <h4 class="text-lg font-bold text-gray-900 mb-4">快速操作</h4>
                   <div class="space-y-3">
-                    <router-link to="/gas-exchange" class="btn-primary w-full">
-                      <span class="flex items-center justify-center gap-2">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <router-link to="/gas-exchange" class="btn-primary w-full group relative overflow-hidden">
+                      <!-- Glow effect -->
+                      <div class="absolute inset-0 bg-gradient-to-r from-amber-400 to-orange-500 rounded-xl blur-lg opacity-75 group-hover:opacity-100 transition-opacity duration-300"></div>
+                      <!-- Button content -->
+                      <span class="relative flex items-center justify-center gap-2 z-10">
+                        <svg class="w-5 h-5 group-hover:rotate-12 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
                         </svg>
                         兌換 Gas
                       </span>
+                      <!-- Shimmer effect -->
+                      <div class="absolute inset-0 -top-2 -left-2 bg-gradient-to-r from-transparent via-white/20 to-transparent skew-x-12 group-hover:animate-shimmer"></div>
                     </router-link>
-                    <button @click="showManualRefuel = true" class="btn-secondary w-full">
-                      <span class="flex items-center justify-center gap-2">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <button @click="showManualRefuel = true" class="btn-secondary w-full group relative overflow-hidden">
+                      <!-- Subtle glow effect -->
+                      <div class="absolute inset-0 bg-gradient-to-r from-blue-100/50 to-cyan-100/50 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                      <!-- Button content -->
+                      <span class="relative flex items-center justify-center gap-2 z-10">
+                        <svg class="w-5 h-5 group-hover:scale-110 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 100-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 100-4m0 4v2m0-6V4"></path>
                         </svg>
                         手動補 Gas
                       </span>
                     </button>
-                    <button @click="showAutoRefuel = true" class="btn-secondary w-full">
-                      <span class="flex items-center justify-center gap-2">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <button @click="showAutoRefuel = true" class="btn-secondary w-full group relative overflow-hidden">
+                      <!-- Subtle glow effect -->
+                      <div class="absolute inset-0 bg-gradient-to-r from-green-100/50 to-emerald-100/50 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                      <!-- Button content -->
+                      <span class="relative flex items-center justify-center gap-2 z-10">
+                        <svg class="w-5 h-5 group-hover:scale-110 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
                         </svg>
                         自動補 Gas
