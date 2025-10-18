@@ -67,10 +67,12 @@ contract GasPassTest is Test {
             s: s
         });
 
+        // use bob as agent for first mint; mapping agent->wallet will be set
         GasPass.MintWithSigTypedData memory m = GasPass.MintWithSigTypedData({
             to: alice,
             amount: amount,
             permitData: p,
+            agent: bob,
             nonce: gasPass.ownerNonces(alice),
             deadline: block.timestamp + 1 days
         });
@@ -92,6 +94,7 @@ contract GasPassTest is Test {
             m.to,
             m.amount,
             permitHash,
+            m.agent,
             m.nonce,
             m.deadline
         ));
@@ -106,6 +109,8 @@ contract GasPassTest is Test {
         // tokenId = 1 for first mint per ERC3525 implementation
         assertEq(gasPass.ownerOf(1), alice);
         assertEq(gasPass.balanceOf(1), amount);
+        // verify agent mapping is set
+        assertEq(gasPass.getAgentToWallet(bob), alice);
     }
 
     function test_mintWithSig_revert_onlyOwner() public {
@@ -113,12 +118,12 @@ contract GasPassTest is Test {
         uint256 deadline = block.timestamp + 1 days;
         (uint8 v, bytes32 r, bytes32 s) = _signPermit(alice, alicePk, address(gasPass), amount, deadline);
         GasPass.StablecoinPermitData memory p = GasPass.StablecoinPermitData(alice, address(gasPass), amount, deadline, v, r, s);
-        GasPass.MintWithSigTypedData memory m = GasPass.MintWithSigTypedData(alice, amount, p, gasPass.ownerNonces(alice), block.timestamp + 1 days);
+        GasPass.MintWithSigTypedData memory m = GasPass.MintWithSigTypedData(alice, amount, p, bob, gasPass.ownerNonces(alice), block.timestamp + 1 days);
 
         bytes32 permitHash = keccak256(abi.encode(
             gasPass.STABLECOIN_PERMIT_TYPEHASH(), p.owner, p.spender, p.value, p.deadline, p.v, p.r, p.s));
         bytes32 structHash = keccak256(abi.encode(
-            gasPass.MINT_WITH_SIG_TYPEHASH(), m.to, m.amount, permitHash, m.nonce, m.deadline));
+            gasPass.MINT_WITH_SIG_TYPEHASH(), m.to, m.amount, permitHash, m.agent, m.nonce, m.deadline));
         bytes32 digest = _hashTypedDataV4(gasPass, structHash);
         (uint8 ov, bytes32 or_, bytes32 os) = vm.sign(alicePk, digest);
         bytes memory outerSig = abi.encodePacked(or_, os, ov);
@@ -134,10 +139,9 @@ contract GasPassTest is Test {
         uint256 deadline = block.timestamp + 1 days;
         (uint8 v, bytes32 r, bytes32 s) = _signPermit(alice, alicePk, address(gasPass), amount, deadline);
         GasPass.StablecoinPermitData memory p = GasPass.StablecoinPermitData(alice, address(gasPass), amount, deadline, v, r, s);
-
-        GasPass.MintWithSigTypedData memory m = GasPass.MintWithSigTypedData(alice, amount, p, gasPass.ownerNonces(alice), block.timestamp + 1 days);
+        GasPass.MintWithSigTypedData memory m = GasPass.MintWithSigTypedData(alice, amount, p, bob, gasPass.ownerNonces(alice), block.timestamp + 1 days);
         bytes32 pmh = keccak256(abi.encode(gasPass.STABLECOIN_PERMIT_TYPEHASH(), p.owner, p.spender, p.value, p.deadline, p.v, p.r, p.s));
-        bytes32 msh = keccak256(abi.encode(gasPass.MINT_WITH_SIG_TYPEHASH(), m.to, m.amount, pmh, m.nonce, m.deadline));
+        bytes32 msh = keccak256(abi.encode(gasPass.MINT_WITH_SIG_TYPEHASH(), m.to, m.amount, pmh, m.agent, m.nonce, m.deadline));
         bytes32 md = _hashTypedDataV4(gasPass, msh);
         (uint8 ov, bytes32 or_, bytes32 os) = vm.sign(alicePk, md);
         bytes memory osig = abi.encodePacked(or_, os, ov);
@@ -165,10 +169,10 @@ contract GasPassTest is Test {
         uint256 deadline = block.timestamp + 1 days;
         (uint8 v, bytes32 r, bytes32 s) = _signPermit(alice, alicePk, address(gasPass), amount, deadline);
         GasPass.StablecoinPermitData memory p = GasPass.StablecoinPermitData(alice, address(gasPass), amount, deadline, v, r, s);
-        GasPass.MintWithSigTypedData memory m = GasPass.MintWithSigTypedData(alice, amount, p, gasPass.ownerNonces(alice), block.timestamp + 1 days);
+        GasPass.MintWithSigTypedData memory m = GasPass.MintWithSigTypedData(alice, amount, p, bob, gasPass.ownerNonces(alice), block.timestamp + 1 days);
 
         bytes32 pmh = keccak256(abi.encode(gasPass.STABLECOIN_PERMIT_TYPEHASH(), p.owner, p.spender, p.value, p.deadline, p.v, p.r, p.s));
-        bytes32 msh = keccak256(abi.encode(gasPass.MINT_WITH_SIG_TYPEHASH(), m.to, m.amount, pmh, m.nonce, m.deadline));
+        bytes32 msh = keccak256(abi.encode(gasPass.MINT_WITH_SIG_TYPEHASH(), m.to, m.amount, pmh, m.agent, m.nonce, m.deadline));
         bytes32 md = _hashTypedDataV4(gasPass, msh);
         (uint8 ov, bytes32 or_, bytes32 os) = vm.sign(alicePk, md);
         bytes memory osig = abi.encodePacked(or_, os, ov);
@@ -181,6 +185,7 @@ contract GasPassTest is Test {
             targetChainId: 137,
             gasAmount: uint128(10 ether),
             threshold: uint128(5 ether),
+            agent: bob,
             nonce: 0,
             deadline: block.timestamp + 1 days
         });
@@ -191,6 +196,7 @@ contract GasPassTest is Test {
             sp.targetChainId,
             sp.gasAmount,
             sp.threshold,
+            sp.agent,
             sp.nonce,
             sp.deadline
         ));

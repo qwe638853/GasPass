@@ -20,14 +20,14 @@ export async function ensureInitialized() {
 
   const yellowstoneProvider = new ethers.JsonRpcProvider("https://yellowstone-rpc.litprotocol.com/");
   delegateeSigner = new ethers.Wallet(DELEGATEE_PRIVATE_KEY, yellowstoneProvider);
-  console.log('Delegatee address:', delegateeSigner.address);
+  console.log('Delegatee address:', `delegateeSigner`.address);
 
   litNodeClient = new LitNodeClient({ litNetwork: 'datil', debug: true });
   await litNodeClient.connect();
   console.log('Connected to Lit Network');
 
   abilityClient = getVincentAbilityClient({
-    bundledVincentAbility,
+    bundledVincentAbility: bundledVincentAbility,
     ethersSigner: delegateeSigner,
   });
 }
@@ -38,10 +38,28 @@ export function getDelegateeAddress() {
 
 export async function precheck(bridgeParams, { delegatorPkpEthAddress, rpcUrl }) {
   await ensureInitialized();
-  return await abilityClient.precheck(bridgeParams, {
+  const precheckResult = await abilityClient.precheck(bridgeParams, {
     delegatorPkpEthAddress,
-    rpcUrl,
   });
+  
+  if (precheckResult.success) {
+    const { data } = precheckResult.result;
+    console.log('Estimated destination amount:', data.estimatedDestinationAmount);
+    console.log('Protocol fee:', data.estimatedFees.protocolFee);
+    console.log('Estimated execution time:', data.estimatedExecutionTime + ' seconds');
+  } else {
+    // Handle different types of failures
+    if (precheckResult.runtimeError) {
+      console.error('Runtime error:', precheckResult.runtimeError);
+    }
+    if (precheckResult.schemaValidationError) {
+      console.error('Schema validation error:', precheckResult.schemaValidationError);
+    }
+    if (precheckResult.result) {
+      console.error('Bridge precheck failed:', precheckResult.result.error);
+    }
+  }
+  return await precheckResult;
 }
 
 export async function getSignedBridgeQuote(bridgeParams, { delegatorPkpEthAddress }) {
