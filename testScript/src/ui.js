@@ -31,7 +31,10 @@ const client = new VincentBridgeClient();
 async function postJson(path, payload) {
   const resp = await fetch(path, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      ...(payload && payload.jwt ? { Authorization: `Bearer ${payload.jwt}` } : {}),
+    },
     body: JSON.stringify(payload)
   });
   const text = await resp.text();
@@ -181,7 +184,7 @@ $('btn-precheck').addEventListener('click', async () => {
     const delegator = $('delegator').value.trim();
     const jwt = $('jwtStr').value.trim();
     const audience = $('audience').value.trim();
-    if (!delegator && (!jwt || !audience)) throw new Error('缺少 Delegator 或 JWT+Audience');
+    if (!jwt) throw new Error('請先登入以取得 JWT');
     const params = client.buildBridgeParams(getParamsFromForm());
     log('執行後端 precheck...');
     const appId = $('appId')?.value?.trim();
@@ -200,7 +203,7 @@ $('btn-quote').addEventListener('click', async () => {
     const delegator = $('delegator').value.trim();
     const jwt = $('jwtStr').value.trim();
     const audience = $('audience').value.trim();
-    if (!delegator && (!jwt || !audience)) throw new Error('缺少 Delegator 或 JWT+Audience');
+    if (!jwt) throw new Error('請先登入以取得 JWT');
     const params = client.buildBridgeParams(getParamsFromForm());
     log('後端取得 signed bridge quote...');
     const appId = $('appId')?.value?.trim();
@@ -219,7 +222,7 @@ $('btn-exec').addEventListener('click', async () => {
     const delegator = $('delegator').value.trim();
     const jwt = $('jwtStr').value.trim();
     const audience = $('audience').value.trim();
-    if (!delegator && (!jwt || !audience)) throw new Error('缺少 Delegator 或 JWT+Audience');
+    if (!jwt) throw new Error('請先登入以取得 JWT');
     const params = client.buildBridgeParams(getParamsFromForm());
     log('後端執行 execute...');
     const appId = $('appId')?.value?.trim();
