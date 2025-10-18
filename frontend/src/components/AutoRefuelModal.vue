@@ -1,10 +1,10 @@
 <template>
   <div class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-    <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
       <!-- Header -->
       <div class="p-6 border-b border-gray-200">
         <div class="flex items-center justify-between">
-          <h3 class="text-xl font-bold text-gray-900">手動補 Gas</h3>
+          <h3 class="text-xl font-bold text-gray-900">自動補 Gas 設定</h3>
           <button @click="$emit('close')" class="text-gray-400 hover:text-gray-600 transition-colors">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
@@ -31,7 +31,7 @@
 
           <!-- Gas Amount -->
           <div>
-            <label class="block text-sm font-semibold text-gray-700 mb-2">Gas 數量</label>
+            <label class="block text-sm font-semibold text-gray-700 mb-2">每次補充 Gas 數量</label>
             <div class="relative">
               <input 
                 v-model="form.gasAmount"
@@ -40,10 +40,26 @@
                 min="0.001"
                 placeholder="輸入 Gas 數量"
                 class="amount-input"
-                @input="calculateCost"
               />
               <span class="currency-label">ETH</span>
             </div>
+          </div>
+
+          <!-- Threshold -->
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-2">觸發閾值</label>
+            <div class="relative">
+              <input 
+                v-model="form.threshold"
+                type="number"
+                step="0.001"
+                min="0.001"
+                placeholder="輸入觸發閾值"
+                class="amount-input"
+              />
+              <span class="currency-label">ETH</span>
+            </div>
+            <p class="text-sm text-gray-500 mt-1">當 Gas 餘額低於此值時自動補充</p>
           </div>
 
           <!-- Recipient Address -->
@@ -57,23 +73,25 @@
             />
           </div>
 
-          <!-- Cost Preview -->
-          <div v-if="costPreview" class="cost-preview">
-            <h4 class="text-lg font-semibold text-gray-900 mb-3">費用預覽</h4>
+          <!-- Policy Preview -->
+          <div v-if="form.gasAmount && form.threshold" class="policy-preview">
+            <h4 class="text-lg font-semibold text-gray-900 mb-3">策略預覽</h4>
             <div class="space-y-2">
               <div class="flex justify-between">
-                <span class="text-gray-600">Gas 費用:</span>
-                <span class="font-semibold">{{ costPreview.gasCost }} USDC</span>
+                <span class="text-gray-600">目標鏈:</span>
+                <span class="font-semibold">{{ getChainName(form.targetChain) }}</span>
               </div>
               <div class="flex justify-between">
-                <span class="text-gray-600">橋接費用:</span>
-                <span class="font-semibold">{{ costPreview.bridgeFee }} USDC</span>
+                <span class="text-gray-600">補充數量:</span>
+                <span class="font-semibold">{{ form.gasAmount }} ETH</span>
               </div>
-              <div class="border-t pt-2">
-                <div class="flex justify-between text-lg">
-                  <span class="font-bold text-gray-900">總費用:</span>
-                  <span class="font-bold text-amber-600">{{ costPreview.total }} USDC</span>
-                </div>
+              <div class="flex justify-between">
+                <span class="text-gray-600">觸發閾值:</span>
+                <span class="font-semibold">{{ form.threshold }} ETH</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-600">接收地址:</span>
+                <span class="font-semibold text-xs">{{ form.recipientAddress.slice(0, 6) }}...{{ form.recipientAddress.slice(-4) }}</span>
               </div>
             </div>
           </div>
@@ -87,13 +105,13 @@
           >
             <span v-if="isLoading" class="flex items-center justify-center gap-2">
               <div class="loading-spinner"></div>
-              處理中...
+              設定中...
             </span>
             <span v-else class="flex items-center justify-center gap-2">
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
               </svg>
-              確認補 Gas
+              設定自動補 Gas
             </span>
           </button>
         </form>
@@ -113,42 +131,33 @@ const emit = defineEmits(['close', 'success'])
 const form = ref({
   targetChain: '1',
   gasAmount: '',
+  threshold: '',
   recipientAddress: ''
 })
 
-const costPreview = ref(null)
 const isLoading = ref(false)
 
 // Computed
 const canSubmit = computed(() => {
   return form.value.gasAmount && 
          parseFloat(form.value.gasAmount) > 0 &&
+         form.value.threshold &&
+         parseFloat(form.value.threshold) > 0 &&
          form.value.recipientAddress &&
          !isLoading.value
 })
 
 // Methods
-const calculateCost = async () => {
-  if (!form.value.gasAmount || parseFloat(form.value.gasAmount) <= 0) {
-    costPreview.value = null
-    return
+const getChainName = (chainId) => {
+  const chains = {
+    '1': 'Ethereum',
+    '137': 'Polygon',
+    '56': 'BSC',
+    '43114': 'Avalanche',
+    '10': 'Optimism',
+    '250': 'Fantom'
   }
-
-  try {
-    const gasAmount = parseFloat(form.value.gasAmount)
-    const chainId = form.value.targetChain
-    
-    // Get cost estimate from service
-    const estimate = await gasPassService.estimateGasFee(gasAmount, chainId)
-    
-    costPreview.value = {
-      gasCost: estimate.gasCost,
-      bridgeFee: estimate.bridgeFee,
-      total: estimate.total
-    }
-  } catch (error) {
-    console.error('Failed to calculate cost:', error)
-  }
+  return chains[chainId] || 'Unknown'
 }
 
 const handleSubmit = async () => {
@@ -157,21 +166,21 @@ const handleSubmit = async () => {
   isLoading.value = true
 
   try {
-    const result = await gasPassService.manualRefuel({
+    const result = await gasPassService.setRefuelPolicy({
       tokenId: 1, // Use first card for now
       targetChainId: parseInt(form.value.targetChain),
       gasAmount: form.value.gasAmount,
-      recipientAddress: form.value.recipientAddress
+      threshold: form.value.threshold
     })
 
     if (result.success) {
       emit('success')
       emit('close')
     } else {
-      throw new Error(result.error || '補 Gas 失敗')
+      throw new Error(result.error || '設定自動補 Gas 失敗')
     }
   } catch (error) {
-    console.error('Manual refuel failed:', error)
+    console.error('Set auto refuel failed:', error)
     // You can add toast notification here
   } finally {
     isLoading.value = false
@@ -196,7 +205,7 @@ const handleSubmit = async () => {
   @apply w-full p-3 border-2 border-gray-300 rounded-xl focus:border-amber-500 focus:ring-4 focus:ring-amber-500/30 focus:outline-none transition-all duration-300;
 }
 
-.cost-preview {
+.policy-preview {
   @apply bg-gray-50 border-2 border-gray-200 rounded-xl p-4;
 }
 
