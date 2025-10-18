@@ -365,9 +365,9 @@ watch(amount, (newValue) => {
   position: relative;
   width: 150px;
   height: 180px;
-  background: linear-gradient(145deg, #f8f9fa, #e9ecef);
+  background: linear-gradient(145deg, #f3f4f6, #e5e7eb);
   border-radius: 10px 10px 25px 25px;
-  border: 3px solid #6c757d;
+  border: 3px solid #9ca3af;
   overflow: hidden;
   box-shadow: 
     0 10px 30px rgba(0,0,0,0.1),
@@ -378,7 +378,7 @@ watch(amount, (newValue) => {
   position: absolute;
   bottom: 0;
   width: 100%;
-  background: linear-gradient(45deg, #fbbf24, #f59e0b);
+  background: linear-gradient(45deg, #f59e0b, #d97706);
   transition: height 0.8s cubic-bezier(0.4, 0, 0.2, 1);
   border-radius: 0 0 20px 20px;
 }
@@ -389,7 +389,7 @@ watch(amount, (newValue) => {
   left: 0;
   width: 100%;
   height: 20px;
-  background: radial-gradient(ellipse at center, rgba(251,191,36,0.8) 0%, transparent 70%);
+  background: radial-gradient(ellipse at center, rgba(245,158,11,0.8) 0%, transparent 70%);
   animation: wave 2s ease-in-out infinite;
 }
 
@@ -411,7 +411,7 @@ watch(amount, (newValue) => {
 .eye {
   width: 12px;
   height: 12px;
-  background: #212529;
+  background: #374151;
   border-radius: 50%;
   transition: height 0.1s ease;
 }
@@ -429,24 +429,24 @@ watch(amount, (newValue) => {
 }
 
 .mouth-neutral {
-  border: 2px solid #6c757d;
+  border: 2px solid #9ca3af;
   border-top: none;
 }
 
 .mouth-smile {
-  border: 2px solid #28a745;
+  border: 2px solid #f59e0b;
   border-top: none;
   transform: scale(1.1);
 }
 
 .mouth-excited {
-  background: #28a745;
+  background: #f59e0b;
   border-radius: 50%;
   animation: bounce-slow 2s infinite;
 }
 
 .mouth-happy {
-  background: #28a745;
+  background: #f59e0b;
   border-radius: 50%;
   width: 25px;
   height: 15px;
@@ -454,7 +454,7 @@ watch(amount, (newValue) => {
 }
 
 .mouth-nervous {
-  border: 2px solid #ffc107;
+  border: 2px solid #f59e0b;
   border-radius: 50%;
   border-top: none;
   animation: wiggle 0.5s infinite;
@@ -471,7 +471,7 @@ watch(amount, (newValue) => {
 
 .symbol {
   position: absolute;
-  color: #6c757d;
+  color: #9ca3af;
   animation: float 3s ease-in-out infinite;
 }
 
@@ -479,7 +479,7 @@ watch(amount, (newValue) => {
   position: relative;
   width: 160px;
   height: 15px;
-  background: linear-gradient(145deg, #adb5bd, #6c757d);
+  background: linear-gradient(145deg, #d1d5db, #9ca3af);
   border-radius: 8px;
   margin: -3px auto 0;
   box-shadow: 0 5px 15px rgba(0,0,0,0.2);
@@ -492,7 +492,7 @@ watch(amount, (newValue) => {
   transform: translateX(-50%);
   width: 20px;
   height: 16px;
-  background: linear-gradient(145deg, #adb5bd, #6c757d);
+  background: linear-gradient(145deg, #d1d5db, #9ca3af);
   border-radius: 50%;
   box-shadow: inset 0 2px 5px rgba(0,0,0,0.2);
 }
@@ -521,12 +521,12 @@ watch(amount, (newValue) => {
 .jar-title {
   font-size: 1.5rem;
   font-weight: 700;
-  color: #343a40;
+  color: #374151;
   margin-bottom: 0.5rem;
 }
 
 .jar-description {
-  color: #6c757d;
+  color: #6b7280;
   margin-bottom: 1.5rem;
   line-height: 1.5;
 }
@@ -554,8 +554,8 @@ watch(amount, (newValue) => {
 
 .amount-input:focus {
   outline: none;
-  border-color: #fbbf24;
-  box-shadow: 0 0 0 3px rgba(251,191,36,0.2);
+  border-color: #f59e0b;
+  box-shadow: 0 0 0 3px rgba(245,158,11,0.2);
 }
 
 .currency-label {
@@ -564,7 +564,7 @@ watch(amount, (newValue) => {
   top: 50%;
   transform: translateY(-50%);
   font-weight: 600;
-  color: #6c757d;
+  color: #6b7280;
 }
 
 .quick-amounts {
@@ -575,32 +575,32 @@ watch(amount, (newValue) => {
 
 .quick-amount-btn {
   padding: 0.5rem;
-  border: 2px solid #dee2e6;
+  border: 2px solid #e5e7eb;
   border-radius: 8px;
   background: white;
-  color: #6c757d;
+  color: #6b7280;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
 }
 
 .quick-amount-btn:hover {
-  border-color: #fbbf24;
-  color: #b45309;
+  border-color: #f59e0b;
+  color: #d97706;
 }
 
 .quick-amount-btn.active {
-  border-color: #fbbf24;
-  background: #fbbf24;
+  border-color: #f59e0b;
+  background: #f59e0b;
   color: white;
 }
 
 .cost-estimate {
-  background: #f8f9fa;
+  background: #f9fafb;
   border-radius: 12px;
   padding: 1rem;
   margin-bottom: 1.5rem;
-  border: 2px solid #dee2e6;
+  border: 2px solid #e5e7eb;
 }
 
 .estimate-row {
@@ -615,20 +615,20 @@ watch(amount, (newValue) => {
 }
 
 .estimate-row.total {
-  border-top: 1px solid #dee2e6;
+  border-top: 1px solid #e5e7eb;
   padding-top: 0.5rem;
   font-weight: 600;
 }
 
 .highlight {
-  color: #b45309;
+  color: #d97706;
   font-weight: 600;
 }
 
 .submit-btn {
   width: 100%;
   padding: 1rem 2rem;
-  background: linear-gradient(145deg, #fbbf24, #f59e0b);
+  background: linear-gradient(145deg, #f59e0b, #d97706);
   color: white;
   border: none;
   border-radius: 12px;
@@ -636,12 +636,12 @@ watch(amount, (newValue) => {
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 15px rgba(251,191,36,0.3);
+  box-shadow: 0 4px 15px rgba(245,158,11,0.3);
 }
 
 .submit-btn:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(251,191,36,0.4);
+  box-shadow: 0 6px 20px rgba(245,158,11,0.4);
 }
 
 .submit-btn:disabled {

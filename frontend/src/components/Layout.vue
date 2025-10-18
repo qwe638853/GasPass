@@ -1,7 +1,7 @@
 <template>
-  <div class="min-h-screen bg-gaspass-gray-100">
+  <div class="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
     <!-- Navigation -->
-    <nav class="bg-white shadow-lg border-b border-gaspass-gray-200">
+    <nav class="bg-white/80 backdrop-blur-md shadow-lg border-b border-gray-200 sticky top-0 z-40">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between h-16">
           <!-- Logo -->
@@ -29,9 +29,9 @@
               首頁
             </router-link>
             <router-link 
-              to="/wallet-management" 
+              to="/card-management" 
               class="nav-link"
-              :class="{ 'nav-link-active': $route.name === 'WalletManagement' }"
+              :class="{ 'nav-link-active': $route.name === 'CardManagement' }"
             >
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
@@ -39,22 +39,12 @@
               儲值卡管理
             </router-link>
             <router-link 
-              to="/deposit" 
+              to="/gas-exchange" 
               class="nav-link"
-              :class="{ 'nav-link-active': $route.name === 'Deposit' }"
+              :class="{ 'nav-link-active': $route.name === 'GasExchange' }"
             >
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-              </svg>
-              測試用
-            </router-link>
-            <router-link 
-              to="/cross-chain-swap" 
-              class="nav-link"
-              :class="{ 'nav-link-active': $route.name === 'CrossChainSwap' }"
-            >
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
               </svg>
               兌換Gas
             </router-link>
@@ -146,21 +136,15 @@
               </svg>
               首頁
             </router-link>
-            <router-link to="/wallet-management" class="mobile-nav-link" @click="showMobileMenu = false">
+            <router-link to="/card-management" class="mobile-nav-link" @click="showMobileMenu = false">
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
               </svg>
               儲值卡管理
             </router-link>
-            <router-link to="/test" class="mobile-nav-link" @click="showMobileMenu = false">
+            <router-link to="/gas-exchange" class="mobile-nav-link" @click="showMobileMenu = false">
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path>
-              </svg>
-              測試用
-            </router-link>
-            <router-link to="/cross-chain-swap" class="mobile-nav-link" @click="showMobileMenu = false">
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
               </svg>
               兌換Gas
             </router-link>
@@ -251,36 +235,36 @@ watch([isConnected, isArbitrum], () => {
 <style scoped>
 /* Logo */
 .logo-container {
-  @apply flex items-center gap-2;
+  @apply flex items-center gap-3;
 }
 
 .logo-icon {
-  @apply text-2xl;
+  @apply text-3xl;
 }
 
 .logo-text {
-  @apply font-bold text-xl;
+  @apply font-bold text-2xl;
 }
 
 .logo-gas {
-  @apply text-gaspass-gray-800;
+  @apply text-slate-800;
 }
 
 .logo-pass {
-  @apply text-gaspass-yellow-600;
+  @apply bg-gradient-to-r from-amber-500 to-orange-600 bg-clip-text text-transparent;
 }
 
 /* Navigation */
 .nav-link {
-  @apply flex items-center gap-2 text-gaspass-gray-600 hover:text-gaspass-yellow-600 hover:bg-gaspass-yellow-50 px-3 py-2 rounded-lg text-sm font-medium transition-all;
+  @apply flex items-center gap-2 text-gray-600 hover:text-amber-600 hover:bg-amber-50 px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 hover:scale-105;
 }
 
 .nav-link-active {
-  @apply text-gaspass-yellow-600 bg-gaspass-yellow-50;
+  @apply text-amber-600 bg-gradient-to-r from-amber-50 to-orange-50 shadow-sm;
 }
 
 .mobile-menu-btn {
-  @apply p-2 text-gaspass-gray-600 hover:text-gaspass-gray-800 transition-colors;
+  @apply p-2 text-gray-600 hover:text-gray-800 transition-colors;
 }
 
 /* Network Status */
@@ -318,7 +302,7 @@ watch([isConnected, isArbitrum], () => {
 
 /* Balance Display */
 .balance-display {
-  @apply flex items-center gap-2 bg-gaspass-gray-50 px-3 py-2 rounded-lg;
+  @apply flex items-center gap-2 bg-gray-50 px-3 py-2 rounded-xl;
 }
 
 .balance-icon {
@@ -326,16 +310,16 @@ watch([isConnected, isArbitrum], () => {
 }
 
 .balance-amount {
-  @apply font-bold text-gaspass-gray-800;
+  @apply font-bold text-gray-800;
 }
 
 .balance-label {
-  @apply text-xs text-gaspass-gray-600;
+  @apply text-xs text-gray-600;
 }
 
 /* Wallet Connection */
 .connect-btn {
-  @apply flex items-center gap-2 bg-gaspass-yellow-400 hover:bg-gaspass-yellow-500 text-gaspass-gray-800 font-semibold py-2 px-4 rounded-lg transition-all focus:outline-none focus:ring-2 focus:ring-gaspass-yellow-400 focus:ring-offset-2;
+  @apply flex items-center gap-2 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white font-semibold py-2 px-4 rounded-xl transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-amber-500/30 focus:ring-offset-2 shadow-lg hover:shadow-xl hover:scale-105;
 }
 
 .wallet-info {
@@ -343,15 +327,15 @@ watch([isConnected, isArbitrum], () => {
 }
 
 .wallet-display {
-  @apply flex items-center gap-3 bg-gaspass-gray-50 px-3 py-2 rounded-lg;
+  @apply flex items-center gap-3 bg-gray-50 px-3 py-2 rounded-xl;
 }
 
 .wallet-avatar {
-  @apply w-8 h-8 rounded-full bg-gaspass-yellow-400 flex items-center justify-center;
+  @apply w-8 h-8 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center;
 }
 
 .avatar-dot {
-  @apply w-3 h-3 bg-gaspass-gray-800 rounded-full;
+  @apply w-3 h-3 bg-white rounded-full;
 }
 
 .wallet-details {
@@ -359,20 +343,20 @@ watch([isConnected, isArbitrum], () => {
 }
 
 .wallet-address {
-  @apply text-sm font-medium text-gaspass-gray-800;
+  @apply text-sm font-medium text-gray-800;
 }
 
 .wallet-status {
-  @apply text-xs text-gaspass-gray-600;
+  @apply text-xs text-gray-600;
 }
 
 .disconnect-btn {
-  @apply p-2 text-gaspass-gray-400 hover:text-red-600 transition-colors;
+  @apply p-2 text-gray-400 hover:text-red-600 transition-colors;
 }
 
 /* Mobile Menu */
 .mobile-menu {
-  @apply hidden bg-white border-t border-gaspass-gray-200 shadow-lg;
+  @apply hidden bg-white/95 backdrop-blur-md border-t border-gray-200 shadow-lg;
 }
 
 .mobile-menu-open {
@@ -388,20 +372,20 @@ watch([isConnected, isArbitrum], () => {
 }
 
 .mobile-nav-link {
-  @apply flex items-center gap-3 text-gaspass-gray-700 hover:text-gaspass-yellow-600 hover:bg-gaspass-yellow-50 px-4 py-3 rounded-lg font-medium transition-all;
+  @apply flex items-center gap-3 text-gray-700 hover:text-amber-600 hover:bg-amber-50 px-4 py-3 rounded-xl font-medium transition-all duration-300;
 }
 
 /* Mobile Wallet */
 .mobile-wallet-section {
-  @apply border-t border-gaspass-gray-200 pt-6;
+  @apply border-t border-gray-200 pt-6;
 }
 
 .mobile-wallet-card {
-  @apply bg-gaspass-gray-50 rounded-xl p-4;
+  @apply bg-gray-50 rounded-xl p-4;
 }
 
 .mobile-connect-btn {
-  @apply flex items-center justify-center gap-2 w-full bg-gaspass-yellow-400 hover:bg-gaspass-yellow-500 text-gaspass-gray-800 font-semibold py-3 px-4 rounded-lg transition-colors;
+  @apply flex items-center justify-center gap-2 w-full bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white font-semibold py-3 px-4 rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl;
 }
 
 .mobile-wallet-info {
@@ -413,11 +397,11 @@ watch([isConnected, isArbitrum], () => {
 }
 
 .mobile-avatar {
-  @apply w-10 h-10 rounded-full bg-gaspass-yellow-400 flex items-center justify-center;
+  @apply w-10 h-10 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center;
 }
 
 .mobile-avatar-dot {
-  @apply w-4 h-4 bg-gaspass-gray-800 rounded-full;
+  @apply w-4 h-4 bg-white rounded-full;
 }
 
 .mobile-wallet-details {
@@ -425,11 +409,11 @@ watch([isConnected, isArbitrum], () => {
 }
 
 .mobile-wallet-address {
-  @apply font-medium text-gaspass-gray-800;
+  @apply font-medium text-gray-800;
 }
 
 .mobile-wallet-status {
-  @apply text-sm text-gaspass-gray-600;
+  @apply text-sm text-gray-600;
 }
 
 .mobile-balance {
@@ -437,11 +421,11 @@ watch([isConnected, isArbitrum], () => {
 }
 
 .mobile-balance-label {
-  @apply text-sm text-gaspass-gray-600;
+  @apply text-sm text-gray-600;
 }
 
 .mobile-balance-amount {
-  @apply font-bold text-gaspass-gray-800;
+  @apply font-bold text-gray-800;
 }
 
 .mobile-network-warning {
@@ -453,10 +437,10 @@ watch([isConnected, isArbitrum], () => {
 }
 
 .mobile-switch-btn {
-  @apply w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors;
+  @apply w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl;
 }
 
 .mobile-disconnect-btn {
-  @apply w-full bg-gaspass-gray-200 hover:bg-gaspass-gray-300 text-gaspass-gray-800 font-semibold py-2 px-4 rounded-lg transition-colors;
+  @apply w-full bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-2 px-4 rounded-xl transition-all duration-300;
 }
 </style>

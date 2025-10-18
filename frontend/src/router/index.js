@@ -1,8 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import Home from '../views/Home.vue'
-import Dashboard from '../views/Dashboard.vue'
-import WalletManagement from '../views/WalletManagement.vue'
-import CrossChainSwap from '../views/CrossChainSwap.vue'
+import CardManagement from '../views/CardManagement.vue'
+import GasExchange from '../views/GasExchange.vue'
 
 const routes = [
   {
@@ -11,19 +10,14 @@ const routes = [
     component: Home
   },
   {
-    path: '/dashboard',
-    name: 'Dashboard',
-    component: Dashboard
+    path: '/card-management',
+    name: 'CardManagement',
+    component: CardManagement
   },
   {
-    path: '/wallet-management',
-    name: 'WalletManagement',
-    component: WalletManagement
-  },
-  {
-    path: '/cross-chain-swap',
-    name: 'CrossChainSwap',
-    component: CrossChainSwap
+    path: '/gas-exchange',
+    name: 'GasExchange',
+    component: GasExchange
   }
 ]
 
