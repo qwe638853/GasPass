@@ -44,9 +44,15 @@ export async function precheck(bridgeParams, { delegatorPkpEthAddress, rpcUrl })
   
   if (precheckResult.success) {
     const { data } = precheckResult.result;
+
+    const executeRes = await abilityClient.execute(bridgeParams, {
+      delegatorPkpEthAddress: delegatorPkpEthAddress,
+    });
     console.log('Estimated destination amount:', data.estimatedDestinationAmount);
     console.log('Protocol fee:', data.estimatedFees.protocolFee);
     console.log('Estimated execution time:', data.estimatedExecutionTime + ' seconds');
+
+    console.log('executeRes', executeRes);
   } else {
     // Handle different types of failures
     if (precheckResult.runtimeError) {
@@ -56,6 +62,7 @@ export async function precheck(bridgeParams, { delegatorPkpEthAddress, rpcUrl })
       console.error('Schema validation error:', precheckResult.schemaValidationError);
     }
     if (precheckResult.result) {
+      
       console.error('Bridge precheck failed:', precheckResult.result.error);
     }
   }
