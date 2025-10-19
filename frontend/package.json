@@ -13,7 +13,16 @@
     "@vueuse/core": "^13.9.0",
     "@wagmi/core": "^2.22.1",
     "@web3modal/wagmi": "^5.1.11",
+    "assert": "^2.1.0",
+    "buffer": "^6.0.3",
+    "crypto-browserify": "^3.12.1",
     "ethers": "^6.15.0",
+    "https-browserify": "^1.0.0",
+    "os-browserify": "^0.3.0",
+    "path-browserify": "^1.0.1",
+    "stream-browserify": "^3.0.0",
+    "stream-http": "^3.2.0",
+    "util": "^0.12.5",
     "viem": "^2.38.3",
     "vue": "^3.5.22",
     "vue-router": "^4.6.3",
@@ -21,10 +30,11 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.1.14",
-    "@vitejs/plugin-vue": "^6.0.1",
+    "@vitejs/plugin-vue": "^5.0.0",
     "autoprefixer": "^10.4.21",
     "postcss": "^8.5.6",
     "tailwindcss": "^3.4.18",
-    "vite": "^7.1.7"
+    "vite": "^5.0.0",
+    "vite-plugin-node-polyfills": "^0.22.0"
   }
 }

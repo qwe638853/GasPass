@@ -247,8 +247,24 @@ onMounted(() => {
 })
 
 // Watch for connection changes
-watch([isConnected, isArbitrum], () => {
+watch([isConnected, isArbitrum], (newValues, oldValues) => {
+  console.log('Layout: Connection state changed', {
+    isConnected: newValues[0],
+    isArbitrum: newValues[1],
+    account: account.value,
+    chainId: chainId.value
+  })
   loadBalance()
+})
+
+// Watch account changes
+watch(account, (newAccount, oldAccount) => {
+  console.log('Layout: Account changed', { newAccount, oldAccount })
+})
+
+// Watch isConnected changes
+watch(isConnected, (newConnected, oldConnected) => {
+  console.log('Layout: isConnected changed', { newConnected, oldConnected })
 })
 </script>
 
