@@ -271,4 +271,6 @@ contract GasPass is ERC3525, Ownable, EIP712 {
     function getAgentToWallet(address agent) public view returns (address) {
         return agentToWallet[agent];
     }
+
+    // Todo:轉移ERC3525的一些檢查邏輯
 }
