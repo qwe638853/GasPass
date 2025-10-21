@@ -31,11 +31,11 @@ contract DeployProd is Script {
         console.log("Deployment completed successfully!");
         
         // 輸出用於驗證的資訊
-        console.log("\n=== 部署資訊 ===");
-        console.log("合約地址:", address(gasPass));
-        console.log("穩定幣地址:", stablecoin);
-        console.log("Relayer地址:", relayer);
-        console.log("部署者地址:", deployer);
+        console.log(unicode"\n=== 部署資訊 ===");
+        console.log(unicode"合約地址:", address(gasPass));
+        console.log(unicode"穩定幣地址:", stablecoin);
+        console.log(unicode"Relayer地址:", relayer);
+        console.log(unicode"部署者地址:", deployer);
     }
 }
 
