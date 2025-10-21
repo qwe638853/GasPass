@@ -5,7 +5,11 @@ libs = ["lib"]
 optimizer = true
 optimizer_runs = 200
 via_ir = true
-
+# remappings（對應你的 import 路徑）
+remappings = [
+  "@openzeppelin/=lib/openzeppelin-contracts/",
+  "@solvprotocol/contracts=lib/erc-3525/contracts"
+]
 # See more config options https://github.com/foundry-rs/foundry/blob/master/crates/config/README.md#all-options
 
 # Arbitrum 主網配置
@@ -20,8 +24,10 @@ via_ir = true
 # remappings（對應你的 import 路徑）
 remappings = [
   "@openzeppelin/=lib/openzeppelin-contracts/",
-  "@solvprotocol/erc-3525/=lib/erc-3525/contracts/"
+  "@solvprotocol/contracts=lib/erc-3525/contracts"
 ]
+
+
 
 # RPC 配置
 [rpc_endpoints]

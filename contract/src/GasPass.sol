@@ -2,13 +2,14 @@
 pragma solidity ^0.8.20;
 
 
-import {ERC3525} from "@solvprotocol/erc-3525/ERC3525.sol"; 
+import {ERC3525} from "@solvprotocol/contracts/ERC3525.sol"; 
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {EIP712} from "@openzeppelin/contracts/utils/cryptography/EIP712.sol";
 import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import {IERC20Permit} from "@openzeppelin/contracts/token/ERC20/extensions/IERC20Permit.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {GasPassTypes} from "./types/GasPassTypes.sol";
 
 /**
  * @title GasPass
@@ -22,15 +23,27 @@ contract GasPass is ERC3525, Ownable, EIP712 {
     bytes32 public constant SET_REFUEL_POLICY_TYPEHASH = keccak256("SetRefuelPolicy(uint256 tokenId, uint256 targetChainId, uint128 gasAmount, uint128 threshold, address agent, uint256 nonce, uint256 deadline)");
     bytes32 public constant CANCEL_REFUEL_POLICY_TYPEHASH = keccak256("CancelRefuelPolicy(uint256 tokenId, uint256 targetChainId, uint256 nonce, uint256 deadline)");
     bytes32 public constant STABLECOIN_PERMIT_TYPEHASH = keccak256("StablecoinPermitData(address owner,address spender,uint256 value,uint256 deadline,uint8 v,bytes32 r,bytes32 s)");
-    bytes32 public constant MINT_WITH_SIG_TYPEHASH = keccak256("MintWithSig(address to, uint256 amount, StablecoinPermitData permitData,address agent,uint256 nonce,uint256 deadline)");
+    bytes32 public constant MINT_WITH_SIG_TYPEHASH = keccak256("MintWithSig(address to, uint256 value, StablecoinPermitData permitData,address agent,uint256 nonce,uint256 deadline)");
     bytes32 public constant DEPOSIT_WITH_SIG_TYPEHASH = keccak256("DepositWithSig(uint256 tokenId, uint256 amount, StablecoinPermitData permitData,uint256 nonce,uint256 deadline)");
+    bytes32 public constant MINT_BATCH_WITH_SIG_TYPEHASH = keccak256("MintBatchWithSig(address to, uint256 amount, uint256 singleValue, address agent, StablecoinPermitData permitData,uint256 nonce,uint256 deadline)");
+    bytes32 public constant SET_AGENT_TO_WALLET_WITH_SIG_TYPEHASH = keccak256("SetAgentToWalletWithSig(address agent,address wallet,uint256 nonce,uint256 deadline)");
+
+    // ============ Events ============
+    event Minted(address indexed to, uint256 value, address indexed agent);
+    event MintBatch(address indexed to, uint256 amount, uint256 singleValue, address indexed agent);
+    event Deposited(address indexed owner, uint256 indexed tokenId, uint256 amount);
+    event AgentBound(address indexed agent, address indexed wallet);
+    event RefuelPolicySet(uint256 indexed tokenId, uint256 indexed targetChainId, uint128 gasAmount, uint128 threshold, address indexed agent);
+    event RefuelPolicyCancelled(uint256 indexed tokenId, uint256 indexed targetChainId);
+    event AutoRefueled(uint256 indexed tokenId, uint256 indexed targetChainId, uint256 gasAmount, uint256 fee);
+    event RelayerChanged(address indexed oldRelayer, address indexed newRelayer);
 
     /** @dev 每個 tokenId 的次數器，供策略簽章使用，防重放。 */
     mapping(uint256 => uint256) public nonces;     
     /** @dev 每個使用者地址對應的次數器，供 mint/deposit 的簽章使用，防重放。 */
     mapping(address => uint256) public ownerNonces;  
     /** @dev tokenId => (chainId => RefuelPolicy) 的策略對應。 */
-    mapping(uint256 => mapping(uint256 => RefuelPolicy)) public chainPolicies;
+    mapping(uint256 => mapping(uint256 => GasPassTypes.RefuelPolicy)) public chainPolicies;
     /** @dev 代理人映射：agent 地址對應其所屬錢包地址（該錢包需為 token 擁有者）。 */
     mapping(address => address) public agentToWallet;
     /** @dev 作為 GasPass 資金來源的 EIP-2612 支援之穩定幣合約。 */
@@ -41,62 +54,18 @@ contract GasPass is ERC3525, Ownable, EIP712 {
     uint256 public totalFeesCollected;
 
     // EIP712 Struct for SetRefuelPolicy
-    /// @notice 設定自動補氣策略的 EIP-712 型別資料。
-    struct SetRefuelPolicyTypedData {
-        uint256 tokenId;
-        uint256 targetChainId;
-        uint128 gasAmount; // 自動refuel的額度
-        uint128 threshold; // 低於此threshold時，會自動refuel
-        address agent;
-        uint256 nonce; // 一次性nonce
-        uint256 deadline; // 過期時間
-    }
-
-    /// @notice 取消自動補氣策略的 EIP-712 型別資料。
-    struct CancelRefuelPolicyTypedData {
-        uint256 tokenId;
-        uint256 targetChainId;
-        uint256 nonce;
-        uint256 deadline;
-    }
-
-    /// @notice 每鏈之補氣策略設定。
-    struct RefuelPolicy {
-        uint128 gasAmount; // 自動refuel的額度
-        uint128 threshold; // 低於此threshold時，會自動refuel
-        address agent;
-
-    }
-
-    /// @notice 穩定幣 EIP-2612 的 permit 參數，用於授權合約轉移資金。
-    struct StablecoinPermitData {
-        address owner;      // 付款人
-        address spender;    // 必須是 address(this)
-        uint256 value;      // 授權額度（建議 >= 本次 amount）
-        uint256 deadline;   // permit 截止時間
-        uint8 v; bytes32 r; bytes32 s;
-    }
-
-    /// @notice 使用簽章鑄造 GasPass 的型別資料。
-    struct MintWithSigTypedData {
-        address to;
-        uint256 amount;
-        StablecoinPermitData permitData;
-        address agent;
-        uint256 nonce;
-        uint256 deadline;
-    }   
-
-    /// @notice 使用簽章為既有 tokenId 充值 value 的型別資料。
-    struct DepositWithSigTypedData {
-        uint256 tokenId;
-        uint256 amount;
-        StablecoinPermitData permitData;
-        uint256 nonce;
-        uint256 deadline;
-    }
+    using GasPassTypes for *;
 
     
+    modifier onlyAgent(uint256 tokenId) {
+        require(agentToWallet[msg.sender] == ownerOf(tokenId), "Not agent");
+        _;
+    }
+
+    modifier onlyRelayer() {
+        require(msg.sender == relayer, "Not relayer");
+        _;
+    }
 
     /**
      * @notice 部署合約。
@@ -118,13 +87,13 @@ contract GasPass is ERC3525, Ownable, EIP712 {
      * @param typedData 鑄造所需之型別資料（含 permit 參數）。
      * @param signature 付款人對 MINT_WITH_SIG 結構之簽章。
      */
-    function mintWithSig(MintWithSigTypedData calldata typedData, bytes memory signature) public onlyOwner {
+    function mintWithSig(GasPassTypes.MintWithSigTypedData calldata typedData, bytes memory signature) public onlyOwner {
         require(typedData.deadline >= block.timestamp, "Signature expired");
-        require(typedData.amount > 0, "amount=0");
-        require(typedData.amount <= typedData.permitData.value, "amount > value");
+        require(typedData.value > 0, "value=0");
+        require(typedData.value <= typedData.permitData.value, "value > value");
         require(typedData.permitData.deadline >= block.timestamp, "permit expired");
         require(typedData.nonce == ownerNonces[typedData.permitData.owner], "Nonce already used");
-
+        
         bytes32 permitHash = keccak256(
             abi.encode(
                 STABLECOIN_PERMIT_TYPEHASH,
@@ -148,8 +117,8 @@ contract GasPass is ERC3525, Ownable, EIP712 {
             abi.encode(
                 MINT_WITH_SIG_TYPEHASH,
                 typedData.to,
-                typedData.amount,
-                permitHash, 
+                typedData.value,
+                permitHash,
                 typedData.agent,
                 ownerNonce,
                 typedData.deadline
@@ -159,17 +128,104 @@ contract GasPass is ERC3525, Ownable, EIP712 {
         address signer = ECDSA.recover(digest, signature);
         require(signer == typedData.permitData.owner, "Invalid signature");
         stablecoin.permit(typedData.permitData.owner, address(this), typedData.permitData.value, typedData.permitData.deadline, typedData.permitData.v, typedData.permitData.r, typedData.permitData.s);
-        IERC20(address(stablecoin)).safeTransferFrom(typedData.permitData.owner, address(this), typedData.amount);
-        _mint(typedData.to, 0, typedData.amount);
+        IERC20(address(stablecoin)).safeTransferFrom(typedData.permitData.owner, address(this), typedData.value);
+        _mint(typedData.to, 0, typedData.value);
+        emit Minted(typedData.to, typedData.value, typedData.agent);
         ownerNonces[typedData.permitData.owner]++;
     }   
+
+    function mintBatchWithSig(GasPassTypes.MintBatchWithSigTypedData calldata typedData, bytes memory signature) public onlyRelayer {
+        require(typedData.deadline >= block.timestamp, "Signature expired");
+        require(typedData.amount > 0, "Amount is 0");
+        require(typedData.amount <= typedData.permitData.value, "Amount > value");
+        require(typedData.permitData.deadline >= block.timestamp, "permit expired");
+        require(typedData.nonce == ownerNonces[typedData.permitData.owner], "Nonce already used");
+
+        if (typedData.amount * typedData.singleValue > typedData.permitData.value) {
+            revert("Amount * singleValue > value");
+        }
+        
+        bytes32 permitHash = keccak256(
+            abi.encode(
+                STABLECOIN_PERMIT_TYPEHASH,
+                typedData.permitData.owner,
+                typedData.permitData.spender,
+                typedData.permitData.value,
+                typedData.permitData.deadline,
+                typedData.permitData.v,
+                typedData.permitData.r,
+                typedData.permitData.s
+            )
+        );
+
+        uint256 ownerNonce = ownerNonces[typedData.permitData.owner];
+        // First time mint with agent, set agent to wallet
+        if (agentToWallet[typedData.agent] == address(0)) {
+            _setAgentToWallet(typedData.agent, typedData.permitData.owner);
+        }
+
+        bytes32 structHash = keccak256(
+            abi.encode(
+                MINT_BATCH_WITH_SIG_TYPEHASH,
+                typedData.to,
+                typedData.amount,
+                typedData.singleValue,
+                typedData.agent,
+                permitHash,
+                typedData.nonce,
+                typedData.deadline
+            )
+        );
+
+        bytes32 digest = _hashTypedDataV4(structHash);
+        address signer = ECDSA.recover(digest, signature);
+        require(signer == typedData.permitData.owner, "Invalid signature");
+        stablecoin.permit(typedData.permitData.owner, address(this), typedData.permitData.value, typedData.permitData.deadline, typedData.permitData.v, typedData.permitData.r, typedData.permitData.s);
+        IERC20(address(stablecoin)).safeTransferFrom(typedData.permitData.owner, address(this), typedData.amount * typedData.singleValue);
+        for (uint256 i = 0; i < typedData.amount; i++) {
+            _mint(typedData.to, 0, typedData.singleValue);
+        }
+        emit MintBatch(typedData.to, typedData.amount, typedData.singleValue, typedData.agent);
+        ownerNonces[typedData.permitData.owner]++;
+
+
+    }
+
+    function setAgentToWalletWithSig(GasPassTypes.SetAgentToWalletWithSigTypedData calldata typedData, bytes memory signature) public onlyRelayer {
+        require(typedData.deadline >= block.timestamp, "Signature expired");
+        require(typedData.nonce == ownerNonces[typedData.wallet], "Nonce already used");
+        require(agentToWallet[typedData.agent] == address(0), "Agent already has a wallet");
+        require(typedData.wallet != address(0), "Invalid wallet");
+
+        bytes32 structHash = keccak256(
+            abi.encode(
+                SET_AGENT_TO_WALLET_WITH_SIG_TYPEHASH,
+                typedData.agent,
+                typedData.wallet,
+                typedData.nonce,
+                typedData.deadline
+            )
+        );
+        bytes32 digest = _hashTypedDataV4(structHash);
+        address signer = ECDSA.recover(digest, signature);
+        require(signer == typedData.wallet, "Invalid signature");
+
+        _setAgentToWallet(typedData.agent, typedData.wallet);
+        emit AgentBound(typedData.agent, typedData.wallet);
+        ownerNonces[typedData.wallet]++;
+    }
+        
+
+        
+
+
 
     /**
      * @notice 以簽章為既有 tokenId 增加值，並透過 permit 轉入對應穩定幣。
      * @param typedData 充值所需之型別資料（含 permit 參數）。
      * @param signature 付款人對 DEPOSIT_WITH_SIG 結構之簽章。
      */
-    function depositWithSig(DepositWithSigTypedData calldata typedData, bytes memory signature) public {
+    function depositWithSig(GasPassTypes.DepositWithSigTypedData calldata typedData, bytes memory signature) public onlyRelayer {
         require(typedData.deadline >= block.timestamp, "Signature expired");
         require(typedData.amount > 0, "amount=0");
         require(typedData.amount <= typedData.permitData.value, "amount > value");
@@ -225,7 +281,7 @@ contract GasPass is ERC3525, Ownable, EIP712 {
     function setRefuelPolicy(uint256 tokenId, uint256 targetChainId, uint128 gasAmount, uint128 threshold, address agent) public  {
         require(agentToWallet[agent] == ownerOf(tokenId), "Invalid agent");
         require(msg.sender == ownerOf(tokenId), "Not token owner");
-        chainPolicies[tokenId][targetChainId] = RefuelPolicy(gasAmount, threshold, agent);
+        chainPolicies[tokenId][targetChainId] = GasPassTypes.RefuelPolicy(gasAmount, threshold, agent, 0);
     }
     
     // 設定自動refuel的policy with signature
@@ -235,8 +291,7 @@ contract GasPass is ERC3525, Ownable, EIP712 {
      * @param policy 以 EIP-712 簽章之策略結構。
      * @param signature token 擁有者對策略結構的簽章。
      */
-    function setRefuelPolicyWithSig(SetRefuelPolicyTypedData calldata policy, bytes memory signature) public {
-        require(msg.sender == relayer, "Not relayer");
+    function setRefuelPolicyWithSig(GasPassTypes.SetRefuelPolicyTypedData calldata policy, bytes memory signature) public onlyRelayer {
         require(policy.deadline >= block.timestamp, "Signature expired");
         require(policy.nonce == nonces[policy.tokenId], "Nonce already used");
         require(policy.gasAmount > 0, "Gas amount must be greater than 0");
@@ -261,7 +316,8 @@ contract GasPass is ERC3525, Ownable, EIP712 {
         require(signer == ownerOf(policy.tokenId), "Invalid signature");
 
         // update policy
-        chainPolicies[policy.tokenId][policy.targetChainId] = RefuelPolicy(policy.gasAmount, policy.threshold, policy.agent);
+        chainPolicies[policy.tokenId][policy.targetChainId] = GasPassTypes.RefuelPolicy(policy.gasAmount, policy.threshold, policy.agent, 0);
+        emit RefuelPolicySet(policy.tokenId, policy.targetChainId, policy.gasAmount, policy.threshold, policy.agent);
         nonces[policy.tokenId]++;
     }   
 
@@ -283,8 +339,7 @@ contract GasPass is ERC3525, Ownable, EIP712 {
      * @param typedData 以 EIP-712 簽章之取消結構。
      * @param signature token 擁有者對取消結構的簽章。
      */
-    function cancelRefuelPolicyWithSig(CancelRefuelPolicyTypedData calldata typedData, bytes memory signature) public {
-        require(msg.sender == relayer, "Not relayer");
+    function cancelRefuelPolicyWithSig(GasPassTypes.CancelRefuelPolicyTypedData calldata typedData, bytes memory signature) public onlyRelayer {
         require(typedData.deadline >= block.timestamp, "Signature expired");
         require(typedData.nonce == nonces[typedData.tokenId], "Nonce already used");
     
@@ -295,6 +350,7 @@ contract GasPass is ERC3525, Ownable, EIP712 {
         
         // update policy
         delete chainPolicies[typedData.tokenId][typedData.targetChainId];
+        emit RefuelPolicyCancelled(typedData.tokenId, typedData.targetChainId);
         nonces[typedData.tokenId]++;
     }    
 
@@ -305,13 +361,12 @@ contract GasPass is ERC3525, Ownable, EIP712 {
      * @param tokenId 目標 tokenId。
      * @param targetChainId 目標鏈 ID。
      */
-    function autoRefuel(uint256 tokenId, uint256 targetChainId) public {
-        require(agentToWallet[msg.sender] == ownerOf(tokenId), "Not agent");
-        RefuelPolicy memory policy = chainPolicies[tokenId][targetChainId];
+    function autoRefuel(uint256 tokenId, uint256 targetChainId) public onlyAgent(tokenId) {
+        GasPassTypes.RefuelPolicy storage policy = chainPolicies[tokenId][targetChainId];
         require(policy.gasAmount > 0, "No policy");
         require(policy.agent == msg.sender, "Wrong agent");
-
-
+        require(block.timestamp - policy.lastRefueled > 60 seconds, "Cooldown period not met");
+        
         // 計算0.5%手續費
         uint256 gasAmount = policy.gasAmount;
         uint256 fee = gasAmount * 5 / 1000;
@@ -324,6 +379,8 @@ contract GasPass is ERC3525, Ownable, EIP712 {
 
         IERC20(address(stablecoin)).safeTransfer(address(msg.sender), gasAmount);
         totalFeesCollected += fee;
+        policy.lastRefueled = block.timestamp;
+        emit AutoRefueled(tokenId, targetChainId, gasAmount, fee);
     }
     
     /**
@@ -332,7 +389,9 @@ contract GasPass is ERC3525, Ownable, EIP712 {
      */
     function setRelayer(address _relayer) public onlyOwner {
         require(_relayer != address(0), "Invalid relayer");
+        address old = relayer;
         relayer = _relayer;
+        emit RelayerChanged(old, _relayer);
     }
     
     /**

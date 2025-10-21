@@ -7,6 +7,8 @@ import "forge-std/console.sol";
 import { ERC20 } from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import { ERC20Permit } from "@openzeppelin/contracts/token/ERC20/extensions/ERC20Permit.sol";
 import { GasPass } from "../src/GasPass.sol";
+import {GasPassTypes} from "../src/types/GasPassTypes.sol";
+
 
 contract MockUSDCPermit is ERC20, ERC20Permit {
     constructor(string memory name_, string memory symbol_) ERC20(name_, symbol_) ERC20Permit(name_) {
@@ -51,7 +53,7 @@ contract DeployAnvil is Script {
     function _gasPassMintDigest(
         GasPass gasPass,
         address to,
-        uint256 amount,
+        uint256 value,
         bytes32 permitDataHash,
         address agent,
         uint256 ownerNonce,
@@ -61,7 +63,7 @@ contract DeployAnvil is Script {
             abi.encode(
                 gasPass.MINT_WITH_SIG_TYPEHASH(),
                 to,
-                amount,
+                value,
                 permitDataHash,
                 agent,
                 ownerNonce,
@@ -121,11 +123,11 @@ contract DeployAnvil is Script {
             bytes32 permitDataHash = _hashPermitDataForGasPass(gasPass, deployer, address(gasPass), value, deadline, pv, pr, ps);
 
             uint256 ownerNonce = gasPass.ownerNonces(deployer);
-            bytes32 mintDigest = _gasPassMintDigest(gasPass, to, amount, permitDataHash, agent, ownerNonce, deadline);
+            bytes32 mintDigest = _gasPassMintDigest(gasPass, to, value, permitDataHash, agent, ownerNonce, deadline);
             (uint8 mv, bytes32 mr, bytes32 ms) = vm.sign(deployerPk, mintDigest);
             bytes memory mintSig = abi.encodePacked(mr, ms, mv);
 
-            GasPass.StablecoinPermitData memory permitData = GasPass.StablecoinPermitData({
+            GasPassTypes.StablecoinPermitData memory permitData = GasPassTypes.StablecoinPermitData({
                 owner: deployer,
                 spender: address(gasPass),
                 value: value,
@@ -135,9 +137,9 @@ contract DeployAnvil is Script {
                 s: ps
             });
 
-            GasPass.MintWithSigTypedData memory mintData = GasPass.MintWithSigTypedData({
+            GasPassTypes.MintWithSigTypedData memory mintData = GasPassTypes.MintWithSigTypedData({
                 to: to,
-                amount: amount,
+                value: value,
                 permitData: permitData,
                 agent: agent,
                 nonce: ownerNonce,
