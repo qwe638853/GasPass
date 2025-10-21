@@ -37,6 +37,10 @@
       <input id="delegator" placeholder="登入 Vincent 後自動帶入" readonly />
     </div>
     <div class="row">
+      <label for="recipient">Recipient</label>
+      <input id="recipient" placeholder="若留空，預設使用 Delegator PKP Address" />
+    </div>
+    <div class="row">
       <label for="rpcUrl">RPC URL</label>
       <input id="rpcUrl" placeholder="https://yellowstone-rpc.litprotocol.com/" value="https://yellowstone-rpc.litprotocol.com/" />
     </div>
@@ -75,6 +79,7 @@
       <button id="btn-precheck">Precheck</button>
       <button id="btn-quote">Get Signed Bridge Quote</button>
       <button id="btn-exec">Execute</button>
+      <button id="btn-exec-combined">Execute (Combined)</button>
     </div>
 
     <hr />

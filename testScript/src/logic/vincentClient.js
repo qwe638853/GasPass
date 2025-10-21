@@ -1,6 +1,6 @@
 import { ethers } from "ethers";
 import { LitNodeClient } from '@lit-protocol/lit-node-client';
-import { bundledVincentAbility } from '@lit-protocol/vincent-ability-debridge';
+import { bundledVincentAbility } from '@qwe638853/ability-bungee';
 import { getVincentAbilityClient } from '@lit-protocol/vincent-app-sdk/abilityClient';
 
 // 在瀏覽器環境中：
@@ -52,32 +52,36 @@ export class VincentBridgeClient {
     destinationToken,
     amount,
     slippageBps,
+    recipient,
+    separateApproval,
+    bridgeTxData,
   }) {
     return {
       operation: operation || 'BRIDGE',
-      rpcUrl,
-      sourceChain,
-      destinationChain,
-      sourceToken,
-      destinationToken,
-      amount,
-      slippageBps: Number(slippageBps),
+      rpcUrl: String(rpcUrl || '').trim(),
+      fromChainId: String(sourceChain || '').trim(),
+      toChainId: String(destinationChain || '').trim(),
+      fromToken: String(sourceToken || '').trim(),
+      toToken: String(destinationToken || '').trim(),
+      amount: String(amount || '').trim(),
+      recipient: String(recipient || '').trim(),
+      slippageBps: slippageBps != null && slippageBps !== '' ? Number(slippageBps) : undefined,
+      separateApproval,
+      bridgeTxData,
     };
   }
 
-  async precheck(params, { delegatorPkpEthAddress, rpcUrl }) {
+  async precheck(params, { delegatorPkpEthAddress }) {
     await this.ensureInitialized();
-    return await this.abilityClient.precheck(params, {
-      delegatorPkpEthAddress,
-      rpcUrl,
-    });
+    return await this.abilityClient.precheck(params, { delegatorPkpEthAddress });
   }
 
   async getSignedBridgeQuote(params, { delegatorPkpEthAddress }) {
     await this.ensureInitialized();
-    return await this.abilityClient.getSignedBridgeQuote(params, {
-      delegatorPkpEthAddress,
-    });
+    if (typeof this.abilityClient.getSignedBridgeQuote === 'function') {
+      return await this.abilityClient.getSignedBridgeQuote(params, { delegatorPkpEthAddress });
+    }
+    return await this.abilityClient.precheck(params, { delegatorPkpEthAddress });
   }
 
   async execute(params, { delegatorPkpEthAddress }) {

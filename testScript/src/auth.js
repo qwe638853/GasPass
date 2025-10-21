@@ -26,7 +26,7 @@ export async function bootstrapAuthFlow(vincentAppClient, audienceOverride) {
     const jwtStr = result?.jwtStr ?? result?.jwt ?? result?.token ?? null;
     const decodedJWT = result?.decodedJWT ?? result?.decoded ?? null;
     console.log('decodedJWT', jwtStr);
-    console.log('decodedJWT decoded', decodedJWT);
+    console.log('decodedJWT decdoded', decodedJWT);
     if (jwtStr) localStorage.setItem('VINCENT_AUTH_JWT', jwtStr);
     if (decodedJWT) localStorage.setItem('VINCENT_AUTH_JWT_DECODED', JSON.stringify(decodedJWT));
     vincentAppClient.removeVincentJWTFromURI();

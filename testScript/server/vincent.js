@@ -1,6 +1,6 @@
 import { ethers } from "ethers";
 import { LitNodeClient } from '@lit-protocol/lit-node-client';
-import { bundledVincentAbility } from '@lit-protocol/vincent-ability-debridge';
+import { bundledVincentAbility } from '@qwe638853/ability-bungee';
 import { getVincentAbilityClient } from '@lit-protocol/vincent-app-sdk/abilityClient';
 import dotenv from 'dotenv';
 
@@ -20,7 +20,7 @@ export async function ensureInitialized() {
 
   const yellowstoneProvider = new ethers.JsonRpcProvider("https://yellowstone-rpc.litprotocol.com/");
   delegateeSigner = new ethers.Wallet(DELEGATEE_PRIVATE_KEY, yellowstoneProvider);
-  console.log('Delegatee address:', `delegateeSigner`.address);
+  console.log('Delegatee address:', delegateeSigner.address);
 
   litNodeClient = new LitNodeClient({ litNetwork: 'datil', debug: true });
   await litNodeClient.connect();
@@ -36,23 +36,20 @@ export function getDelegateeAddress() {
   return delegateeSigner ? delegateeSigner.address : null;
 }
 
-export async function precheck(bridgeParams, { delegatorPkpEthAddress, rpcUrl }) {
+export async function precheck(bridgeParams, { delegatorPkpEthAddress }) {
   await ensureInitialized();
   const precheckResult = await abilityClient.precheck(bridgeParams, {
     delegatorPkpEthAddress,
   });
   
   if (precheckResult.success) {
-    const { data } = precheckResult.result;
-
-    const executeRes = await abilityClient.execute(bridgeParams, {
-      delegatorPkpEthAddress: delegatorPkpEthAddress,
-    });
-    console.log('Estimated destination amount:', data.estimatedDestinationAmount);
-    console.log('Protocol fee:', data.estimatedFees.protocolFee);
-    console.log('Estimated execution time:', data.estimatedExecutionTime + ' seconds');
-
-    console.log('executeRes', executeRes);
+    const r = precheckResult.result || {};
+    const estAmount = r.estimatedToAmount ?? r.data?.estimatedDestinationAmount;
+    const estFees = r.estimatedFees ?? r.data?.estimatedFees;
+    const estTime = r.estimatedExecutionTime ?? r.data?.estimatedExecutionTime;
+    if (estAmount != null) console.log('Estimated destination amount:', estAmount);
+    if (estFees?.protocolFee != null) console.log('Protocol fee:', estFees.protocolFee);
+    if (estTime != null) console.log('Estimated execution time:', String(estTime) + ' seconds');
   } else {
     // Handle different types of failures
     if (precheckResult.runtimeError) {
@@ -78,7 +75,12 @@ export async function getSignedBridgeQuote(bridgeParams, { delegatorPkpEthAddres
 
 export async function execute(bridgeParams, { delegatorPkpEthAddress }) {
   await ensureInitialized();
-  return await abilityClient.execute(bridgeParams, {
-    delegatorPkpEthAddress,
-  });
+  return await abilityClient.execute(bridgeParams, { delegatorPkpEthAddress });
+}
+
+// Combined flow: auto-approve then bridge in單一呼叫
+export async function executeCombined(bridgeParams, { delegatorPkpEthAddress }) {
+  await ensureInitialized();
+  const merged = { ...bridgeParams, separateApproval: false };
+  return await abilityClient.execute(merged, { delegatorPkpEthAddress });
 }
