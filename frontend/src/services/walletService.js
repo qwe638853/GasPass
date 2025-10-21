@@ -1,7 +1,7 @@
 // 錢包和 Web3 相關服務 - 使用 wagmi core
 import { getAccount, getChainId, watchAccount, watchChainId, switchChain, disconnect } from '@wagmi/core'
 import { createWeb3Modal, defaultWagmiConfig } from '@web3modal/wagmi'
-import { arbitrumSepolia, baseSepolia, polygonAmoy, sepolia, optimismSepolia } from 'viem/chains'
+import { mainnet, optimism, polygon, arbitrum, avalanche, base, bsc } from 'viem/chains'
 
 class WalletService {
   constructor() {
@@ -12,7 +12,8 @@ class WalletService {
       url: window.location.origin, // 使用當前頁面的 URL
       icons: ['https://gaspass.com/icon.png']
     }
-    this.chains = [arbitrumSepolia, sepolia, baseSepolia, optimismSepolia, polygonAmoy]
+    // 使用主網鏈清單
+    this.chains = [mainnet, optimism, polygon, arbitrum, avalanche, base, bsc]
     this.wagmiConfig = null
     this.modal = null
     this.isInitialized = false
@@ -51,7 +52,10 @@ class WalletService {
       this.modal = createWeb3Modal({ 
         wagmiConfig: this.wagmiConfig, 
         projectId: this.projectId, 
-        chains: this.chains 
+        chains: this.chains,
+        themeVariables: {
+          '--w3m-accent': '#f59e0b'
+        }
       })
       
       this.isInitialized = true

@@ -12,7 +12,7 @@ export default defineConfig({
     global: 'globalThis',
   },
   optimizeDeps: {
-    exclude: []
+    exclude: ['@web3modal/siwe']
   },
   resolve: {
     alias: {
