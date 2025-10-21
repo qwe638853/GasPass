@@ -14,7 +14,6 @@ function log(message, type = 'info') {
 
 function getParamsFromForm() {
   return {
-    operation: $('op').value,
     rpcUrl: $('rpcUrl').value,
     sourceChain: $('sourceChain').value,
     destinationChain: $('destinationChain').value,
@@ -22,6 +21,23 @@ function getParamsFromForm() {
     destinationToken: $('destinationToken').value,
     amount: $('amount').value,
     slippageBps: $('slippageBps').value,
+  };
+}
+
+function buildAbilityParams() {
+  const f = getParamsFromForm();
+  const recipientInput = $('recipient')?.value?.trim();
+  const delegator = $('delegator')?.value?.trim();
+  const recipient = recipientInput || delegator || '';
+  return {
+    rpcUrl: String(f.rpcUrl || '').trim(),
+    fromChainId: String(f.sourceChain || '').trim(),
+    toChainId: String(f.destinationChain || '').trim(),
+    fromToken: String(f.sourceToken || '').trim(),
+    toToken: String(f.destinationToken || '').trim(),
+    amount: String(f.amount || '').trim(),
+    recipient,
+    slippageBps: f.slippageBps ? Number(f.slippageBps) : undefined,
   };
 }
 
@@ -48,7 +64,7 @@ async function postJson(path, payload) {
 }
 
 // 表單狀態持久化與還原
-const formKeys = ['rpcUrl','op','sourceChain','destinationChain','sourceToken','destinationToken','amount','slippageBps','appId','jwtStr','audience'];
+const formKeys = ['rpcUrl','sourceChain','destinationChain','sourceToken','destinationToken','amount','slippageBps','recipient','appId','jwtStr','audience'];
 function saveForm() {
   try {
     const state = {};
@@ -185,11 +201,11 @@ $('btn-precheck').addEventListener('click', async () => {
     const jwt = $('jwtStr').value.trim();
     const audience = $('audience').value.trim();
     if (!jwt) throw new Error('請先登入以取得 JWT');
-    const params = client.buildBridgeParams(getParamsFromForm());
+    const params = buildAbilityParams();
     log('執行後端 precheck...');
     const appId = $('appId')?.value?.trim();
     let decodedJWT = null; try { const s = localStorage.getItem('VINCENT_AUTH_JWT_DECODED'); decodedJWT = s ? JSON.parse(s) : null; } catch {}
-    const { resp, data, text } = await postJson('/api/vincent/precheck', { bridgeParams: params, delegatorPkpEthAddress: delegator, rpcUrl: params.rpcUrl, jwt, audience, appId, decodedJWT });
+    const { resp, data, text } = await postJson('/api/vincent/precheck', { bridgeParams: params, delegatorPkpEthAddress: delegator, jwt, audience, appId, decodedJWT });
     if (!resp.ok || !data?.ok) throw new Error((data && data.error) || text || `HTTP ${resp.status}`);
     log('precheck 回應: ' + JSON.stringify(data.result));
   } catch (err) {
@@ -204,7 +220,7 @@ $('btn-quote').addEventListener('click', async () => {
     const jwt = $('jwtStr').value.trim();
     const audience = $('audience').value.trim();
     if (!jwt) throw new Error('請先登入以取得 JWT');
-    const params = client.buildBridgeParams(getParamsFromForm());
+    const params = buildAbilityParams();
     log('後端取得 signed bridge quote...');
     const appId = $('appId')?.value?.trim();
     let decodedJWT = null; try { const s = localStorage.getItem('VINCENT_AUTH_JWT_DECODED'); decodedJWT = s ? JSON.parse(s) : null; } catch {}
@@ -223,7 +239,7 @@ $('btn-exec').addEventListener('click', async () => {
     const jwt = $('jwtStr').value.trim();
     const audience = $('audience').value.trim();
     if (!jwt) throw new Error('請先登入以取得 JWT');
-    const params = client.buildBridgeParams(getParamsFromForm());
+    const params = buildAbilityParams();
     log('後端執行 execute...');
     const appId = $('appId')?.value?.trim();
     let decodedJWT = null; try { const s = localStorage.getItem('VINCENT_AUTH_JWT_DECODED'); decodedJWT = s ? JSON.parse(s) : null; } catch {}
@@ -233,6 +249,25 @@ $('btn-exec').addEventListener('click', async () => {
   } catch (err) {
     console.error(err);
     log('execute 失敗: ' + (err.message || err), 'error');
+  }
+});
+
+$('btn-exec-combined').addEventListener('click', async () => {
+  try {
+    const delegator = $('delegator').value.trim();
+    const jwt = $('jwtStr').value.trim();
+    const audience = $('audience').value.trim();
+    if (!jwt) throw new Error('請先登入以取得 JWT');
+    const params = buildAbilityParams();
+    log('後端執行 executeCombined...');
+    const appId = $('appId')?.value?.trim();
+    let decodedJWT = null; try { const s = localStorage.getItem('VINCENT_AUTH_JWT_DECODED'); decodedJWT = s ? JSON.parse(s) : null; } catch {}
+    const { resp, data, text } = await postJson('/api/vincent/executeCombined', { bridgeParams: params, delegatorPkpEthAddress: delegator, jwt, audience, appId, decodedJWT });
+    if (!resp.ok || !data?.ok) throw new Error((data && data.error) || text || `HTTP ${resp.status}`);
+    log('executeCombined 回應: ' + JSON.stringify(data.result));
+  } catch (err) {
+    console.error(err);
+    log('executeCombined 失敗: ' + (err.message || err), 'error');
   }
 });
 
