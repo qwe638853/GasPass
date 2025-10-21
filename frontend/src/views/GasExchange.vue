@@ -383,17 +383,31 @@
                     暫無交易記錄
                   </div>
                   <div v-else class="space-y-3">
-                    <div v-for="tx in recentTransactions" :key="tx.id" class="transaction-item">
+                    <div v-for="tx in visibleTransactions" :key="tx.id" class="transaction-item">
                       <div class="flex items-center justify-between">
-                        <div>
+                        <div class="flex-1">
                           <div class="font-semibold text-gray-900">{{ tx.amount }} {{ tx.symbol }}</div>
                           <div class="text-sm text-gray-500">{{ tx.chain }}</div>
+                          <div class="text-xs text-gray-400 mt-1">{{ tx.timestamp }}</div>
                         </div>
                         <div class="text-right">
-                          <div class="text-sm text-gray-600">{{ tx.cost }} USDC</div>
-                          <div class="text-sm text-green-600">{{ tx.status }}</div>
+                          <div class="text-sm text-gray-600">{{ tx.cost }} {{ tx.costSymbol }}</div>
+                          <div class="text-sm" :class="getStatusClass(tx.status)">{{ getStatusText(tx.status) }}</div>
+                          <div v-if="tx.explorerURL" class="mt-1">
+                            <a :href="tx.explorerURL" target="_blank" class="text-xs text-blue-600 hover:text-blue-800">
+                              查看詳情 ↗
+                            </a>
+                          </div>
                         </div>
                       </div>
+                    </div>
+                    
+                    <!-- Toggle more/less -->
+                    <div v-if="hiddenTransactionCount > 0" class="mt-4 flex justify-center">
+                      <button class="toggle-transactions-btn" @click="showAllTransactions = !showAllTransactions">
+                        <span v-if="!showAllTransactions">顯示其餘 {{ hiddenTransactionCount }} 筆交易</span>
+                        <span v-else>收合交易記錄</span>
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -746,6 +760,7 @@ const { account, isConnected, connectWallet } = useWeb3()
 
 // Data
 const recentTransactions = ref([])
+const showAllTransactions = ref(false)
 
 // Swap processing and success modals
 const showSwapProcessing = ref(false)
@@ -794,6 +809,18 @@ const visibleBalances = computed(() => {
 })
 const hiddenCount = computed(() => {
   const total = (usdcBalances.value || []).length
+  return total > 3 ? total - 3 : 0
+})
+
+// 交易記錄相關 computed
+const visibleTransactions = computed(() => {
+  const list = recentTransactions.value || []
+  if (showAllTransactions.value) return list
+  return list.slice(0, 3)
+})
+
+const hiddenTransactionCount = computed(() => {
+  const total = (recentTransactions.value || []).length
   return total > 3 ? total - 3 : 0
 })
 
@@ -924,27 +951,82 @@ const onSelectToken = async (symbol) => {
 
 
 const loadRecentTransactions = async () => {
-  // 模擬交易歷史
-  recentTransactions.value = [
-    {
-      id: 1,
-      amount: '0.05',
-      symbol: 'ETH',
-      chain: 'Arbitrum',
-      cost: '0.075',
-      status: 'completed',
-      timestamp: '2024-01-15 14:30'
-    },
-    {
-      id: 2,
-      amount: '0.02',
-      symbol: 'ETH',
-      chain: 'Base',
-      cost: '0.03',
-      status: 'completed',
-      timestamp: '2024-01-14 09:15'
+  try {
+    // 從 localStorage 載入交易記錄
+    const savedTransactions = localStorage.getItem('gasPassTransactions')
+    if (savedTransactions) {
+      recentTransactions.value = JSON.parse(savedTransactions)
+    } else {
+      // 如果沒有記錄，初始化為空數組
+      recentTransactions.value = []
     }
-  ]
+  } catch (error) {
+    console.error('載入交易記錄失敗:', error)
+    recentTransactions.value = []
+  }
+}
+
+// 保存交易記錄到 localStorage
+const saveTransactions = () => {
+  try {
+    localStorage.setItem('gasPassTransactions', JSON.stringify(recentTransactions.value))
+  } catch (error) {
+    console.error('保存交易記錄失敗:', error)
+  }
+}
+
+// 添加新交易記錄
+const addTransaction = (transaction) => {
+  const newTransaction = {
+    id: Date.now(), // 使用時間戳作為唯一 ID
+    amount: transaction.amount,
+    symbol: transaction.symbol,
+    chain: transaction.chain,
+    cost: transaction.cost,
+    costSymbol: transaction.costSymbol || 'USDC',
+    status: transaction.status || 'completed',
+    timestamp: new Date().toLocaleString('zh-TW', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit'
+    }),
+    explorerURL: transaction.explorerURL
+  }
+  
+  // 添加到數組開頭（最新的在前面）
+  recentTransactions.value.unshift(newTransaction)
+  
+  // 限制最多保存 50 筆交易記錄
+  if (recentTransactions.value.length > 50) {
+    recentTransactions.value = recentTransactions.value.slice(0, 50)
+  }
+  
+  // 保存到 localStorage
+  saveTransactions()
+}
+
+// 獲取狀態文字
+const getStatusText = (status) => {
+  const statusMap = {
+    'completed': '已完成',
+    'pending': '處理中',
+    'failed': '失敗',
+    'cancelled': '已取消'
+  }
+  return statusMap[status] || status
+}
+
+// 獲取狀態樣式類別
+const getStatusClass = (status) => {
+  const classMap = {
+    'completed': 'text-green-600',
+    'pending': 'text-yellow-600',
+    'failed': 'text-red-600',
+    'cancelled': 'text-gray-600'
+  }
+  return classMap[status] || 'text-gray-600'
 }
 
 // ===== Swap 相關方法 =====
@@ -1159,6 +1241,17 @@ const executeSwap = async () => {
         swapSuccess.value = true
         swapFees.value = result.fees
         lastSwapResult.value = result
+        
+        // 添加交易記錄
+        addTransaction({
+          amount: fromAmount.value,
+          symbol: selectedFromToken.value.symbol,
+          chain: getChainName(selectedFromChain.value),
+          cost: result.fees?.totalFees || '0',
+          costSymbol: result.fees?.currency || 'USDC',
+          status: 'completed',
+          explorerURL: result.explorerURL
+        })
         
         // 等待一下讓用戶看到完成狀態
         setTimeout(() => {
@@ -1617,6 +1710,10 @@ onMounted(() => {
 
 .toggle-list-btn {
   @apply px-4 py-2 text-sm font-semibold text-amber-700 bg-amber-50 hover:bg-amber-100 border border-amber-200 rounded-lg transition-colors;
+}
+
+.toggle-transactions-btn {
+  @apply px-4 py-2 text-sm font-semibold text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-lg transition-colors;
 }
 
 .token-switch {

@@ -1,20 +1,5 @@
 <template>
   <Layout>
-    <!-- Header Section -->
-    <section class="bg-gradient-to-br from-gray-100 to-gray-200 py-16">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="text-center">
-          <h1 class="text-4xl sm:text-5xl font-bold text-gray-800 mb-4">
-            <span class="bg-gradient-to-r from-amber-500 to-orange-600 bg-clip-text text-transparent">
-              儲值卡管理
-            </span>
-          </h1>
-          <p class="text-xl text-gray-600 max-w-3xl mx-auto">
-            管理您的 GasPass 儲值卡，享受無憂的跨鏈 Gas 管理體驗
-          </p>
-        </div>
-      </div>
-    </section>
 
     <!-- Main Content -->
     <section class="py-12 bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen">
@@ -38,169 +23,338 @@
 
         <!-- Connected State -->
         <div v-else>
-          <!-- User Info -->
-          <div class="bg-white/80 backdrop-blur-xl rounded-2xl shadow-xl border border-white/20 p-6 mb-8 relative overflow-hidden group">
-            <!-- Glow effect -->
-            <div class="absolute inset-0 bg-gradient-to-br from-amber-100/30 to-orange-100/30 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-            <!-- Content -->
-            <div class="relative z-10 flex items-center justify-between">
-              <div class="flex items-center gap-4">
-                <div class="w-12 h-12 bg-gradient-to-br from-amber-400 to-orange-500 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-lg">
-                  <svg class="w-6 h-6 text-white group-hover:rotate-12 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
-                  </svg>
-                </div>
-                <div>
-                  <h3 class="text-lg font-bold text-gray-900 group-hover:text-amber-600 transition-colors duration-300">錢包已連接</h3>
-                  <p class="text-gray-600 group-hover:text-gray-700 transition-colors duration-300">{{ formatAddress(account) }}</p>
-                </div>
-              </div>
-              <div class="text-right">
-                <div class="text-sm text-gray-500 group-hover:text-gray-600 transition-colors duration-300">USDC 餘額</div>
-                <div class="text-lg font-bold text-gray-900 group-hover:text-amber-600 transition-colors duration-300">{{ usdcBalance }} USDC</div>
-              </div>
-            </div>
-            <!-- Shimmer effect -->
-            <div class="absolute inset-0 -top-2 -left-2 bg-gradient-to-r from-transparent via-white/10 to-transparent skew-x-12 group-hover:animate-shimmer opacity-0 group-hover:opacity-100"></div>
-          </div>
-
-          <!-- Card Status -->
-          <div v-if="!hasCard" class="text-center py-12">
-            <div class="bg-white rounded-2xl shadow-lg p-8 max-w-2xl mx-auto">
-              <h3 class="text-2xl font-bold text-gray-900 mb-4">歡迎使用 GasPass！</h3>
-              <p class="text-gray-600 mb-8">您還沒有儲值卡，讓我們為您創建第一個可愛的 GasPass 儲值罐</p>
-              
-              <!-- Cute Gas Jar Component -->
-              <CuteGasJar 
-                :isFirstTime="true"
-                @success="handleMintSuccess"
-                @error="handleError"
-              />
-            </div>
-          </div>
-
-          <!-- Existing Card Management -->
-          <div v-else>
-            <!-- Card Overview -->
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
-              <!-- Card Info -->
-              <div class="lg:col-span-2">
-                <div class="bg-white rounded-2xl shadow-lg p-6">
-                  <div class="flex items-center justify-between mb-6">
-                    <h3 class="text-xl font-bold text-gray-900">我的儲值卡</h3>
-                    <div class="flex gap-2">
-                      <button @click="refreshCards" class="btn-secondary-sm">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
-                        </svg>
-                        刷新
-                      </button>
-                    </div>
-                  </div>
+          <!-- 上半部分：儲值卡管理 -->
+          <div class="mb-12">
+            <!-- 沒有儲值卡的情況 -->
+            <div v-if="!hasCard" class="text-center py-12">
+              <div class="bg-white rounded-3xl shadow-2xl p-12 max-w-4xl mx-auto relative overflow-hidden">
+                <!-- 背景裝飾 -->
+                <div class="absolute inset-0 bg-gradient-to-br from-amber-50/50 to-orange-50/50"></div>
+                <div class="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-amber-200/20 to-orange-200/20 rounded-full -translate-y-32 translate-x-32"></div>
+                <div class="absolute bottom-0 left-0 w-48 h-48 bg-gradient-to-tr from-amber-200/20 to-orange-200/20 rounded-full translate-y-24 -translate-x-24"></div>
+                
+                <div class="relative z-10">
+                  <h3 class="text-3xl font-bold text-gray-900 mb-6">歡迎使用 GasPass！</h3>
+                  <p class="text-xl text-gray-600 mb-12 max-w-2xl mx-auto">
+                    您還沒有儲值卡，讓我們為您創建第一個可愛的 GasPass 儲值罐，開始您的無憂 DeFi 之旅！
+                  </p>
                   
-                  <div v-for="card in userCards" :key="card.tokenId" class="card-item">
-                    <div class="flex items-center justify-between">
-                      <div class="flex items-center gap-4">
-                        <div class="w-16 h-16 bg-gradient-to-br from-amber-400 to-orange-500 rounded-2xl flex items-center justify-center">
-                          <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
-                          </svg>
-                        </div>
-                        <div>
-                          <h4 class="text-lg font-bold text-gray-900">GasPass #{{ card.tokenId }}</h4>
-                          <p class="text-gray-600">餘額: {{ card.balance }} USDC</p>
-                          <p class="text-sm text-gray-500">最後更新: {{ card.lastUpdate }}</p>
-                        </div>
-                      </div>
-                      <div class="text-right">
-                        <div class="text-2xl font-bold text-gray-900">{{ card.balance }} USDC</div>
-                        <div class="text-sm text-gray-500">可用餘額</div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Quick Actions -->
-              <div class="space-y-6">
-                <!-- Deposit Card -->
-                <div class="bg-white rounded-2xl shadow-lg p-6">
-                  <h4 class="text-lg font-bold text-gray-900 mb-4">快速儲值</h4>
+                  <!-- Cute Gas Jar Component -->
                   <CuteGasJar 
-                    :isFirstTime="false"
-                    :existingCard="userCards[0]"
-                    @success="handleDepositSuccess"
+                    :isFirstTime="true"
+                    @success="handleMintSuccess"
                     @error="handleError"
                   />
                 </div>
+              </div>
+            </div>
 
-                <!-- Quick Actions -->
-                <div class="bg-white rounded-2xl shadow-lg p-6">
-                  <h4 class="text-lg font-bold text-gray-900 mb-4">快速操作</h4>
-                  <div class="space-y-3">
-                    <router-link to="/gas-exchange" class="btn-primary w-full group relative overflow-hidden">
-                      <!-- Glow effect -->
-                      <div class="absolute inset-0 bg-gradient-to-r from-amber-400 to-orange-500 rounded-xl blur-lg opacity-75 group-hover:opacity-100 transition-opacity duration-300"></div>
-                      <!-- Button content -->
-                      <span class="relative flex items-center justify-center gap-2 z-10">
-                        <svg class="w-5 h-5 group-hover:rotate-12 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
-                        </svg>
-                        兌換 Gas
-                      </span>
-                      <!-- Shimmer effect -->
-                      <div class="absolute inset-0 -top-2 -left-2 bg-gradient-to-r from-transparent via-white/20 to-transparent skew-x-12 group-hover:animate-shimmer"></div>
-                    </router-link>
-                    <button @click="showManualRefuel = true" class="btn-secondary w-full group relative overflow-hidden">
-                      <!-- Subtle glow effect -->
-                      <div class="absolute inset-0 bg-gradient-to-r from-blue-100/50 to-cyan-100/50 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                      <!-- Button content -->
-                      <span class="relative flex items-center justify-center gap-2 z-10">
-                        <svg class="w-5 h-5 group-hover:scale-110 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 100-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 100-4m0 4v2m0-6V4"></path>
-                        </svg>
-                        手動補 Gas
-                      </span>
-                    </button>
-                    <button @click="showAutoRefuel = true" class="btn-secondary w-full group relative overflow-hidden">
-                      <!-- Subtle glow effect -->
-                      <div class="absolute inset-0 bg-gradient-to-r from-green-100/50 to-emerald-100/50 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                      <!-- Button content -->
-                      <span class="relative flex items-center justify-center gap-2 z-10">
-                        <svg class="w-5 h-5 group-hover:scale-110 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
-                        </svg>
-                        自動補 Gas
-                      </span>
-                    </button>
+            <!-- 有儲值卡的情況 -->
+            <div v-else>
+              <!-- 儲值卡概覽 -->
+              <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+                <!-- 儲值卡資訊 -->
+                <div class="lg:col-span-2">
+                  <div class="bg-white rounded-3xl shadow-2xl p-8 relative overflow-hidden group">
+                    <!-- 背景光效 -->
+                    <div class="absolute inset-0 bg-gradient-to-br from-amber-50/30 to-orange-50/30 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                    
+                    <div class="relative z-10">
+                      <div class="flex items-center justify-between mb-8">
+                        <h3 class="text-2xl font-bold text-gray-900">我的儲值卡</h3>
+                        <button @click="refreshCards" class="btn-secondary-sm group">
+                          <svg class="w-4 h-4 group-hover:rotate-180 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                          </svg>
+                          刷新
+                        </button>
+                      </div>
+                      
+                      <div v-for="card in userCards" :key="card.tokenId" class="card-item-enhanced">
+                        <div class="flex items-center justify-between">
+                          <div class="flex items-center gap-6">
+                            <div class="w-20 h-20 bg-gradient-to-br from-amber-400 to-orange-500 rounded-3xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
+                              <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
+                              </svg>
+                            </div>
+                            <div>
+                              <h4 class="text-2xl font-bold text-gray-900 mb-2">GasPass #{{ card.tokenId }}</h4>
+                              <p class="text-lg text-gray-600 mb-1">餘額: {{ card.balance }} USDC</p>
+                              <p class="text-sm text-gray-500">最後更新: {{ card.lastUpdate }}</p>
+                            </div>
+                          </div>
+                          <div class="text-right">
+                            <div class="text-3xl font-bold text-gray-900 mb-1">{{ card.balance }} USDC</div>
+                            <div class="text-sm text-gray-500">可用餘額</div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- 快速儲值 -->
+                <div class="bg-white rounded-3xl shadow-2xl p-8 relative overflow-hidden group">
+                  <!-- 背景光效 -->
+                  <div class="absolute inset-0 bg-gradient-to-br from-blue-50/30 to-cyan-50/30 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                  
+                  <div class="relative z-10">
+                    <h4 class="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+                      <svg class="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
+                      </svg>
+                      快速儲值
+                    </h4>
+                    <CuteGasJar 
+                      :isFirstTime="false"
+                      :existingCard="userCards[0]"
+                      @success="handleDepositSuccess"
+                      @error="handleError"
+                    />
                   </div>
                 </div>
               </div>
             </div>
+          </div>
 
-            <!-- Transaction History -->
-            <div class="bg-white rounded-2xl shadow-lg p-6">
-              <h3 class="text-xl font-bold text-gray-900 mb-6">交易歷史</h3>
-              <div v-if="transactionHistory.length === 0" class="text-center py-8 text-gray-500">
-                暫無交易記錄
+          <!-- 下半部分：Gas 兌換管理 -->
+          <div class="bg-white rounded-3xl shadow-2xl p-8 relative overflow-hidden">
+            <!-- 背景裝飾 -->
+            <div class="absolute inset-0 bg-gradient-to-br from-gray-50/50 to-gray-100/50"></div>
+            <div class="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-amber-200/20 to-orange-200/20 rounded-full -translate-y-16 translate-x-16"></div>
+            
+            <div class="relative z-10">
+              <!-- 切換標籤 -->
+              <div class="flex justify-center mb-8">
+                <div class="bg-gray-100 rounded-2xl p-1 inline-flex">
+                  <button 
+                    @click="activeTab = 'manual'"
+                    class="px-6 py-3 rounded-xl font-semibold transition-all duration-300 relative"
+                    :class="activeTab === 'manual' 
+                      ? 'bg-white text-gray-900 shadow-lg' 
+                      : 'text-gray-600 hover:text-gray-900'"
+                  >
+                    <span class="relative z-10 flex items-center gap-2">
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                      </svg>
+                      手動兌換
+                    </span>
+                  </button>
+                  <button 
+                    @click="activeTab = 'agent'"
+                    class="px-6 py-3 rounded-xl font-semibold transition-all duration-300 relative"
+                    :class="activeTab === 'agent' 
+                      ? 'bg-white text-gray-900 shadow-lg' 
+                      : 'text-gray-600 hover:text-gray-900'"
+                  >
+                    <span class="relative z-10 flex items-center gap-2">
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+                      </svg>
+                      Agent 自動監測
+                    </span>
+                  </button>
+                </div>
               </div>
-              <div v-else class="space-y-4">
-                <div v-for="tx in transactionHistory" :key="tx.id" class="transaction-item">
-                  <div class="flex items-center justify-between">
-                    <div class="flex items-center gap-4">
-                      <div class="w-10 h-10 bg-gradient-to-br from-amber-400 to-orange-500 rounded-full flex items-center justify-center">
-                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
-                        </svg>
-                      </div>
+
+              <!-- 手動兌換 Gas -->
+              <div v-if="activeTab === 'manual'" class="space-y-6">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                  <!-- 兌換設定 -->
+                  <div class="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-2xl p-6 border border-blue-200">
+                    <h4 class="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+                      <svg class="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                      </svg>
+                      手動兌換設定
+                    </h4>
+                    
+                    <div class="space-y-4">
                       <div>
-                        <h4 class="font-semibold text-gray-900">{{ tx.type }}</h4>
-                        <p class="text-sm text-gray-500">{{ tx.timestamp }}</p>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">選擇目標鏈</label>
+                        <select v-model="manualRefuel.chainId" class="w-full p-3 border-2 border-gray-200 rounded-xl focus:border-blue-400 focus:outline-none transition-colors">
+                          <option value="1">Ethereum Mainnet</option>
+                          <option value="42161">Arbitrum One</option>
+                          <option value="10">Optimism</option>
+                          <option value="137">Polygon</option>
+                          <option value="8453">Base</option>
+                        </select>
+                      </div>
+                      
+                      <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">兌換金額 (USDC)</label>
+                        <input 
+                          v-model="manualRefuel.amount"
+                          type="number"
+                          step="0.01"
+                          min="1"
+                          placeholder="輸入兌換金額"
+                          class="w-full p-3 border-2 border-gray-200 rounded-xl focus:border-blue-400 focus:outline-none transition-colors"
+                        />
+                      </div>
+                      
+                      <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">接收地址</label>
+                        <input 
+                          v-model="manualRefuel.recipient"
+                          type="text"
+                          placeholder="輸入接收地址"
+                          class="w-full p-3 border-2 border-gray-200 rounded-xl focus:border-blue-400 focus:outline-none transition-colors"
+                        />
                       </div>
                     </div>
-                    <div class="text-right">
-                      <div class="font-semibold text-gray-900">{{ tx.amount }} USDC</div>
-                      <div class="text-sm text-green-600">{{ tx.status }}</div>
+                    
+                    <button 
+                      @click="executeManualRefuel"
+                      :disabled="!canExecuteManualRefuel"
+                      class="w-full mt-6 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 disabled:from-gray-300 disabled:to-gray-400 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-300 disabled:cursor-not-allowed"
+                    >
+                      立即兌換 Gas
+                    </button>
+                  </div>
+                  
+                  <!-- 兌換預覽 -->
+                  <div class="bg-gradient-to-br from-amber-50 to-orange-50 rounded-2xl p-6 border border-amber-200">
+                    <h4 class="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+                      <svg class="w-6 h-6 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                      </svg>
+                      兌換預覽
+                    </h4>
+                    
+                    <div class="space-y-4">
+                      <div class="flex justify-between items-center py-2 border-b border-amber-200">
+                        <span class="text-gray-600">兌換金額:</span>
+                        <span class="font-semibold text-gray-900">{{ manualRefuel.amount || '0' }} USDC</span>
+                      </div>
+                      <div class="flex justify-between items-center py-2 border-b border-amber-200">
+                        <span class="text-gray-600">目標鏈:</span>
+                        <span class="font-semibold text-gray-900">{{ getChainName(manualRefuel.chainId) }}</span>
+                      </div>
+                      <div class="flex justify-between items-center py-2 border-b border-amber-200">
+                        <span class="text-gray-600">手續費:</span>
+                        <span class="font-semibold text-gray-900">0.5%</span>
+                      </div>
+                      <div class="flex justify-between items-center py-2">
+                        <span class="text-gray-600">實際到賬:</span>
+                        <span class="font-bold text-amber-600">{{ calculateActualAmount(manualRefuel.amount) }} USDC</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Agent 自動監測 -->
+              <div v-else class="space-y-6">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                  <!-- Agent 設定 -->
+                  <div class="bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl p-6 border border-green-200">
+                    <h4 class="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+                      <svg class="w-6 h-6 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+                      </svg>
+                      Agent 自動監測設定
+                    </h4>
+                    
+                    <div class="space-y-4">
+                      <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">監測鏈</label>
+                        <select v-model="agentRefuel.chainId" class="w-full p-3 border-2 border-gray-200 rounded-xl focus:border-green-400 focus:outline-none transition-colors">
+                          <option value="1">Ethereum Mainnet</option>
+                          <option value="42161">Arbitrum One</option>
+                          <option value="10">Optimism</option>
+                          <option value="137">Polygon</option>
+                          <option value="8453">Base</option>
+                        </select>
+                      </div>
+                      
+                      <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">觸發閾值 (ETH)</label>
+                        <input 
+                          v-model="agentRefuel.threshold"
+                          type="number"
+                          step="0.001"
+                          min="0.001"
+                          placeholder="當餘額低於此值時觸發"
+                          class="w-full p-3 border-2 border-gray-200 rounded-xl focus:border-green-400 focus:outline-none transition-colors"
+                        />
+                      </div>
+                      
+                      <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">補充金額 (USDC)</label>
+                        <input 
+                          v-model="agentRefuel.amount"
+                          type="number"
+                          step="0.01"
+                          min="1"
+                          placeholder="每次補充的金額"
+                          class="w-full p-3 border-2 border-gray-200 rounded-xl focus:border-green-400 focus:outline-none transition-colors"
+                        />
+                      </div>
+                      
+                      <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">接收地址</label>
+                        <input 
+                          v-model="agentRefuel.recipient"
+                          type="text"
+                          placeholder="輸入接收地址"
+                          class="w-full p-3 border-2 border-gray-200 rounded-xl focus:border-green-400 focus:outline-none transition-colors"
+                        />
+                      </div>
+                    </div>
+                    
+                    <button 
+                      @click="setupAgentRefuel"
+                      :disabled="!canSetupAgentRefuel"
+                      class="w-full mt-6 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 disabled:from-gray-300 disabled:to-gray-400 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-300 disabled:cursor-not-allowed"
+                    >
+                      設定 Agent 監測
+                    </button>
+                  </div>
+                  
+                  <!-- Agent 狀態 -->
+                  <div class="bg-gradient-to-br from-purple-50 to-indigo-50 rounded-2xl p-6 border border-purple-200">
+                    <h4 class="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+                      <svg class="w-6 h-6 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                      </svg>
+                      Agent 狀態
+                    </h4>
+                    
+                    <div class="space-y-4">
+                      <div class="flex items-center justify-between">
+                        <span class="text-gray-600">監測狀態:</span>
+                        <span class="px-3 py-1 rounded-full text-sm font-semibold" :class="agentStatus.active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'">
+                          {{ agentStatus.active ? '運行中' : '未啟動' }}
+                        </span>
+                      </div>
+                      <div class="flex items-center justify-between">
+                        <span class="text-gray-600">監測鏈:</span>
+                        <span class="font-semibold text-gray-900">{{ getChainName(agentRefuel.chainId) }}</span>
+                      </div>
+                      <div class="flex items-center justify-between">
+                        <span class="text-gray-600">觸發閾值:</span>
+                        <span class="font-semibold text-gray-900">{{ agentRefuel.threshold || '0' }} ETH</span>
+                      </div>
+                      <div class="flex items-center justify-between">
+                        <span class="text-gray-600">補充金額:</span>
+                        <span class="font-semibold text-gray-900">{{ agentRefuel.amount || '0' }} USDC</span>
+                      </div>
+                      <div class="flex items-center justify-between">
+                        <span class="text-gray-600">最後檢查:</span>
+                        <span class="font-semibold text-gray-900">{{ agentStatus.lastCheck || '從未檢查' }}</span>
+                      </div>
+                    </div>
+                    
+                    <div v-if="agentStatus.active" class="mt-6 p-4 bg-green-100 rounded-xl">
+                      <div class="flex items-center gap-2 text-green-800">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <span class="font-semibold">Agent 正在監測您的錢包餘額</span>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -245,8 +399,50 @@ const usdcBalance = ref('0.00')
 const showManualRefuel = ref(false)
 const showAutoRefuel = ref(false)
 
+// 新增：Tab 切換
+const activeTab = ref('manual')
+
+// 新增：手動兌換設定
+const manualRefuel = ref({
+  chainId: '42161', // 預設 Arbitrum
+  amount: '',
+  recipient: ''
+})
+
+// 新增：Agent 自動監測設定
+const agentRefuel = ref({
+  chainId: '42161', // 預設 Arbitrum
+  threshold: '',
+  amount: '',
+  recipient: ''
+})
+
+// 新增：Agent 狀態
+const agentStatus = ref({
+  active: false,
+  lastCheck: null
+})
+
 // Computed
 const hasCard = computed(() => userCards.value.length > 0)
+
+// 手動兌換驗證
+const canExecuteManualRefuel = computed(() => {
+  return manualRefuel.value.amount && 
+         parseFloat(manualRefuel.value.amount) > 0 &&
+         manualRefuel.value.recipient &&
+         hasCard.value
+})
+
+// Agent 設定驗證
+const canSetupAgentRefuel = computed(() => {
+  return agentRefuel.value.threshold && 
+         parseFloat(agentRefuel.value.threshold) > 0 &&
+         agentRefuel.value.amount && 
+         parseFloat(agentRefuel.value.amount) > 0 &&
+         agentRefuel.value.recipient &&
+         hasCard.value
+})
 
 // Methods
 const loadUserData = async () => {
@@ -261,6 +457,9 @@ const loadUserData = async () => {
     
     // Load USDC balance
     usdcBalance.value = await getUSDCBalance()
+    
+    // 載入 Agent 狀態
+    await loadAgentStatus()
   } catch (error) {
     console.error('Failed to load user data:', error)
   }
@@ -291,10 +490,102 @@ const handleError = (error) => {
   // You can add toast notification here
 }
 
+// 新增：鏈名稱映射
+const getChainName = (chainId) => {
+  const chainMap = {
+    '1': 'Ethereum Mainnet',
+    '42161': 'Arbitrum One',
+    '10': 'Optimism',
+    '137': 'Polygon',
+    '8453': 'Base'
+  }
+  return chainMap[chainId] || 'Unknown Chain'
+}
+
+// 新增：計算實際到賬金額
+const calculateActualAmount = (amount) => {
+  if (!amount) return '0.00'
+  const fee = parseFloat(amount) * 0.005 // 0.5% 手續費
+  return (parseFloat(amount) - fee).toFixed(2)
+}
+
+// 新增：執行手動兌換
+const executeManualRefuel = async () => {
+  if (!canExecuteManualRefuel.value) return
+  
+  try {
+    // 這裡會串接 Bounce swap 工具
+    console.log('執行手動兌換:', manualRefuel.value)
+    
+    // 模擬 API 調用
+    await new Promise(resolve => setTimeout(resolve, 2000))
+    
+    // 成功後重置表單
+    manualRefuel.value = {
+      chainId: '42161',
+      amount: '',
+      recipient: ''
+    }
+    
+    // 顯示成功訊息
+    alert('Gas 兌換成功！')
+    
+  } catch (error) {
+    console.error('Manual refuel failed:', error)
+    alert('兌換失敗: ' + error.message)
+  }
+}
+
+// 新增：設定 Agent 監測
+const setupAgentRefuel = async () => {
+  if (!canSetupAgentRefuel.value) return
+  
+  try {
+    // 這裡會設定 Agent 監測策略
+    console.log('設定 Agent 監測:', agentRefuel.value)
+    
+    // 模擬 API 調用
+    await new Promise(resolve => setTimeout(resolve, 2000))
+    
+    // 更新 Agent 狀態
+    agentStatus.value = {
+      active: true,
+      lastCheck: new Date().toLocaleString('zh-TW')
+    }
+    
+    // 顯示成功訊息
+    alert('Agent 監測設定成功！')
+    
+  } catch (error) {
+    console.error('Agent setup failed:', error)
+    alert('設定失敗: ' + error.message)
+  }
+}
+
+// 新增：載入 Agent 狀態
+const loadAgentStatus = async () => {
+  try {
+    // 這裡會從後端載入 Agent 狀態
+    // 暫時使用模擬數據
+    agentStatus.value = {
+      active: false,
+      lastCheck: null
+    }
+  } catch (error) {
+    console.error('Failed to load agent status:', error)
+  }
+}
+
 // Lifecycle
 onMounted(() => {
   if (isConnected.value) {
     loadUserData()
+  }
+  
+  // 預設填入當前錢包地址
+  if (account.value) {
+    manualRefuel.value.recipient = account.value
+    agentRefuel.value.recipient = account.value
   }
 })
 </script>
@@ -316,7 +607,108 @@ onMounted(() => {
   @apply border border-gray-200 rounded-xl p-4 mb-4 hover:shadow-md transition-all duration-300;
 }
 
+.card-item-enhanced {
+  @apply border border-gray-200 rounded-2xl p-6 mb-6 hover:shadow-lg transition-all duration-300 bg-white/50 backdrop-blur-sm;
+}
+
 .transaction-item {
   @apply border-b border-gray-100 py-4 last:border-b-0;
+}
+
+/* 新增：Tab 切換動畫 */
+.tab-transition-enter-active,
+.tab-transition-leave-active {
+  transition: all 0.3s ease;
+}
+
+.tab-transition-enter-from {
+  opacity: 0;
+  transform: translateY(10px);
+}
+
+.tab-transition-leave-to {
+  opacity: 0;
+  transform: translateY(-10px);
+}
+
+/* 新增：表單輸入樣式增強 */
+input:focus,
+select:focus {
+  @apply ring-2 ring-blue-500/20 border-blue-400;
+}
+
+/* 新增：按鈕懸停效果增強 */
+button:not(:disabled):hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+button:not(:disabled):active {
+  transform: translateY(0);
+}
+
+/* 新增：卡片懸停效果 */
+.card-item-enhanced:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+}
+
+/* 新增：漸變背景動畫 */
+@keyframes gradient-shift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.bg-gradient-animated {
+  background-size: 200% 200%;
+  animation: gradient-shift 3s ease infinite;
+}
+
+/* 新增：光效動畫 */
+@keyframes glow-pulse {
+  0%, 100% { box-shadow: 0 0 20px rgba(245, 158, 11, 0.3); }
+  50% { box-shadow: 0 0 40px rgba(245, 158, 11, 0.6); }
+}
+
+.glow-pulse {
+  animation: glow-pulse 2s ease-in-out infinite;
+}
+
+/* 新增：載入動畫 */
+@keyframes loading-dots {
+  0%, 20% { opacity: 0; }
+  50% { opacity: 1; }
+  80%, 100% { opacity: 0; }
+}
+
+.loading-dot {
+  animation: loading-dots 1.4s infinite;
+}
+
+.loading-dot:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.loading-dot:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+/* 新增：響應式設計增強 */
+@media (max-width: 768px) {
+  .card-item-enhanced {
+    @apply p-4;
+  }
+  
+  .grid-cols-1.lg\\:grid-cols-2 {
+    @apply gap-4;
+  }
+}
+
+/* 新增：深色模式支持（預留） */
+@media (prefers-color-scheme: dark) {
+  .card-item-enhanced {
+    @apply bg-gray-800/50 border-gray-700;
+  }
 }
 </style>

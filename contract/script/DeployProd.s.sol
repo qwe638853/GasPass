@@ -16,11 +16,26 @@ contract DeployProd is Script {
         require(relayer != address(0), "RELAYER not set");
         require(stablecoin != address(0), "STABLECOIN not set");
 
+        address deployer = vm.addr(deployerPk);
+        console.log("Deploying GasPass to Arbitrum Mainnet...");
+        console.log("Deployer:", deployer);
+        console.log("Relayer:", relayer);
+        console.log("Stablecoin (USDC):", stablecoin);
+        console.log("Chain ID:", block.chainid);
+
         vm.startBroadcast(deployerPk);
         GasPass gasPass = new GasPass(stablecoin, relayer);
         vm.stopBroadcast();
 
-        console.log("GasPass:", address(gasPass));
+        console.log("GasPass deployed at:", address(gasPass));
+        console.log("Deployment completed successfully!");
+        
+        // 輸出用於驗證的資訊
+        console.log("\n=== 部署資訊 ===");
+        console.log("合約地址:", address(gasPass));
+        console.log("穩定幣地址:", stablecoin);
+        console.log("Relayer地址:", relayer);
+        console.log("部署者地址:", deployer);
     }
 }
 
