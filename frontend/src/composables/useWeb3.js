@@ -4,7 +4,8 @@ import { walletService } from '../services/walletService.js'
 const account = ref(null)
 const chainId = ref(null)
 const isConnected = computed(() => !!account.value)
-const isArbitrum = computed(() => chainId.value === 421614) // Arbitrum Sepolia
+// 主網環境不再特定標記測試網
+const isArbitrum = computed(() => chainId.value === 42161) // Arbitrum One (mainnet)
 
 let removeListener = null
 
@@ -16,23 +17,25 @@ export function useWeb3() {
       await new Promise(resolve => setTimeout(resolve, 100))
       
       const state = await walletService.getState()
-      console.log('Initial wallet state:', state)
+      // 移除冗長的 console，保留關鍵資訊
+      console.log('[useWeb3] Initial wallet chain:', state.chainId)
       account.value = state.account
       chainId.value = state.chainId
 
       // 設置事件監聽
       removeListener = walletService.addEventListener((event, data) => {
-        console.log('Wallet event received:', event, data)
+        // 精簡事件日誌
+        // console.log('Wallet event:', event, data)
         switch (event) {
           case 'connected':
           case 'accountChanged':
-            console.log('Updating account state:', data)
+            // console.log('Updating account state:', data)
             account.value = data.account
             chainId.value = data.chainId
-            console.log('State updated - account:', account.value, 'chainId:', chainId.value)
+            // console.log('State updated - account:', account.value, 'chainId:', chainId.value)
             break
           case 'chainChanged':
-            console.log('Chain changed:', data.chainId)
+            console.log('[useWeb3] Chain changed:', data.chainId)
             chainId.value = data.chainId
             break
           case 'disconnected':
@@ -55,12 +58,12 @@ export function useWeb3() {
 
   const connectWallet = async () => {
     try {
-      console.log('Attempting to connect wallet...')
+      // console.log('Attempting to connect wallet...')
       const result = await walletService.connectWallet()
-      console.log('Connect result:', result)
+      // console.log('Connect result:', result)
       
       if (result.success) {
-        console.log('Wallet connection initiated successfully')
+        // console.log('Wallet connection initiated successfully')
         // 狀態會通過事件監聽器自動更新，不需要手動檢查
       }
       return result.success
@@ -80,16 +83,17 @@ export function useWeb3() {
     }
   }
 
-  const switchToArbitrum = async () => {
+  // 提供通用切換到指定主網鏈的方法
+  const switchToChain = async (id) => {
     try {
-      const result = await walletService.switchToArbitrum()
+      const result = await walletService.switchNetwork(id)
       if (result.success) {
         const state = await walletService.getState()
         chainId.value = state.chainId
       }
       return result.success
     } catch (error) {
-      console.error('Switch to Arbitrum failed:', error)
+      console.error('Switch network failed:', error)
       return false
     }
   }
@@ -129,7 +133,7 @@ export function useWeb3() {
     isArbitrum,
     connectWallet,
     disconnectWallet,
-    switchToArbitrum,
+    switchToChain,
     getBalance,
     getUSDCBalance,
     formatAddress,
