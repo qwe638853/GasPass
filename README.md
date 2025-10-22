@@ -24,29 +24,14 @@ GasPass integrates:
 
 ```mermaid
 graph TD
-
-A[User deposits USDC into GasPass ERC-3525 Slot] --> B["MintWithSig (EIP-712)"]
-B --> C[Vincent Agent monitors user balances]
-C --> D{Balance < threshold?}
-D -- Yes --> E[Trigger Avail XCS: Bridge & Execute]
-E --> F[Bungee API cross-chain transfer]
-F --> G[Alchemy / Relayer refuels gas on target chain]
-G --> H[Slot balance updated; execution logs stored on Avail]
-D -- No --> I[Idle / Wait for next cycle]
-
-
----
-
-### 🧠 Why This Works
-
-✅ Wrapped `(EIP-712)` in quotes → `"MintWithSig (EIP-712)"`  
-✅ Added proper newlines between nodes  
-✅ Removed stray parentheses after `I`  
-✅ GitHub now interprets it as valid Mermaid graph nodes
-
----
-
-Would you like me to add **color-coded layers (User / Agent / Bridge / Refuel)** or icons (💳, 🤖, 🌉, ⚙️) to make the diagram more visually expressive for the README?
+    A[User deposits USDC into GasPass ERC-3525 Slot] --> B["MintWithSig (EIP-712)"]
+    B --> C[Vincent Agent monitors user balances]
+    C --> D{Balance < threshold?}
+    D -- Yes --> E[Trigger Avail XCS: Bridge & Execute]
+    E --> F[Bungee API cross-chain transfer]
+    F --> G[Alchemy / Relayer refuels gas on target chain]
+    G --> H[Slot balance updated; execution logs stored on Avail]
+    D -- No --> I[Idle / Wait for next cycle]
 
 ---
 
