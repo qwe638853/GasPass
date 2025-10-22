@@ -20,18 +20,7 @@ GasPass integrates:
 
 ---
 
-## 🧩 Architecture
-
-```mermaid
-graph TD
-    A[User deposits USDC into GasPass ERC-3525 Slot] --> B["MintWithSig (EIP-712)"]
-    B --> C[Vincent Agent monitors user balances]
-    C --> D{Balance < threshold?}
-    D -- Yes --> E[Trigger Avail XCS: Bridge & Execute]
-    E --> F[Bungee API cross-chain transfer]
-    F --> G[Alchemy / Relayer refuels gas on target chain]
-    G --> H[Slot balance updated; execution logs stored on Avail]
-    D -- No --> I[Idle / Wait for next cycle]
+## Architecture
 
 ---
 
@@ -42,7 +31,7 @@ Implements an ERC-3525 Semi-Fungible Token, representing a refillable gas card.
 
 Key Functions:
 
-mintWithSig() — Mint a GasPass card using EIP-712 signature.
+ — Mint a GasPass card using EIP-712 signature.
 
 depositWithSig() — Deposit USDC/USDT using ERC-20 Permit or Permit2.
 
