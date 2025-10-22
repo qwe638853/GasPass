@@ -1,5 +1,5 @@
 // 錢包和 Web3 相關服務 - 使用 wagmi core
-import { getAccount, getChainId, watchAccount, watchChainId, switchChain, disconnect } from '@wagmi/core'
+import { getAccount, getChainId, watchAccount, watchChainId, switchChain, disconnect, reconnect } from '@wagmi/core'
 import { createWeb3Modal, defaultWagmiConfig } from '@web3modal/wagmi'
 import { mainnet, optimism, polygon, arbitrum, avalanche, base, bsc } from 'viem/chains'
 
@@ -46,7 +46,9 @@ class WalletService {
       this.wagmiConfig = defaultWagmiConfig({ 
         chains: this.chains, 
         projectId: this.projectId, 
-        metadata: this.metadata 
+        metadata: this.metadata,
+        ssr: false,
+        autoConnect: true
       })
       
       this.modal = createWeb3Modal({ 
@@ -86,6 +88,9 @@ class WalletService {
           
           if (account.isConnected && account.address) {
             // 連接成功
+            try { localStorage.setItem('WALLET_CONNECTED', '1') } catch {}
+            try { localStorage.setItem('WALLET_LAST_ADDRESS', account.address || '') } catch {}
+            try { localStorage.setItem('WALLET_LAST_CHAIN_ID', String(account.chainId || '')) } catch {}
             this.notifyListeners('connected', {
               account: account.address,
               isConnected: account.isConnected,
@@ -93,6 +98,7 @@ class WalletService {
             })
           } else if (!account.isConnected) {
             // 斷開連接
+            try { localStorage.removeItem('WALLET_CONNECTED') } catch {}
             this.notifyListeners('disconnected')
           } else {
             // 其他帳戶變化
@@ -156,6 +162,20 @@ class WalletService {
         success: false, 
         error: error.message 
       }
+    }
+  }
+
+  // 嘗試自動重連（無 UI）
+  async attemptReconnect() {
+    try {
+      if (!this.isInitialized) {
+        await this.initializeWeb3Modal()
+      }
+      await reconnect(this.wagmiConfig)
+      return { success: true }
+    } catch (error) {
+      console.error('Auto reconnect failed:', error)
+      return { success: false, error: error.message }
     }
   }
 
