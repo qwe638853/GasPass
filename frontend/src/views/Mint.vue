@@ -133,7 +133,7 @@
             <!-- Card Preview -->
             <div class="bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl p-6 text-white mb-6">
               <div class="flex items-center justify-between mb-4">
-                <img src="../assets/GasPass.png" alt="GasPass" class="h-8 w-auto brightness-0 invert" />
+                <img src="../assets/GaspassLogo-removebg.png" alt="GasPass" class="h-14 w-auto brightness-0 invert" />
                 <span class="text-sm opacity-80">ERC-3525</span>
               </div>
               
