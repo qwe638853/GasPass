@@ -34,6 +34,20 @@ F --> G[Alchemy / Relayer refuels gas on target chain]
 G --> H[Slot balance updated; execution logs stored on Avail]
 D -- No --> I[Idle / Wait for next cycle]
 
+
+---
+
+### 🧠 Why This Works
+
+✅ Wrapped `(EIP-712)` in quotes → `"MintWithSig (EIP-712)"`  
+✅ Added proper newlines between nodes  
+✅ Removed stray parentheses after `I`  
+✅ GitHub now interprets it as valid Mermaid graph nodes
+
+---
+
+Would you like me to add **color-coded layers (User / Agent / Bridge / Refuel)** or icons (💳, 🤖, 🌉, ⚙️) to make the diagram more visually expressive for the README?
+
 ---
 
 ## Smart Contract Summary
