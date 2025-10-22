@@ -1,8 +1,9 @@
 import { ref } from 'vue'
 import { ensureVincentAuth, getStoredVincentAuth, getPkpEthAddress, getStoredPkpEthAddress } from '../services/vincentAuthService.js'
 
-// 需要從環境或設定中提供 Vincent App ID
-const APP_ID_FROM_ENV = typeof import.meta !== 'undefined' && import.meta.env ? import.meta.env.VITE_VINCENT_APP_ID : undefined
+// Vincent App ID - 硬編碼以解決 JWT 驗證問題
+const VINCENT_APP_ID = 6140907850
+const APP_ID_FROM_ENV = typeof import.meta !== 'undefined' && import.meta.env ? import.meta.env.VITE_VINCENT_APP_ID : VINCENT_APP_ID
 const DEFAULT_AUDIENCE = typeof window !== 'undefined' ? window.location.origin : ''
 
 export function useVincentAuth(appIdProvider) {
@@ -32,9 +33,12 @@ export function useVincentAuth(appIdProvider) {
       vincentRedirecting.value = true
       return { redirected: true }
     }
-    vincentJwt.value = result.jwtStr
-    vincentDecoded.value = result.decodedJWT
-    vincentPkpEthAddress.value = getPkpEthAddress(result.decodedJWT)
+    // 只有在有新的 JWT 時才更新狀態，避免清除已設置的 JWT
+    if (result.jwtStr) {
+      vincentJwt.value = result.jwtStr
+      vincentDecoded.value = result.decodedJWT
+      vincentPkpEthAddress.value = getPkpEthAddress(result.decodedJWT)
+    }
     return { redirected: false, ...result }
   }
 

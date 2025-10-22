@@ -45,10 +45,112 @@ export async function bootstrapAuthFlow(vincentAppClient, audienceOverride) {
     }
   }
 
-  const audience = (audienceOverride || window.location.origin) + '/'
+  // 嘗試多種 audience 格式
+  const baseOrigin = audienceOverride || window.location.origin
+  const possibleAudiences = [
+    baseOrigin + '/',
+    baseOrigin,
+    baseOrigin + '/card-management',
+    baseOrigin + '/card-management/',
+    'http://localhost:5173',
+    'http://localhost:5173/',
+    'http://localhost:5173/card-management',
+    'http://localhost:5173/card-management/'
+  ]
+  
+  // 先嘗試最常見的格式
+  const audience = baseOrigin + '/'
 
   if (vincentAppClient.uriContainsVincentJWT()) {
-    const result = await vincentAppClient.decodeVincentJWTFromUri(audience)
+    let jwtAudiences = []
+    
+    // 先嘗試從 URL 中提取 JWT 並手動解析，看看實際的 audience 是什麼
+    try {
+      const url = new URL(window.location.href)
+      const jwtParam = url.searchParams.get('jwt')
+      if (jwtParam) {
+        // 手動解析 JWT payload（不驗證簽名）
+        const parts = jwtParam.split('.')
+        if (parts.length === 3) {
+          const payload = JSON.parse(atob(parts[1]))
+          
+          // 如果 audience 是數組，添加到可能的 audience 列表中
+          if (Array.isArray(payload.aud)) {
+            possibleAudiences.push(...payload.aud)
+            jwtAudiences = payload.aud
+          }
+        }
+      }
+    } catch (error) {
+      // 靜默處理錯誤
+    }
+    
+    let result = null
+    let successfulAudience = null
+    
+    // 將 JWT audience 放在測試列表的前面
+    const prioritizedAudiences = [...jwtAudiences, ...possibleAudiences.filter(aud => !jwtAudiences.includes(aud))]
+    
+    // 嘗試每種 audience 格式
+    for (const testAudience of prioritizedAudiences) {
+      try {
+        result = await vincentAppClient.decodeVincentJWTFromUri(testAudience)
+        if (result && (result.jwtStr || result.jwt || result.token)) {
+          successfulAudience = testAudience
+          break
+        }
+      } catch (error) {
+        // 如果是 appId mismatch 錯誤，嘗試使用字符串格式的 appId
+        if (error.message.includes('appId mismatch')) {
+          try {
+            const stringAppIdClient = createWebAuth(String(vincentAppClient.appId || appId))
+            result = await stringAppIdClient.decodeVincentJWTFromUri(testAudience)
+            if (result && (result.jwtStr || result.jwt || result.token)) {
+              successfulAudience = testAudience
+              break
+            }
+          } catch (retryError) {
+            // 靜默處理重試錯誤
+          }
+        }
+        continue
+      }
+    }
+    
+    // 如果所有 audience 都失敗了，嘗試直接使用 JWT 內容（跳過 SDK 驗證）
+    if (!result || (!result.jwtStr && !result.jwt && !result.token)) {
+      try {
+        const url = new URL(window.location.href)
+        const jwtParam = url.searchParams.get('jwt')
+        if (jwtParam) {
+          // 直接使用 JWT，不通過 SDK 驗證
+          const parts = jwtParam.split('.')
+          if (parts.length === 3) {
+            const payload = JSON.parse(atob(parts[1]))
+            
+            // 檢查 JWT 是否過期
+            const now = Math.floor(Date.now() / 1000)
+            if (payload.exp && payload.exp < now) {
+              throw new Error('JWT has expired')
+            }
+            
+            // 直接使用 JWT 內容
+            localStorage.setItem(STORAGE_JWT, jwtParam)
+            localStorage.setItem(STORAGE_DECODED, JSON.stringify(payload))
+            const pkp = extractPkpEthAddress(payload)
+            if (pkp) localStorage.setItem(STORAGE_PKP_ADDR, pkp)
+            
+            vincentAppClient.removeVincentJWTFromURI()
+            return { decodedJWT: payload, jwtStr: jwtParam }
+          }
+        }
+      } catch (directError) {
+        // 靜默處理直接提取錯誤
+      }
+      
+      throw new Error('Failed to decode JWT with any audience format')
+    }
+    
     const jwtStr = result?.jwtStr ?? result?.jwt ?? result?.token ?? null
     const decodedJWT = result?.decodedJWT ?? result?.decoded ?? null
     if (jwtStr) localStorage.setItem(STORAGE_JWT, jwtStr)

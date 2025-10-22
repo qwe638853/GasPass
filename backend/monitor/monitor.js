@@ -7,21 +7,55 @@ import { ethers } from 'ethers';
 
 # 必須設定
 GASPASS_ADDRESS=0x...  # GasPass 合約地址（部署後填入）
-AGENT_PRIVATE_KEY=0x...  # Agent 私鑰（用於觸發 autoRefuel）
 
 # 可選設定
-BASE_RPC_URL=https://mainnet.base.org  # GasPass 合約部署的鏈（預設 Base）
+BASE_RPC_URL=https://sepolia.base.org  # GasPass 合約部署的鏈（測試網用 Base Sepolia）
 MONITOR_INTERVAL=1  # 監聽間隔（分鐘，預設 1 分鐘）
 
-# 可選：覆蓋特定鏈的 RPC URL
+# 注意：目前只測試監測功能，不實際觸發 autoRefuel
+
+# 測試網 RPC 覆蓋（可選）
+# ARB_SEPOLIA_RPC_URL=https://sepolia-rollup.arbitrum.io/rpc
+# BASE_SEPOLIA_RPC_URL=https://sepolia.base.org
+# ETH_SEPOLIA_RPC_URL=https://sepolia.infura.io/v3/YOUR-API-KEY
+# POLYGON_AMOY_RPC_URL=https://rpc-amoy.polygon.technology
+
+# 主網 RPC 覆蓋（可選）
 # ETH_RPC_URL=https://mainnet.infura.io/v3/YOUR-API-KEY
 # ARB_RPC_URL=https://arb1.arbitrum.io/rpc
 # OP_RPC_URL=https://mainnet.optimism.io
 # POLYGON_RPC_URL=https://polygon-rpc.com
 */
 
-// 18 條鏈的 RPC 配置
+// 測試網和主網的 RPC 配置
 const CHAIN_CONFIGS = {
+  // 測試網
+  421614: {
+    rpc: 'https://sepolia-rollup.arbitrum.io/rpc', // testnet
+    name: 'Arbitrum Sepolia',
+    nativeSymbol: 'ETH',
+    nativeName: 'Arbitrum Sepolia Ether'
+  },
+  84532: {
+    rpc: 'https://sepolia.base.org',// testnet
+    name: 'Base Sepolia',
+    nativeSymbol: 'ETH',
+    nativeName: 'Base Sepolia Ether'
+  },
+  11155111: {
+    rpc: 'https://sepolia.infura.io/v3/YOUR-API-KEY',// testnet
+    name: 'Ethereum Sepolia',
+    nativeSymbol: 'ETH',
+    nativeName: 'Ethereum Sepolia Ether'
+  },
+  80002: {
+    rpc: 'https://rpc-amoy.polygon.technology',// testnet
+    name: 'Polygon Amoy',
+    nativeSymbol: 'MATIC',
+    nativeName: 'Polygon Amoy'
+  },
+  
+  // 主網（保留原有配置）
   1: {
     rpc: 'https://mainnet.infura.io/v3/YOUR-API-KEY',
     name: 'Ethereum',
@@ -160,7 +194,7 @@ function getGasPassContract() {
   const provider = getProvider();
   const address = process.env.GASPASS_ADDRESS || "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512";
   if (!address) throw new Error('GASPASS_ADDRESS 未設定');
-  
+
   return new ethers.Contract(address, GAS_PASS_ABI, provider);
 }
 
@@ -185,22 +219,18 @@ async function checkBalance(walletAddress, chainId) {
   }
 }
 
-// 觸發自動補氣
+// 模擬觸發自動補氣（僅測試監測功能）
 async function triggerAutoRefuel(tokenId, chainId) {
   try {
-    const contract = getGasPassContract();
-    const agentWallet = new ethers.Wallet(process.env.AGENT_PRIVATE_KEY, getProvider());
-    const contractWithSigner = contract.connect(agentWallet);
+    console.log(`🚀 [模擬] 觸發 autoRefuel: tokenId=${tokenId}, chainId=${chainId}`);
+    console.log(`📝 [模擬] 這裡會呼叫合約的 autoRefuel 函數`);
+    console.log(`📝 [模擬] 合約會扣除 GasPass token 餘額並轉給 agent`);
+    console.log(`📝 [模擬] Agent 收到 USDC 後會透過 Lit Protocol 執行跨鏈`);
     
-    console.log(`🚀 觸發 autoRefuel: tokenId=${tokenId}, chainId=${chainId}`);
-    
-    // 實際調用合約（測試時可以先註解掉）
-    const tx = await contractWithSigner.autoRefuel(tokenId, chainId);
-    console.log(`✅ autoRefuel 交易已發送: ${tx.hash}`);
-    
-    return tx;
+    // 模擬成功
+    return { hash: '0x' + Math.random().toString(16).substr(2, 64) };
   } catch (error) {
-    console.error(`❌ 觸發 autoRefuel 失敗:`, error.message);
+    console.error(`❌ 模擬觸發 autoRefuel 失敗:`, error.message);
     throw error;
   }
 }
@@ -212,7 +242,7 @@ async function checkAllPolicies() {
     
     const contract = getGasPassContract();
     const totalSupply = await contract.totalSupply();
-    const totalSupplyNum = totalSupply.toNumber();
+    const totalSupplyNum = Number(totalSupply);
     
     console.log(`📊 總共發現 ${totalSupplyNum} 個 token`);
     
@@ -227,7 +257,7 @@ async function checkAllPolicies() {
     // 遍歷所有 tokenId
     for (let i = 0; i < totalSupplyNum; i++) {
       const tokenId = await contract.tokenByIndex(i);
-      const tokenIdNum = tokenId.toNumber();
+      const tokenIdNum = Number(tokenId);
       
       console.log(`\n🎫 檢查 TokenId #${tokenIdNum}`);
       
@@ -299,15 +329,14 @@ export async function getMaxTokenId(contractAddress) {
   }
 
   const supply = await contract.totalSupply();
-  const supplyBn = ethers.BigNumber.isBigNumber(supply) ? supply : ethers.BigNumber.from(supply);
-  if (supplyBn.isZero()) return ethers.BigNumber.from(0);
+  const totalSupplyNum = Number(supply);
+  if (totalSupplyNum === 0) return 0;
 
-  let maxId = ethers.BigNumber.from(0);
-  const total = supplyBn.toNumber();
-  for (let i = 0; i < total; i++) {
+  let maxId = 0;
+  for (let i = 0; i < totalSupplyNum; i++) {
     const id = await contract.tokenByIndex(i);
-    const idBn = ethers.BigNumber.isBigNumber(id) ? id : ethers.BigNumber.from(id);
-    if (idBn.gt(maxId)) maxId = idBn;
+    const idNum = Number(id);
+    if (idNum > maxId) maxId = idNum;
   }
   return maxId;
 }
@@ -320,7 +349,29 @@ export async function monitor() {
 export { checkAllPolicies, startMonitoring, checkBalance, triggerAutoRefuel };
 
 // 如果直接執行此文件，開始監聽
-if (import.meta.url === `file://${process.argv[1]}`) {
-  startMonitoring();
+console.log('🔍 檢查執行條件...');
+console.log('import.meta.url:', import.meta.url);
+console.log('process.argv[1]:', process.argv[1]);
+
+// 修正路徑比較
+const currentFile = import.meta.url.replace('file:///', '').replace(/\//g, '\\');
+const isMainModule = currentFile === process.argv[1];
+console.log('修正後比較:', currentFile, '===', process.argv[1], '=', isMainModule);
+
+if (isMainModule) {
+  console.log('🚀 Monitor 啟動中...');
+  console.log('📋 環境變量檢查:');
+  console.log('  GASPASS_ADDRESS:', process.env.GASPASS_ADDRESS || '未設定');
+  console.log('  BASE_RPC_URL:', process.env.BASE_RPC_URL || '未設定');
+  console.log('');
+  
+  try {
+    startMonitoring();
+  } catch (error) {
+    console.error('❌ Monitor 啟動失敗:', error.message);
+    console.error(error.stack);
+  }
+} else {
+  console.log('❌ 條件不匹配，程序退出');
 }
 

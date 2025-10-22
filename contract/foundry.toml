@@ -37,3 +37,4 @@ arbitrum_sepolia = "https://sepolia-rollup.arbitrum.io/rpc"
 # 鏈配置
 [etherscan]
 arbitrum = { key = "${ARBISCAN_API_KEY}", url = "https://api.arbiscan.io/api" }
+arbitrum_sepolia = { key = "${ARBISCAN_API_KEY}", url = "https://api-sepolia.arbiscan.io/api" }
