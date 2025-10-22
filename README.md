@@ -66,19 +66,24 @@ Contract: GasPass.sol
 Standards: ERC-3525 + EIP-712 + Permit2
 
 Key Components
-Module	Functionality
-MintWithSig	Mints a new ERC-3525 token with user signature (EIP-712).
-DepositWithSig	Deposits USDC/USDT via Permit2 authorization.
-SetRefuelPolicy	Defines threshold, chain target, and trigger conditions.
-ExecuteRefuel	Called by Vincent Agent once the policy condition is met.
-UpdateSlotBalance	Updates slot’s on-chain value and Avail audit log.
-🛠️ Tech Stack
-Layer	Tools & Frameworks
-Smart Contracts	Solidity, Foundry, OpenZeppelin, Solv ERC-3525
-Cross-Chain Layer	Avail XCS, Bungee Bridge API
-Automation Layer	Lit Protocol Vincent Abilities (PKP Agent)
-Frontend	Vue 3, Vite, Vuetify, Pinia, Viem, Ethers.js
-Backend / Infra	Node.js, Express, Alchemy SDK, Avail SDK
+| Module              | Functionality                                             |
+| ------------------- | --------------------------------------------------------- |
+| `MintWithSig`       | Mints a new ERC-3525 token with user signature (EIP-712). |
+| `DepositWithSig`    | Deposits USDC/USDT via Permit2 authorization.             |
+| `SetRefuelPolicy`   | Defines threshold, chain target, and trigger conditions.  |
+| `ExecuteRefuel`     | Called by Vincent Agent once the policy condition is met. |
+| `UpdateSlotBalance` | Updates slot’s on-chain value and Avail audit log.        |
+
+---
+
+## 🛠️ Tech Stack
+| Layer                 | Tools & Frameworks                             |
+| --------------------- | ---------------------------------------------- |
+| **Smart Contracts**   | Solidity, Foundry, OpenZeppelin, Solv ERC-3525 |
+| **Cross-Chain Layer** | Avail XCS, Bungee Bridge API                   |
+| **Automation Layer**  | Lit Protocol Vincent Abilities (PKP Agent)     |
+| **Frontend**          | Vue 3, Vite, Vuetify, Pinia, Viem, Ethers.js   |
+| **Backend / Infra**   | Node.js, Express, Alchemy SDK, Avail SDK       |
 
 ---
 ## 🔄 How It Works
@@ -104,7 +109,7 @@ Updated balances and execution logs are stored on Avail.
 ---
 
 ## 🧱 Deployment
-
+```bash
 # Clone repository
 git clone https://github.com/<your-username>/GasPass.git
 cd GasPass
@@ -119,7 +124,7 @@ forge build
 forge script script/DeployGasPass.s.sol:DeployGasPass \
   --rpc-url $ARBITRUM_RPC \
   --broadcast
-
+```
 ---
 
 ## 🔗 Integration Examples
