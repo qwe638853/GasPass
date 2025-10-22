@@ -4,6 +4,7 @@ import { walletService } from '../services/walletService.js'
 const account = ref(null)
 const chainId = ref(null)
 const isConnected = computed(() => !!account.value)
+const isWalletReady = ref(false)
 // 主網環境不再特定標記測試網
 const isArbitrum = computed(() => chainId.value === 42161) // Arbitrum One (mainnet)
 
@@ -16,6 +17,8 @@ export function useWeb3() {
       // 等待一下讓 Web3Modal 完全初始化
       await new Promise(resolve => setTimeout(resolve, 100))
       
+      // 嘗試無 UI 重連（可還原 WalletConnect/Injected 連線）
+      try { await walletService.attemptReconnect() } catch {}
       const state = await walletService.getState()
       // 移除冗長的 console，保留關鍵資訊
       console.log('[useWeb3] Initial wallet chain:', state.chainId)
@@ -45,8 +48,10 @@ export function useWeb3() {
             break
         }
       })
+      isWalletReady.value = true
     } catch (error) {
       console.error('Failed to initialize wallet service:', error)
+      isWalletReady.value = true
     }
   })
 
@@ -130,6 +135,7 @@ export function useWeb3() {
     account,
     chainId,
     isConnected,
+    isWalletReady,
     isArbitrum,
     connectWallet,
     disconnectWallet,

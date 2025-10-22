@@ -6,7 +6,7 @@
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         <!-- Wallet Connection Status -->
-        <div v-if="!isConnected" class="text-center py-12">
+        <div v-if="isWalletReady && !isConnected" class="text-center py-12">
           <div class="bg-white rounded-2xl shadow-lg p-8 max-w-md mx-auto">
             <div class="w-16 h-16 bg-gradient-to-br from-amber-400 to-orange-500 rounded-full flex items-center justify-center mx-auto mb-6">
               <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -23,8 +23,52 @@
 
         <!-- Connected State -->
         <div v-else>
+          <!-- Vincent Agent 登入銜接卡片（尚未取得 JWT 時顯示） -->
+          <div v-if="!vincentJwt" class="mb-8">
+            <div class="bg-white rounded-3xl shadow-2xl p-8 relative overflow-hidden group">
+              <div class="absolute inset-0 bg-gradient-to-br from-indigo-50/30 to-purple-50/30 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+              <div class="relative z-10">
+                <div class="flex items-center justify-between mb-6">
+                  <h3 class="text-2xl font-bold text-gray-900">連接 Vincent Agent</h3>
+                  <span v-if="vincentRedirecting" class="text-sm text-gray-500">正在導向登入頁...</span>
+                </div>
+                <p class="text-gray-600 mb-6">
+                  為了啟用跨鏈 Gas 兌換與自動監測，請先完成 Vincent Agent 登入授權。
+                </p>
+                <div class="flex items-center gap-4">
+                  <button 
+                    class="btn-primary"
+                    :disabled="vincentRedirecting"
+                    @click="handleVincentConnectClick"
+                  >
+                    前往 Vincent 登入
+                  </button>
+                  <div v-if="vincentRedirecting" class="flex items-center gap-1 text-gray-500">
+                    <span class="loading-dot">•</span>
+                    <span class="loading-dot">•</span>
+                    <span class="loading-dot">•</span>
+                  </div>
+                </div>
+
+                <!-- 導轉前確認區塊 -->
+                <div v-if="confirmVincentVisible" class="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded-xl">
+                  <p class="text-gray-800 mb-4">即將離開 GasPass 前往 Vincent 登入，完成後會自動返回。是否繼續？</p>
+                  <div class="flex items-center justify-between">
+                    <label class="flex items-center gap-2 text-sm text-gray-600">
+                      <input type="checkbox" v-model="skipVincentConfirm" @change="setSkipVincentConfirm(skipVincentConfirm)" />
+                      下次不再顯示
+                    </label>
+                    <div class="flex items-center gap-3">
+                      <button class="btn-secondary-sm" @click="confirmVincentCancel">取消</button>
+                      <button class="btn-primary" @click="confirmVincentProceed">繼續</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
           <!-- 上半部分：儲值卡管理 -->
-          <div class="mb-12">
+          <div v-if="vincentJwt" class="mb-12">
             <!-- 沒有儲值卡的情況 -->
             <div v-if="!hasCard" class="text-center py-12">
               <div class="bg-white rounded-3xl shadow-2xl p-12 max-w-4xl mx-auto relative overflow-hidden">
@@ -119,7 +163,7 @@
           </div>
 
           <!-- 下半部分：Gas 兌換管理 -->
-          <div class="bg-white rounded-3xl shadow-2xl p-8 relative overflow-hidden">
+          <div v-if="vincentJwt" class="bg-white rounded-3xl shadow-2xl p-8 relative overflow-hidden">
             <!-- 背景裝飾 -->
             <div class="absolute inset-0 bg-gradient-to-br from-gray-50/50 to-gray-100/50"></div>
             <div class="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-amber-200/20 to-orange-200/20 rounded-full -translate-y-16 translate-x-16"></div>
@@ -381,16 +425,20 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useWeb3 } from '../composables/useWeb3.js'
 import { gasPassService } from '../services/gasPassService.js'
+import { useVincentAuth } from '../composables/useVincentAuth.js'
 import Layout from '../components/Layout.vue'
 import CuteGasJar from '../components/CuteGasJar.vue'
 import ManualRefuelModal from '../components/ManualRefuelModal.vue'
 import AutoRefuelModal from '../components/AutoRefuelModal.vue'
 
 // Web3 composable
-const { account, isConnected, connectWallet, formatAddress, getUSDCBalance } = useWeb3()
+const { account, isConnected, isWalletReady, connectWallet, formatAddress, getUSDCBalance } = useWeb3()
+
+// Vincent Auth composable（App ID 從環境變數取得）
+const { ensureAuth, loadFromStorage, vincentJwt, vincentRedirecting, vincentPkpEthAddress } = useVincentAuth()
 
 // Data
 const userCards = ref([])
@@ -577,10 +625,30 @@ const loadAgentStatus = async () => {
 }
 
 // Lifecycle
-onMounted(() => {
-  if (isConnected.value) {
-    loadUserData()
+onMounted(async () => {
+  // 從 localStorage 嘗試還原 Vincent JWT（避免重整後狀態遺失）
+  loadFromStorage()
+
+  // 無論是否已連接錢包，都先檢查本地 JWT 是否有效（若過期將自動清除）
+  try {
+    await ensureAuth(undefined, { allowRedirect: false })
+  } catch (e) {
+    console.error('Vincent JWT 檢查失敗:', e)
   }
+
+  if (isConnected.value) {
+    try {
+      const result = await ensureAuth(undefined, { allowRedirect: false })
+      if (!result.needsRedirect) {
+        await loadUserData()
+      }
+    } catch (e) {
+      console.error('Vincent Auth 初始化失敗:', e)
+      await loadUserData()
+    }
+  }
+
+  // 回跳時不主動打開錢包 UI；自動重連交由 wagmi autoConnect/reconnect 完成
   
   // 預設填入當前錢包地址
   if (account.value) {
@@ -588,6 +656,58 @@ onMounted(() => {
     agentRefuel.value.recipient = account.value
   }
 })
+
+// 監聽錢包連線後，觸發 Vincent 登入流程
+watch(isConnected, async (connected) => {
+  if (connected) {
+    try {
+      const result = await ensureAuth(undefined, { allowRedirect: false })
+      if (!result.needsRedirect) {
+        await loadUserData()
+      }
+    } catch (e) {
+      console.error('Vincent Auth 啟動失敗:', e)
+      await loadUserData()
+    }
+  }
+})
+
+// 供 UI 觸發 Vincent 登入（導轉）
+const handleVincentConnect = async () => {
+  try {
+    await ensureAuth(undefined, { allowRedirect: true })
+  } catch (e) {
+    console.error('啟動 Vincent 登入失敗:', e)
+  }
+}
+
+// 導轉前確認與偏好
+const confirmVincentVisible = ref(false)
+const skipVincentConfirm = ref(false)
+const SKIP_KEY = 'VIN_SKIP_CONFIRM_LOGIN'
+onMounted(() => {
+  try {
+    const v = localStorage.getItem(SKIP_KEY)
+    skipVincentConfirm.value = v === '1'
+  } catch {}
+})
+const setSkipVincentConfirm = (v) => {
+  try { localStorage.setItem(SKIP_KEY, v ? '1' : '0') } catch {}
+}
+const handleVincentConnectClick = () => {
+  if (skipVincentConfirm.value) {
+    handleVincentConnect()
+  } else {
+    confirmVincentVisible.value = true
+  }
+}
+const confirmVincentCancel = () => {
+  confirmVincentVisible.value = false
+}
+const confirmVincentProceed = () => {
+  confirmVincentVisible.value = false
+  handleVincentConnect()
+}
 </script>
 
 <style scoped>
