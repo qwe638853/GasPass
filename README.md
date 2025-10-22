@@ -50,13 +50,15 @@ D -- No --> I[Idle / Wait for next check]
 
 ---
 ## ⚙️ Features
-Feature	Description
-ERC-3525 Gas Slot	Each slot acts as a semi-fungible “gas wallet” holding USDC/USDT for a specific chain.
-Permit-Based Minting	Supports EIP-712 + ERC-20 Permit2 signatures for gasless onboarding.
-Vincent Agent (PKP)	Automated delegated execution powered by Lit Protocol’s Vincent Abilities.
-Cross-Chain Refuel	Uses Avail’s Bridge & Execute and Bungee API for intent-based stablecoin transfers.
-Alchemy Gas Manager	Sponsors or triggers gas top-ups via paymaster API.
-Unified Slot Balance	Slot states and refuel logs recorded on Avail for verifiable auditing.
+
+| Feature                  | Description                                                                            |
+| ------------------------ | -------------------------------------------------------------------------------------- |
+| **ERC-3525 Gas Slot**    | Each slot acts as a semi-fungible “gas wallet” holding USDC/USDT for a specific chain. |
+| **Permit-Based Minting** | Supports EIP-712 + ERC-20 Permit2 signatures for gasless onboarding.                   |
+| **Vincent Agent (PKP)**  | Automated delegated execution powered by Lit Protocol’s Vincent Abilities.             |
+| **Cross-Chain Refuel**   | Uses Avail’s Bridge & Execute and Bungee API for intent-based stablecoin transfers.    |
+| **Alchemy Gas Manager**  | Sponsors or triggers gas top-ups via paymaster API.                                    |
+| **Unified Slot Balance** | Slot states and refuel logs recorded on Avail for verifiable auditing.                 |
 
 ---
 
