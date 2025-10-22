@@ -1,87 +1,131 @@
-# GasPass — Cross-Chain Auto Gas Card (ERC-3525 + Lit Vincent + Avail)
+GasPass
 
-> “GasPass is like a cross-chain fuel card. It automatically refuels your wallet’s gas balance across chains — safely, seamlessly, and without friction.”
+GasPass — An ERC-3525-based stored-value “gas card” that automatically or manually refuels gas across multiple EVM chains.
 
----
+📑 Table of Contents
 
-## Overview
+Overview
 
-**GasPass** is an **ERC-3525 Semi-Fungible Token (SFT)**-based "Cross-Chain Gas Prepaid Card" system.
+Architecture
 
-Users can deposit **USDC / USDT** into a GasPass **Slot**, which represents their personal “gas account.”  
-When the gas balance on a target chain falls below a defined threshold, GasPass automatically refuels it.
+Features
 
-GasPass integrates:
-- **Lit Protocol Vincent Agent** — a PKP-powered automation agent for decentralized EVM transaction signing.  
-- **Avail Bridge & Execute** — intent-based cross-chain execution with gasless UX.  
-- **Bungee Bridge API (Socket.tech)** — handles cross-chain swaps and refuels.  
-- **Alchemy Gas Manager / EIP-7702** — enables gas sponsorship and account abstraction.  
-- **EIP-712 / Permit2** — allows signature-based minting and deposits with zero gas.
+Smart Contract
 
----
+Tech Stack
 
-## Architecture
+How It Works
 
----
+Deployment
 
-## Smart Contract Summary
-GasPass.sol
+Integrations
 
-Implements an ERC-3525 Semi-Fungible Token, representing a refillable gas card.
+Roadmap
 
-Key Functions:
+License
 
- — Mint a GasPass card using EIP-712 signature.
+Contributors
 
-depositWithSig() — Deposit USDC/USDT using ERC-20 Permit or Permit2.
+🚀 Overview
+Category	Description
+Type	ERC-3525 Semi-Fungible Token (SFT)
+Purpose	A stored-value gas card for multi-chain gas refueling
+Core Concept	Users deposit USDC into an ERC-3525 slot; Vincent Agent automates gas top-ups when balances drop below threshold
+Key Technologies	Lit Protocol, Avail XCS, Bungee Bridge API, Alchemy Gas Manager, EIP-712, Permit2
+Status	Cross-chain prototype deployed on Arbitrum & Base testnets
+🧠 Architecture
+graph TD
 
-setRefuelPolicy() — Define the auto-refuel threshold and strategy.
+A[User deposits USDC into GasPass ERC-3525 Slot] --> B[MintWithSig (EIP-712)]
+B --> C[Vincent Agent monitors user balances]
+C --> D{Balance < threshold?}
+D -- Yes --> E[Trigger Avail XCS: Bridge & Execute]
+E --> F[Bungee API cross-chain transfer]
+F --> G[Alchemy / Relayer refuels gas on target chain]
+G --> H[Slot balance updated; execution logs stored on Avail]
+D -- No --> I[Idle / Wait for next check]
 
-cancelRefuelPolicy() — Cancel an existing refuel policy.
+⚙️ Features
+Feature	Description
+ERC-3525 Gas Slot	Each slot acts as a semi-fungible “gas wallet” holding USDC/USDT for a specific chain.
+Permit-Based Minting	Supports EIP-712 + ERC-20 Permit2 signatures for gasless onboarding.
+Vincent Agent (PKP)	Automated delegated execution powered by Lit Protocol’s Vincent Abilities.
+Cross-Chain Refuel	Uses Avail’s Bridge & Execute and Bungee API for intent-based stablecoin transfers.
+Alchemy Gas Manager	Sponsors or triggers gas top-ups via paymaster API.
+Unified Slot Balance	Slot states and refuel logs recorded on Avail for verifiable auditing.
+🧩 Smart Contract
 
-withdraw() — Withdraw remaining stablecoins.
+Contract: GasPass.sol
+Standards: ERC-3525 + EIP-712 + Permit2
 
-Security & Standards:
+Key Components
+Module	Functionality
+MintWithSig	Mints a new ERC-3525 token with user signature (EIP-712).
+DepositWithSig	Deposits USDC/USDT via Permit2 authorization.
+SetRefuelPolicy	Defines threshold, chain target, and trigger conditions.
+ExecuteRefuel	Called by Vincent Agent once the policy condition is met.
+UpdateSlotBalance	Updates slot’s on-chain value and Avail audit log.
+🛠️ Tech Stack
+Layer	Tools & Frameworks
+Smart Contracts	Solidity, Foundry, OpenZeppelin, Solv ERC-3525
+Cross-Chain Layer	Avail XCS, Bungee Bridge API
+Automation Layer	Lit Protocol Vincent Abilities (PKP Agent)
+Frontend	Vue 3, Vite, Vuetify, Pinia, Viem, Ethers.js
+Backend / Infra	Node.js, Express, Alchemy SDK, Avail SDK
+🔄 How It Works
 
-All signatures verified under EIP-712 domain separator.
+User Deposit
+Users deposit USDC into an ERC-3525 slot using MintWithSig.
 
-Uses OpenZeppelin modules: ECDSA, SafeERC20, Ownable.
+Threshold Monitoring
+The Vincent Agent (Lit PKP) monitors target chain gas balances.
 
-Supports Permit2 for seamless gasless approval flows.
+Auto Refuel Trigger
+When the balance drops below a set threshold, the agent triggers an Avail XCS intent.
 
+Cross-Chain Execution
+Avail executes through Bungee, bridging stablecoins securely.
 
----
+Gas Top-Up
+Alchemy Gas Manager or relayer converts bridged tokens to gas and funds the destination wallet.
 
-## Vision
+Balance Sync
+Updated balances and execution logs are stored on Avail.
 
-“Every wallet deserves a self-refueling experience.”
+🧱 Deployment
+# Clone repository
+git clone https://github.com/<your-username>/GasPass.git
+cd GasPass
 
-GasPass aims to become the gas subscription layer for cross-chain Web3 users.
-Through ERC-3525 + Lit Protocol + Avail, we make gas management:
+# Install dependencies
+pnpm install
 
-- Refillable
+# Compile contracts
+forge build
 
-- Delegated
+# Deploy to Arbitrum
+forge script script/DeployGasPass.s.sol:DeployGasPass \
+  --rpc-url $ARBITRUM_RPC \
+  --broadcast
 
-- Cross-chain aware
+🔗 Integration Examples
 
-- User-friendly
+Lit Protocol
+Automates ExecuteRefuel using delegated policy execution via Vincent Agent.
 
----
-
-## License
-
-MIT License © 2025 GasPass Team
-
-🔗 References
-
-ERC-3525 Semi-Fungible Token Standard
-
-Lit Protocol Vincent Abilities
-
-Avail Nexus SDK
+Avail SDK
+Submits cross-chain intents (Bridge & Execute) and maintains proof logs.
 
 Alchemy Gas Manager
+Sponsors gas on Arbitrum/Base via paymaster integration.
 
-Socket Bungee v2 API
+🧭 Future Roadmap
+Phase	Goal
+🔹 Phase 1	ERC-3525 base contract + manual refuel
+🔹 Phase 2	Automated refuel via Vincent Agent (Lit PKP)
+🔹 Phase 3	Avail XCS integration (Bridge & Execute)
+🔹 Phase 4	Multi-chain dashboard + analytics
+🔹 Phase 5	Public launch + staking incentives
+📜 License
 
+MIT License © 2025 GasPass Contributors
