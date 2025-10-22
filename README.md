@@ -49,7 +49,6 @@ E --> F[Bungee API cross-chain transfer]
 F --> G[Alchemy / Relayer refuels gas on target chain]
 G --> H[Slot balance updated; execution logs stored on Avail]
 D -- No --> I[Idle / Wait for next check]
-
 ```
 
 
