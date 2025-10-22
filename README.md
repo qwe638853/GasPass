@@ -34,13 +34,38 @@ F --> G[Alchemy / Relayer refuels gas on target chain]
 G --> H[Slot balance updated; execution logs stored on Avail]
 D -- No --> I[Idle / Wait for]()
 
+---
 
-| Layer             | Component                          | Description                                               |
-| ----------------- | ---------------------------------- | --------------------------------------------------------- |
-| Smart Contract    | **ERC-3525 GasPass.sol**           | SFT 格式的 Gas 卡，可透過 `DepositWithSig`、`RefuelPolicy` 管理跨鏈策略。 |
-| Signing Layer     | **Lit Vincent Agent**              | 由 PKP 驅動的 Agent，根據策略自動觸發跨鏈轉帳與補 Gas。                       |
-| Cross-Chain Layer | **Avail Bridge & Execute**         | 提供無 Gas 跨鏈執行環境。                                           |
-| Bridge Layer      | **Bungee API**                     | 實現跨鏈轉移（ETH ↔ USDC/USDT）。                                  |
-| Gasless Layer     | **Alchemy Gas Manager (EIP-7702)** | 提供 Gas Sponsorship。                                       |
-| Frontend          | **Vue3 + Vuetify + Pinia + Viem**  | 使用者儲值、查看、手動補 Gas 與設定策略的介面。                                |
+ Vision
+
+“Every wallet deserves a self-refueling experience.”
+
+GasPass aims to become the gas subscription layer for cross-chain Web3 users.
+Through ERC-3525 + Lit Protocol + Avail, we make gas management:
+
+- Refillable
+
+- Delegated
+
+- Cross-chain aware
+
+- User-friendly
+
+
+
+License
+
+MIT License © 2025 GasPass Team
+
+🔗 References
+
+ERC-3525 Semi-Fungible Token Standard
+
+Lit Protocol Vincent Abilities
+
+Avail Nexus SDK
+
+Alchemy Gas Manager
+
+Socket Bungee v2 API
 
