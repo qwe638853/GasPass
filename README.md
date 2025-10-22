@@ -91,22 +91,22 @@ Key Components
 ## 🔄 How It Works
 
 1. User Deposit
-   Users deposit USDC into an ERC-3525 slot using MintWithSig.
+Users deposit USDC into an ERC-3525 slot using MintWithSig.
 
 2. Threshold Monitoring
-   The Vincent Agent (Lit PKP) monitors target chain gas balances.
+The Vincent Agent (Lit PKP) monitors target chain gas balances.
 
 3. Auto Refuel Trigger
-   When the balance drops below a set threshold, the agent triggers an Avail XCS intent.
+When the balance drops below a set threshold, the agent triggers an Avail XCS intent.
 
 4. Cross-Chain Execution
-   Avail executes through Bungee, bridging stablecoins securely.
+Avail executes through Bungee, bridging stablecoins securely.
 
 5. Gas Top-Up
-   Alchemy Gas Manager or relayer converts bridged tokens to gas and funds the destination wallet.
+Alchemy Gas Manager or relayer converts bridged tokens to gas and funds the destination wallet.
 
 6. Balance Sync
-   Updated balances and execution logs are stored on Avail.
+Updated balances and execution logs are stored on Avail.
 
 ---
 
