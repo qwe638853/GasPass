@@ -41,15 +41,17 @@ Status	Cross-chain prototype deployed on Arbitrum & Base testnets
 
 ```mermaid
 flowchart LR
-A["Deposit (MintWithSig)"] --> B["Monitor (PKP)"]
-B --> C{"Below threshold?"}
-C -- Yes --> D["Avail XCS intent"]
-D --> E["Bungee bridge"]
-E --> F["Gas top-up"]
-F --> G["Sync on Avail"]
-C -- No --> H["Idle"]
+A[User deposits USDC into GasPass ERC-3525 Slot] --> B[MintWithSig (EIP-712)]
+B --> C[Vincent Agent monitors user balances]
+C --> D{Balance < threshold?}
+D -- Yes --> E[Trigger Avail XCS: Bridge & Execute]
+E --> F[Bungee API cross-chain transfer]
+F --> G[Alchemy / Relayer refuels gas on target chain]
+G --> H[Slot balance updated; execution logs stored on Avail]
+D -- No --> I[Idle / Wait for next check]
 
 ```
+
 
 
 ---
@@ -147,11 +149,11 @@ Sponsors gas on Arbitrum/Base via paymaster integration.
 ---
 ## 🧭 Future Roadmap
 Phase	Goal
-🔹 Phase 1	ERC-3525 base contract + manual refuel
-🔹 Phase 2	Automated refuel via Vincent Agent (Lit PKP)
+🔹 Phase 1	ERC-3525 base contract + manual refuel;
+🔹 Phase 2	Automated refuel via Vincent Agent (Lit PKP);
 🔹 Phase 3	Avail XCS integration (Bridge & Execute)
-🔹 Phase 4	Multi-chain dashboard + analytics
-🔹 Phase 5	Public launch + staking incentives
+🔹 Phase 4	Multi-chain dashboard + analytics;
+🔹 Phase 5	Public launch + staking incentives;
 
 ---
 ## 📜 License
