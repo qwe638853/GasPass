@@ -437,8 +437,13 @@ import AutoRefuelModal from '../components/AutoRefuelModal.vue'
 // Web3 composable
 const { account, isConnected, isWalletReady, connectWallet, formatAddress, getUSDCBalance } = useWeb3()
 
-// Vincent Auth composable（App ID 從環境變數取得）
+// Vincent Auth composable（使用硬編碼的 App ID）
 const { ensureAuth, loadFromStorage, vincentJwt, vincentRedirecting, vincentPkpEthAddress } = useVincentAuth()
+
+// Vincent JWT 狀態監聽（可選調試）
+// watch(vincentJwt, (newVal) => {
+//   console.log('[CardManagement] vincentJwt changed:', !!newVal, newVal)
+// }, { immediate: true })
 
 // Data
 const userCards = ref([])
