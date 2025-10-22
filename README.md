@@ -1,8 +1,9 @@
-GasPass
+### GasPass
 
-GasPass — An ERC-3525-based stored-value “gas card” that automatically or manually refuels gas across multiple EVM chains.
+｜GasPass — An ERC-3525-based stored-value “gas card” that automatically or manually refuels gas across multiple EVM chains.
 
-📑 Table of Contents
+---
+## 📑 Table of Contents
 
 Overview
 
@@ -24,16 +25,18 @@ Roadmap
 
 License
 
-Contributors
+---
 
-🚀 Overview
+## 🚀 Overview
 Category	Description
 Type	ERC-3525 Semi-Fungible Token (SFT)
 Purpose	A stored-value gas card for multi-chain gas refueling
 Core Concept	Users deposit USDC into an ERC-3525 slot; Vincent Agent automates gas top-ups when balances drop below threshold
 Key Technologies	Lit Protocol, Avail XCS, Bungee Bridge API, Alchemy Gas Manager, EIP-712, Permit2
 Status	Cross-chain prototype deployed on Arbitrum & Base testnets
-🧠 Architecture
+
+---
+## 🧠 Architecture
 graph TD
 
 A[User deposits USDC into GasPass ERC-3525 Slot] --> B[MintWithSig (EIP-712)]
@@ -45,7 +48,8 @@ F --> G[Alchemy / Relayer refuels gas on target chain]
 G --> H[Slot balance updated; execution logs stored on Avail]
 D -- No --> I[Idle / Wait for next check]
 
-⚙️ Features
+---
+## ⚙️ Features
 Feature	Description
 ERC-3525 Gas Slot	Each slot acts as a semi-fungible “gas wallet” holding USDC/USDT for a specific chain.
 Permit-Based Minting	Supports EIP-712 + ERC-20 Permit2 signatures for gasless onboarding.
@@ -53,7 +57,10 @@ Vincent Agent (PKP)	Automated delegated execution powered by Lit Protocol’s Vi
 Cross-Chain Refuel	Uses Avail’s Bridge & Execute and Bungee API for intent-based stablecoin transfers.
 Alchemy Gas Manager	Sponsors or triggers gas top-ups via paymaster API.
 Unified Slot Balance	Slot states and refuel logs recorded on Avail for verifiable auditing.
-🧩 Smart Contract
+
+---
+
+## 🧩 Smart Contract
 
 Contract: GasPass.sol
 Standards: ERC-3525 + EIP-712 + Permit2
@@ -72,7 +79,9 @@ Cross-Chain Layer	Avail XCS, Bungee Bridge API
 Automation Layer	Lit Protocol Vincent Abilities (PKP Agent)
 Frontend	Vue 3, Vite, Vuetify, Pinia, Viem, Ethers.js
 Backend / Infra	Node.js, Express, Alchemy SDK, Avail SDK
-🔄 How It Works
+
+---
+## 🔄 How It Works
 
 User Deposit
 Users deposit USDC into an ERC-3525 slot using MintWithSig.
@@ -92,7 +101,10 @@ Alchemy Gas Manager or relayer converts bridged tokens to gas and funds the dest
 Balance Sync
 Updated balances and execution logs are stored on Avail.
 
-🧱 Deployment
+---
+
+## 🧱 Deployment
+
 # Clone repository
 git clone https://github.com/<your-username>/GasPass.git
 cd GasPass
@@ -108,7 +120,9 @@ forge script script/DeployGasPass.s.sol:DeployGasPass \
   --rpc-url $ARBITRUM_RPC \
   --broadcast
 
-🔗 Integration Examples
+---
+
+## 🔗 Integration Examples
 
 Lit Protocol
 Automates ExecuteRefuel using delegated policy execution via Vincent Agent.
@@ -119,13 +133,16 @@ Submits cross-chain intents (Bridge & Execute) and maintains proof logs.
 Alchemy Gas Manager
 Sponsors gas on Arbitrum/Base via paymaster integration.
 
-🧭 Future Roadmap
+---
+## 🧭 Future Roadmap
 Phase	Goal
 🔹 Phase 1	ERC-3525 base contract + manual refuel
 🔹 Phase 2	Automated refuel via Vincent Agent (Lit PKP)
 🔹 Phase 3	Avail XCS integration (Bridge & Execute)
 🔹 Phase 4	Multi-chain dashboard + analytics
 🔹 Phase 5	Public launch + staking incentives
-📜 License
+
+---
+## 📜 License
 
 MIT License © 2025 GasPass Contributors
