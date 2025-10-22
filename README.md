@@ -37,6 +37,8 @@ Status	Cross-chain prototype deployed on Arbitrum & Base testnets
 
 ---
 ## 🧠 Architecture
+
+```mermaid
 graph TD
 
 A[User deposits USDC into GasPass ERC-3525 Slot] --> B[MintWithSig (EIP-712)]
@@ -47,6 +49,7 @@ E --> F[Bungee API cross-chain transfer]
 F --> G[Alchemy / Relayer refuels gas on target chain]
 G --> H[Slot balance updated; execution logs stored on Avail]
 D -- No --> I[Idle / Wait for next check]
+```
 
 ---
 ## ⚙️ Features
