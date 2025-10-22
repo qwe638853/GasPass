@@ -1,18 +1,13 @@
 <template>
   <div class="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
     <!-- Navigation -->
-    <nav class="bg-white/90 backdrop-blur-xl shadow-xl border-b border-gray-200/50 sticky top-0 z-40 transition-all duration-300 hover:shadow-2xl">
+    <nav class="bg-emerald-500/10 backdrop-blur-xl shadow-xl border-b border-emerald-300/30 sticky top-0 z-40 transition-all duration-300 hover:shadow-2xl">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex justify-between h-16">
+        <div class="flex justify-between h-20">
           <!-- Logo -->
-          <div class="flex items-center">
+          <div class="flex items-center -ml-2">
             <router-link to="/" class="flex items-center space-x-3">
-              <div class="logo-container">
-                <div class="logo-icon">⛽</div>
-                <div class="logo-text">
-                  <span class="logo-gas">Gas</span><span class="logo-pass">Pass</span>
-                </div>
-              </div>
+              <img src="../assets/GaspassLogo-removebg.png" alt="GasPass" class="h-20 w-auto" />
             </router-link>
           </div>
           
@@ -23,7 +18,7 @@
               class="nav-link group relative overflow-hidden"
               :class="{ 'nav-link-active': $route.name === 'Home' }"
             >
-              <div class="absolute inset-0 bg-gradient-to-r from-amber-100/50 to-orange-100/50 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              <div class="absolute inset-0 bg-gradient-to-r from-emerald-100/50 to-teal-100/50 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
               <span class="relative flex items-center gap-2 z-10">
                 <svg class="w-4 h-4 group-hover:scale-110 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
@@ -36,7 +31,7 @@
               class="nav-link group relative overflow-hidden"
               :class="{ 'nav-link-active': $route.name === 'CardManagement' }"
             >
-              <div class="absolute inset-0 bg-gradient-to-r from-amber-100/50 to-orange-100/50 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              <div class="absolute inset-0 bg-gradient-to-r from-emerald-100/50 to-teal-100/50 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
               <span class="relative flex items-center gap-2 z-10">
                 <svg class="w-4 h-4 group-hover:scale-110 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
@@ -49,7 +44,7 @@
               class="nav-link group relative overflow-hidden"
               :class="{ 'nav-link-active': $route.name === 'GasExchange' }"
             >
-              <div class="absolute inset-0 bg-gradient-to-r from-amber-100/50 to-orange-100/50 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              <div class="absolute inset-0 bg-gradient-to-r from-emerald-100/50 to-teal-100/50 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
               <span class="relative flex items-center gap-2 z-10">
                 <svg class="w-4 h-4 group-hover:scale-110 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
@@ -62,7 +57,7 @@
               class="nav-link group relative overflow-hidden"
               :class="{ 'nav-link-active': $route.name === 'GiftCards' }"
             >
-              <div class="absolute inset-0 bg-gradient-to-r from-amber-100/50 to-orange-100/50 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              <div class="absolute inset-0 bg-gradient-to-r from-emerald-100/50 to-teal-100/50 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
               <span class="relative flex items-center gap-2 z-10">
                 <svg class="w-4 h-4 group-hover:scale-110 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"></path>
@@ -292,11 +287,11 @@ watch(isConnected, (newConnected, oldConnected) => {
 
 /* Navigation */
 .nav-link {
-  @apply flex items-center gap-2 text-gray-600 hover:text-amber-600 hover:bg-amber-50 px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 hover:scale-105;
+  @apply flex items-center gap-2 text-gray-600 hover:text-emerald-600 hover:bg-emerald-50 px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 hover:scale-105;
 }
 
 .nav-link-active {
-  @apply text-amber-600 bg-gradient-to-r from-amber-50 to-orange-50 shadow-sm;
+  @apply text-emerald-600 bg-gradient-to-r from-emerald-50 to-teal-50 shadow-sm;
 }
 
 .mobile-menu-btn {
@@ -400,7 +395,7 @@ watch(isConnected, (newConnected, oldConnected) => {
 
 /* Mobile Menu */
 .mobile-menu {
-  @apply hidden bg-white/95 backdrop-blur-md border-t border-gray-200 shadow-lg;
+  @apply hidden bg-emerald-500/10 backdrop-blur-md border-t border-emerald-300/30 shadow-lg;
 }
 
 .mobile-menu-open {
@@ -416,7 +411,7 @@ watch(isConnected, (newConnected, oldConnected) => {
 }
 
 .mobile-nav-link {
-  @apply flex items-center gap-3 text-gray-700 hover:text-amber-600 hover:bg-amber-50 px-4 py-3 rounded-xl font-medium transition-all duration-300;
+  @apply flex items-center gap-3 text-gray-700 hover:text-emerald-600 hover:bg-emerald-50 px-4 py-3 rounded-xl font-medium transition-all duration-300;
 }
 
 /* Mobile Wallet */
