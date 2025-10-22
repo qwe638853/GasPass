@@ -38,13 +38,13 @@ Status	Cross-chain prototype deployed on Arbitrum & Base testnets
 ---
 ## 🧠 Architecture
 
-```mermaid
+mermaid
 flowchart LR
   A[Deposit (MintWithSig)] --> B[Monitor (PKP)]
   B --> C{Below threshold?}
   C -- Yes --> D[Avail XCS intent] --> E[Bungee bridge] --> F[Gas top-up] --> G[Sync on Avail]
   C -- No --> H[Idle]
-```
+
 
 ---
 ## ⚙️ Features
