@@ -37,6 +37,8 @@ contract GasPass is ERC3525, Ownable, EIP712 {
     event RefuelPolicyCancelled(uint256 indexed tokenId, uint256 indexed targetChainId);
     event AutoRefueled(uint256 indexed tokenId, uint256 indexed targetChainId, uint256 gasAmount, uint256 fee);
     event RelayerChanged(address indexed oldRelayer, address indexed newRelayer);
+    event FeesWithdrawn(address indexed to, uint256 amount);
+    event USDCWithdrawn(address indexed owner, uint256 indexed tokenId, uint256 amount, address indexed to); //測試用，我要提
 
     /** @dev 每個 tokenId 的次數器，供策略簽章使用，防重放。 */
     mapping(uint256 => uint256) public nonces;     
@@ -87,7 +89,7 @@ contract GasPass is ERC3525, Ownable, EIP712 {
      * @param typedData 鑄造所需之型別資料（含 permit 參數）。
      * @param signature 付款人對 MINT_WITH_SIG 結構之簽章。
      */
-    function mintWithSig(GasPassTypes.MintWithSigTypedData calldata typedData, bytes memory signature) public onlyOwner {
+    function mintWithSig(GasPassTypes.MintWithSigTypedData calldata typedData, bytes memory signature) public onlyRelayer {
         require(typedData.deadline >= block.timestamp, "Signature expired");
         require(typedData.value > 0, "value=0");
         require(typedData.value <= typedData.permitData.value, "value > value");
@@ -369,7 +371,7 @@ contract GasPass is ERC3525, Ownable, EIP712 {
         
         // 計算0.5%手續費
         uint256 gasAmount = policy.gasAmount;
-        uint256 fee = gasAmount * 5 / 1000;
+        uint256 fee = (gasAmount * 5) / 1000;
         uint256 total = gasAmount + fee;
 
         require(balanceOf(tokenId) >= total, "Insufficient 3525 balance");
@@ -392,6 +394,37 @@ contract GasPass is ERC3525, Ownable, EIP712 {
         address old = relayer;
         relayer = _relayer;
         emit RelayerChanged(old, _relayer);
+    }
+    
+    /**
+     * @notice 提領累積的手續費收入。
+     * @dev 僅合約擁有者可呼叫，將所有累積手續費轉給指定地址。
+     * @param to 接收手續費的地址。
+     */
+    function withdrawFees(address to) public onlyOwner {
+        require(to != address(0), "Invalid address");
+        require(totalFeesCollected > 0, "No fees to withdraw");
+        
+        uint256 amount = totalFeesCollected;
+        totalFeesCollected = 0;
+        
+        IERC20(address(stablecoin)).safeTransfer(to, amount);
+        emit FeesWithdrawn(to, amount);
+    }
+    function getWithdrawableFees() public view returns (uint256) {
+        return totalFeesCollected;
+    }
+   
+    function withdrawAllUSDC(uint256 tokenId, address to) public { //測試用，領取儲值卡的USDC
+        require(msg.sender == ownerOf(tokenId), "Not token owner");
+        require(to != address(0), "Invalid address");
+        
+        uint256 amount = balanceOf(tokenId);
+        require(amount > 0, "No balance to withdraw");
+        _burnValue(tokenId, amount);
+        IERC20(address(stablecoin)).safeTransfer(to, amount);
+        
+        emit USDCWithdrawn(msg.sender, tokenId, amount, to);
     }
     
     /**

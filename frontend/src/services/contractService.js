@@ -1,5 +1,7 @@
 // GasPass 合約服務
 import { ethers, formatUnits, parseUnits, parseEther, formatEther } from 'ethers'
+import { GAS_PASS_CONFIG } from '@/config/gasPassConfig.js'
+import relayerService from './relayerService.js'
 
 // 自定義 splitSignature 函數 (ethers v6 中已移除)
 function splitSignature(signature) {
@@ -11,14 +13,15 @@ function splitSignature(signature) {
 
 // 合約配置
 const CONTRACT_CONFIG = {
-  // Arbitrum Mainnet
-  address: '0x0000000000000000000000000000000000000000', // 需要部署到 Arbitrum Mainnet
+  // Arbitrum Mainnet - 使用已部署的合約地址
+  address: GAS_PASS_CONFIG.contractAddress,
   abi: [
     // ERC3525 基本函數
     'function totalSupply() view returns (uint256)',
     'function tokenByIndex(uint256) view returns (uint256)',
     'function ownerOf(uint256) view returns (address)',
     'function balanceOf(uint256) view returns (uint256)',
+    'function ownerNonces(address) view returns (uint256)',
     
     // GasPass 特定函數
     'function mintWithSig(tuple(address to, uint256 value, tuple(address owner, address spender, uint256 value, uint256 deadline, uint8 v, bytes32 r, bytes32 s) permitData, address agent, uint256 nonce, uint256 deadline) typedData, bytes signature) external',
@@ -63,9 +66,14 @@ class ContractService {
     this.provider = provider
     this.signer = signer
     
-    // 直接使用提供的 signer，不需要創建新的 provider
+    // 使用 signer 的 provider 來讀取合約狀態
     this.gasPassContract = new ethers.Contract(CONTRACT_CONFIG.address, CONTRACT_CONFIG.abi, signer)
     this.usdcContract = new ethers.Contract(USDC_CONFIG.address, USDC_CONFIG.abi, signer)
+    
+    // 確保 provider 是正確的
+    if (signer && signer.provider) {
+      this.provider = signer.provider
+    }
   }
 
   // 檢查用戶是否有 GasPass token
@@ -135,12 +143,41 @@ class ContractService {
   // 獲取 USDC nonce
   async getUSDCNonce(walletAddress) {
     try {
-      return await this.usdcContract.nonces(walletAddress)
+      // 確保 provider 存在
+      if (!this.provider) {
+        throw new Error('Provider not initialized')
+      }
+      
+      // 使用 provider 而不是 signer 來讀取 nonce
+      const usdcContract = new ethers.Contract(USDC_CONFIG.address, USDC_CONFIG.abi, this.provider)
+      const nonce = await usdcContract.nonces(walletAddress)
+      console.log('USDC nonce retrieved:', nonce.toString())
+      return nonce
     } catch (error) {
       console.error('Error getting USDC nonce:', error)
       // 如果 USDC 合約不支持 nonces，我們可以嘗試其他方法
       // 或者直接返回 0，讓用戶手動 approve
       console.warn('USDC contract may not support ERC-2612 permit, falling back to manual approval')
+      return 0n
+    }
+  }
+
+  // 獲取用戶的 nonce (從 GasPass 合約讀取)
+  async getUserNonce(walletAddress) {
+    try {
+      if (!this.provider) {
+        throw new Error('Provider not initialized')
+      }
+      
+      // 從 GasPass 合約讀取 ownerNonces
+      const gasPassContract = new ethers.Contract(CONTRACT_CONFIG.address, CONTRACT_CONFIG.abi, this.provider)
+      const nonce = await gasPassContract.ownerNonces(walletAddress)
+      console.log('GasPass 合約 nonce 獲取成功:', nonce.toString())
+      return nonce
+    } catch (error) {
+      console.error('Error getting GasPass nonce:', error)
+      console.warn('無法從 GasPass 合約讀取 nonce，使用 0 作為 fallback')
+      // 如果獲取失敗，返回 0
       return 0n
     }
   }
@@ -151,7 +188,7 @@ class ContractService {
       const domain = {
         name: 'USD Coin',
         version: '2',
-        chainId: 421614, // Arbitrum Sepolia
+        chainId: 42161, // Arbitrum Mainnet
         verifyingContract: USDC_CONFIG.address
       }
 
@@ -185,8 +222,8 @@ class ContractService {
         value: valueWei,
         deadline: deadline,
         v: sig.v,
-        r: sig.r,
-        s: sig.s
+        r: sig.r.startsWith('0x') ? sig.r : '0x' + sig.r,
+        s: sig.s.startsWith('0x') ? sig.s : '0x' + sig.s
       }
     } catch (error) {
       console.error('Error creating USDC permit:', error)
@@ -194,60 +231,30 @@ class ContractService {
     }
   }
 
-  // Mint GasPass token
+  // Mint GasPass token (使用 Relayer)
   async mintGasPassCard(params) {
     try {
       const { to, amount, agent } = params
       
-      // 在測試網上，我們需要先進行 USDC approve，然後創建 permit 簽名
-      console.log('Testing network detected, using approve + permit approach')
+      console.log('🚀 開始鑄造 GasPass 儲值卡...')
+      console.log('參數:', { to, amount, agent })
       
       const usdcAmount = parseUnits(amount, 6) // USDC 有 6 位小數
+      const deadline = Math.floor(Date.now() / 1000) + 3600
       
-      // 調試信息
-      console.log('Mint parameters:', { to, amount, agent })
-      console.log('Contract address:', CONTRACT_CONFIG.address)
-      console.log('USDC amount:', usdcAmount.toString())
+      // 獲取用戶的實際 nonce
+      const nonce = await this.getUserNonce(to)
+      console.log('用戶 nonce:', nonce.toString())
       
-      // 先進行 USDC approve
-      console.log('Approving USDC...')
-      try {
-        const approveTx = await this.usdcContract.approve(CONTRACT_CONFIG.address, usdcAmount)
-        await approveTx.wait()
-        console.log('USDC approved successfully')
-      } catch (approveError) {
-        console.warn('USDC approve failed, but continuing with mint:', approveError)
-        // 即使 approve 失敗，我們也繼續進行 mint，因為合約可能會處理
-      }
+      // 創建 USDC permit 簽名
+      console.log('📝 創建 USDC permit 簽名...')
+      const permitData = await this.createUSDCPermit(to, CONTRACT_CONFIG.address, amount, deadline)
       
-      // 創建 permit 簽名（即使 USDC 不支持，我們也嘗試創建）
-      let permitData
-      try {
-        permitData = await this.createUSDCPermit(to, CONTRACT_CONFIG.address, amount, Math.floor(Date.now() / 1000) + 3600)
-        console.log('Permit data created:', permitData)
-      } catch (permitError) {
-        console.warn('Permit creation failed, using empty permit data:', permitError)
-        // 如果 permit 創建失敗，使用空的 permit 數據
-        permitData = {
-          owner: to,
-          spender: CONTRACT_CONFIG.address,
-          value: usdcAmount,
-          deadline: Math.floor(Date.now() / 1000) + 3600,
-          v: 0,
-          r: '0x0000000000000000000000000000000000000000000000000000000000000000',
-          s: '0x0000000000000000000000000000000000000000000000000000000000000000'
-        }
-        console.log('Using empty permit data:', permitData)
-      }
-      
-      // 創建 mint 簽名
-      const mintDeadline = Math.floor(Date.now() / 1000) + 3600
-      const nonce = Math.floor(Math.random() * 1000000)
-      
+      // 創建 EIP-712 簽名數據
       const domain = {
         name: 'GasPass',
         version: '1',
-        chainId: 421614,
+        chainId: 42161, // Arbitrum Mainnet
         verifyingContract: CONTRACT_CONFIG.address
       }
 
@@ -271,45 +278,40 @@ class ContractService {
         ]
       }
 
-      const value_data = {
+      const typedData = {
         to: to,
-        value: parseUnits(amount, 6).toString(), // EIP-712 簽名需要字符串
-        permitData: permitData,
-        agent: agent || to, // 如果沒有指定 agent，使用用戶地址
-        nonce: nonce,
-        deadline: mintDeadline
-      }
-
-      const signature = await this.signer.signTypedData(domain, types, value_data, 'MintWithSig')
-      
-      // 調用合約時需要 BigInt
-      const contract_data = {
-        to: to,
-        value: parseUnits(amount, 6), // 合約調用需要 BigInt
-        permitData: permitData,
+        value: usdcAmount.toString(),
+        permitData: {
+          owner: permitData.owner,
+          spender: permitData.spender,
+          value: permitData.value.toString(),
+          deadline: permitData.deadline.toString(),
+          v: permitData.v,
+          r: permitData.r,
+          s: permitData.s
+        },
         agent: agent || to,
-        nonce: nonce,
-        deadline: mintDeadline
+        nonce: nonce.toString(),
+        deadline: deadline.toString()
       }
-      
-      console.log('Contract data:', contract_data)
-      console.log('Signature:', signature)
-      
-      const tx = await this.gasPassContract.mintWithSig(contract_data, signature)
-      const receipt = await tx.wait()
-      
-      // 從事件中獲取 tokenId
-      const mintEvent = receipt.events.find(e => e.event === 'Minted')
-      const tokenId = mintEvent ? mintEvent.args.value : null
 
+      console.log('✍️ 簽署 EIP-712 數據...')
+      console.log('🔍 typedData 內容:', JSON.stringify(typedData, null, 2))
+      const signature = await this.signer.signTypedData(domain, types, typedData, 'MintWithSig')
+      
+      console.log('📤 通過 Relayer 發送交易...')
+      console.log('🔍 發送給後端的數據:', { typedData, signature })
+      const result = await relayerService.relayMint(typedData, signature)
+      
+      console.log('✅ 鑄造成功!', result)
       return {
         success: true,
-        txHash: tx.hash,
-        tokenId: tokenId,
-        receipt: receipt
+        txHash: result.txHash,
+        tokenId: result.tokenId,
+        receipt: result.receipt
       }
     } catch (error) {
-      console.error('Mint failed:', error)
+      console.error('❌ 鑄造失敗:', error)
       return {
         success: false,
         error: error.message
@@ -317,23 +319,31 @@ class ContractService {
     }
   }
 
-  // Deposit to GasPass token
+  // Deposit to GasPass token (使用 Relayer)
   async depositToCard(params) {
     try {
       const { tokenId, amount } = params
       
-      // 創建 permit 簽名
+      console.log('💰 開始為儲值卡充值...')
+      console.log('參數:', { tokenId, amount })
+      
+      const usdcAmount = parseUnits(amount, 6) // USDC 有 6 位小數
       const deadline = Math.floor(Date.now() / 1000) + 3600
-      const permitData = await this.createUSDCPermit(await this.signer.getAddress(), CONTRACT_CONFIG.address, amount, deadline)
       
-      // 創建 deposit 簽名
-      const depositDeadline = Math.floor(Date.now() / 1000) + 3600
-      const nonce = Math.floor(Math.random() * 1000000)
+      // 獲取用戶的實際 nonce
+      const userAddress = await this.signer.getAddress()
+      const nonce = await this.getUserNonce(userAddress)
+      console.log('用戶 nonce:', nonce.toString())
       
+      // 創建 USDC permit 簽名
+      console.log('📝 創建 USDC permit 簽名...')
+      const permitData = await this.createUSDCPermit(userAddress, CONTRACT_CONFIG.address, amount, deadline)
+      
+      // 創建 EIP-712 簽名數據
       const domain = {
         name: 'GasPass',
         version: '1',
-        chainId: 421614,
+        chainId: 42161, // Arbitrum Mainnet
         verifyingContract: CONTRACT_CONFIG.address
       }
 
@@ -356,27 +366,36 @@ class ContractService {
         ]
       }
 
-      const value_data = {
-        tokenId: tokenId,
-        amount: parseUnits(amount, 6),
-        permitData: permitData,
-        nonce: nonce,
-        deadline: depositDeadline
+      const typedData = {
+        tokenId: tokenId.toString(),
+        amount: usdcAmount.toString(),
+        permitData: {
+          owner: permitData.owner,
+          spender: permitData.spender,
+          value: permitData.value.toString(),
+          deadline: permitData.deadline.toString(),
+          v: permitData.v,
+          r: permitData.r,
+          s: permitData.s
+        },
+        nonce: nonce.toString(),
+        deadline: deadline.toString()
       }
 
-      const signature = await this.signer.signTypedData(domain, types, value_data, 'DepositWithSig')
+      console.log('✍️ 簽署 EIP-712 數據...')
+      const signature = await this.signer.signTypedData(domain, types, typedData, 'DepositWithSig')
       
-      // 調用合約
-      const tx = await this.gasPassContract.depositWithSig(value_data, signature)
-      const receipt = await tx.wait()
-
+      console.log('📤 通過 Relayer 發送交易...')
+      const result = await relayerService.relayDeposit(typedData, signature)
+      
+      console.log('✅ 充值成功!', result)
       return {
         success: true,
-        txHash: tx.hash,
-        receipt: receipt
+        txHash: result.txHash,
+        receipt: result.receipt
       }
     } catch (error) {
-      console.error('Deposit failed:', error)
+      console.error('❌ 充值失敗:', error)
       return {
         success: false,
         error: error.message

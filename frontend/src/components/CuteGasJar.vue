@@ -195,14 +195,14 @@ const mouthExpression = computed(() => {
 
 const canSubmit = computed(() => {
   return amount.value && 
-         parseFloat(amount.value) >= 10 && 
+         parseFloat(amount.value) > 0 && 
          !isLoading.value &&
          !showSuccess.value
 })
 
 // Methods
 const onAmountChange = async () => {
-  if (amount.value && parseFloat(amount.value) >= 10) {
+  if (amount.value && parseFloat(amount.value) > 0) {
     // 模擬費用估算
     await new Promise(resolve => setTimeout(resolve, 300))
     costEstimate.value = {
