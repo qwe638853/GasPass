@@ -75,11 +75,60 @@
       <input id="slippageBps" placeholder="100 (1%)" value="100" />
     </div>
 
+    <div class="row">
+      <label for="spenderAddress">Spender (Permit2)</label>
+      <input id="spenderAddress" placeholder="0x000000000022D473030F116dDEE9F6B43aC78BA3 (default)" value="0x000000000022D473030F116dDEE9F6B43aC78BA3" />
+    </div>
+
+    <h2>Sponsor Transaction</h2>
+    <div class="row">
+      <label>Chain ID:</label>
+      <input type="number" id="sponsorChainId" placeholder="42161" />
+    </div>
+    <div class="row">
+      <label>Contract Address:</label>
+      <input type="text" id="sponsorContractAddress" placeholder="0x..." />
+    </div>
+    <div class="row">
+      <label>Function Name:</label>
+      <input type="text" id="sponsorFunctionName" placeholder="transfer" />
+    </div>
+    <div class="row">
+      <label>Args (JSON):</label>
+      <textarea id="sponsorArgs" placeholder='["0x...", "1000000"]'></textarea>
+    </div>
+    <div class="row">
+      <label>ABI (JSON):</label>
+      <textarea id="sponsorAbi" placeholder='[{"inputs":[...],"name":"transfer",...}]'></textarea>
+    </div>
+    <div class="row">
+      <label>Value (wei):</label>
+      <input type="text" id="sponsorValue" placeholder="0" />
+    </div>
+    <div class="actions">
+      <button id="btn-sponsor-precheck">Sponsor Precheck</button>
+      <button id="btn-sponsor-execute">Sponsor Execute</button>
+    </div>
+
+    <h2>Permit2 授權</h2>
+    <div class="row">
+      <label>使用上方欄位作為授權參數</label>
+      <span style="color:#666">chainId=Source Chain, tokenIn=Source Token, amountIn=Amount, rpcUrl=RPC URL</span>
+    </div>
+    <div class="actions">
+      <button id="btn-approve-precheck">Approve Precheck</button>
+      <button id="btn-approve-exec">Approve Execute</button>
+    </div>
+
+    <!-- Sponsored flow 移除；僅使用 Permit2 -->
+
     <div class="actions">
       <button id="btn-precheck">Precheck</button>
       <button id="btn-quote">Get Signed Bridge Quote</button>
       <button id="btn-exec">Execute</button>
       <button id="btn-exec-combined">Execute (Combined)</button>
+      <button id="btn-exec-auto">Execute (Auto Sign+Submit)</button>
+      <button id="btn-submit-front">Submit (Frontend)</button>
     </div>
 
     <hr />
