@@ -18,8 +18,9 @@
   "description": "",
   "dependencies": {
     "@lit-protocol/lit-node-client": "^7.3.1",
-    "@lit-protocol/vincent-ability-debridge": "^0.2.4",
     "@lit-protocol/vincent-app-sdk": "^2.2.3",
+    "@qwe638853/ability-bungee": "^0.1.9",
+    "@qwe638853/ability-sponsor-transaction": "^0.0.3",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
     "ethers": "^6.15.0",

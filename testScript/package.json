@@ -17,7 +17,7 @@
     "@lit-protocol/vincent-ability-erc20-approval": "3.1.0",
     "@lit-protocol/vincent-app-sdk": "^2.2.3",
     "@lit-protocol/vincent-scaffold-sdk": "1.1.9-mma",
-    "@qwe638853/ability-bungee": "^0.1.7",
+    "@qwe638853/ability-bungee": "^0.1.9",
     "@qwe638853/ability-sponsor-transaction": "^0.0.3",
     "abilityClient": "link:@lit-protocol/vincent-app-sdk/abilityClient",
     "body-parser": "^2.2.0",

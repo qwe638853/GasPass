@@ -198,7 +198,23 @@ app.post('/api/vincent/precheck', vincentAuth, withVincentAuth(async (req, res) 
     }
 
     const result = await vincentPrecheck(bridgeParams, { delegatorPkpEthAddress: delegator });
-    return res.json({ ok: true, result });
+    
+    // 提取並回傳 precheck 的關鍵參數
+    const hints = extractHintsFromPrecheck(result);
+    console.log('Precheck hints:', hints);
+    
+    return res.json({ 
+      ok: true, 
+      result,
+      hints: {
+        signTypedData: hints?.signTypedData,
+        quoteId: hints?.quoteId,
+        requestType: hints?.requestType,
+        hasSignTypedData: !!hints?.signTypedData,
+        hasQuoteId: !!hints?.quoteId,
+        hasRequestType: !!hints?.requestType
+      }
+    });
   } catch (err) {
     console.error('precheck error:', err);
     return res.status(400).json({ ok: false, error: err.message || String(err) });
@@ -249,27 +265,46 @@ app.post('/api/vincent/execute', vincentAuth, withVincentAuth(async (req, res) =
       delegator = pkpAddr;
     }
 
-    // 若未帶快路徑三件套，改由後端串 precheck->execute->submit
+    // 若未帶快路徑三件套，先執行 precheck 取得簽名參數
     if (!bridgeParams.signTypedData || !bridgeParams.quoteId || !bridgeParams.requestType) {
-      const comb = await fastSignAndSubmit(bridgeParams, delegator);
-      const payload = comb.execute;
-      return res.json({ ok: true, result: payload, submit: comb.submit, requestType: payload?.requestType, quoteId: payload?.quoteId, userSignature: payload?.userSignature, signTypedData: payload?.signTypedData, witness: payload?.witness, fromChainId: payload?.fromChainId, toChainId: payload?.toChainId, timestamp: payload?.timestamp });
+      const pre = await vincentPrecheck(bridgeParams, { delegatorPkpEthAddress: delegator });
+      const hints = extractHintsFromPrecheck(pre);
+      if (!hints?.signTypedData || !hints?.quoteId || !hints?.requestType) {
+        throw new Error('Precheck did not return signTypedData/quoteId/requestType');
+      }
+      const execParams = { ...bridgeParams, ...hints };
+      const execRes = await vincentExecute(execParams, { delegatorPkpEthAddress: delegator });
+      const payload = execRes?.result ?? execRes;
+      return res.json({ 
+        ok: true, 
+        result: payload, 
+        requestType: payload?.requestType || hints.requestType, 
+        quoteId: payload?.quoteId || hints.quoteId, 
+        userSignature: payload?.userSignature, 
+        signTypedData: payload?.signTypedData, 
+        witness: payload?.witness || payload?.signTypedData?.values?.witness, 
+        fromChainId: payload?.fromChainId, 
+        toChainId: payload?.toChainId, 
+        timestamp: payload?.timestamp 
+      });
     }
 
-    // 已帶三件套：僅簽名與提交
+    // 已帶三件套：僅簽名
     const execRes = await vincentExecute(bridgeParams, { delegatorPkpEthAddress: delegator });
     const payload = execRes.result;
     console.log('payload', payload);
-    let submit = null;
-    const witness = payload?.witness || payload?.signTypedData?.values?.witness;
-    if (payload?.userSignature && witness && bridgeParams?.quoteId && bridgeParams?.requestType) {
-      try {
-        submit = await submitToBungee({ requestType: bridgeParams.requestType, quoteId: bridgeParams.quoteId, userSignature: payload.userSignature, witness });
-      } catch (e) {
-        submit = { error: e?.message || String(e) };
-      }
-    }
-    return res.json({ ok: true, result: { ...payload, witness }, submit, requestType: payload?.requestType, quoteId: payload?.quoteId || bridgeParams?.quoteId, userSignature: payload?.userSignature, signTypedData: payload?.signTypedData, witness, fromChainId: payload?.fromChainId, toChainId: payload?.toChainId, timestamp: payload?.timestamp });
+    return res.json({ 
+      ok: true, 
+      result: payload, 
+      requestType: payload?.requestType || bridgeParams?.requestType, 
+      quoteId: payload?.quoteId || bridgeParams?.quoteId, 
+      userSignature: payload?.userSignature, 
+      signTypedData: payload?.signTypedData, 
+      witness: payload?.witness || payload?.signTypedData?.values?.witness, 
+      fromChainId: payload?.fromChainId, 
+      toChainId: payload?.toChainId, 
+      timestamp: payload?.timestamp 
+    });
   } catch (err) {
     console.error('execute error:', err);
     return res.status(400).json({ ok: false, error: err.message || String(err) });
