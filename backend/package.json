@@ -2,15 +2,10 @@
   "name": "backend",
   "version": "1.0.0",
   "type": "module",
-  "main": "index.js",
+  "main": "server.js",
   "scripts": {
-    "dev": "node --watch index.js",
-    "start": "node index.js",
-    "monitor": "node monitor/monitor.js",
-    "test-monitor": "node monitor/test-monitor-simple.js",
-    "test-full-flow": "node monitor/test-full-flow.js",
-    "test-low-balance": "node monitor/test-low-balance.js",
-    "test-mainnet": "node monitor/test-mainnet.js",
+    "dev": "node --watch server.js",
+    "start": "node server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",

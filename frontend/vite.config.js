@@ -16,6 +16,7 @@ export default defineConfig({
   },
   resolve: {
     alias: {
+      '@': '/src',
       'bn.js': 'bn.js/lib/bn.js',
       'cross-fetch': 'cross-fetch/dist/browser-ponyfill.js',
       'browser-headers': 'browser-headers/dist/browser-headers.umd.js',
