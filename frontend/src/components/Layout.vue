@@ -1,13 +1,56 @@
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+  <div class="min-h-screen bg-gradient-to-br from-slate-800 via-slate-900 to-gray-900 overflow-hidden metallic-bg">
+    <!-- Enhanced Background Elements -->
+    <div class="absolute inset-0 overflow-hidden">
+      <!-- Metallic gradient overlays -->
+      <div class="absolute inset-0 bg-gradient-to-br from-emerald-500/5 via-transparent to-teal-500/5"></div>
+      <div class="absolute inset-0 bg-gradient-to-tl from-cyan-400/3 via-transparent to-emerald-400/3"></div>
+      
+      <!-- Metallic particle system -->
+      <div class="particles-container">
+        <div class="particle metallic-particle" v-for="n in 30" :key="n" :style="getParticleStyle(n)"></div>
+      </div>
+      
+      <!-- Metallic grid pattern overlay -->
+      <div class="absolute inset-0 bg-metallic-grid opacity-15"></div>
+      
+      <!-- Tech Grid Lines -->
+      <div class="tech-grid-lines">
+        <div class="grid-line horizontal" v-for="n in 8" :key="`h-${n}`" :style="getGridLineStyle('horizontal', n)"></div>
+        <div class="grid-line vertical" v-for="n in 12" :key="`v-${n}`" :style="getGridLineStyle('vertical', n)"></div>
+      </div>
+      
+      <!-- Floating Tech Elements -->
+      <div class="tech-elements">
+        <div class="tech-element" v-for="n in 6" :key="n" :style="getTechElementStyle(n)">
+        </div>
+      </div>
+      
+      <!-- Data Streams -->
+      <div class="data-streams">
+        <div class="data-stream" v-for="n in 4" :key="n" :style="getDataStreamStyle(n)"></div>
+      </div>
+      
+      <!-- Holographic Effects -->
+      <div class="holographic-overlay"></div>
+      
+      <!-- Metallic Wave Lines -->
+      <div class="metallic-waves">
+        <div class="wave-line wave-1"></div>
+        <div class="wave-line wave-2"></div>
+        <div class="wave-line wave-3"></div>
+        <div class="wave-line wave-4"></div>
+      </div>
+    </div>
+
     <!-- Navigation -->
-    <nav class="bg-emerald-500/10 backdrop-blur-xl shadow-xl border-b border-emerald-300/30 sticky top-0 z-40 transition-all duration-300 hover:shadow-2xl">
+    <nav class="bg-transparent backdrop-blur-xl sticky top-0 z-50 transition-all duration-300 metallic-nav relative">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between h-20">
           <!-- Logo -->
           <div class="flex items-center -ml-2">
             <router-link to="/" class="flex items-center space-x-3">
-              <img src="../assets/GaspassLogo-removebg.png" alt="GasPass" class="h-20 w-auto" />
+              <img src="../assets/GaspassLogo-removebg.png" alt="GasPass" class="h-20 w-auto logo-fluorescent" />
             </router-link>
           </div>
           
@@ -23,7 +66,7 @@
                 <svg class="w-4 h-4 group-hover:scale-110 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
                 </svg>
-                首頁
+                Home
               </span>
             </router-link>
             <router-link 
@@ -36,7 +79,7 @@
                 <svg class="w-4 h-4 group-hover:scale-110 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
                 </svg>
-                儲值卡管理
+                Card Management
               </span>
             </router-link>
             <router-link 
@@ -49,7 +92,7 @@
                 <svg class="w-4 h-4 group-hover:scale-110 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
                 </svg>
-                兌換Gas
+                Exchange Gas
               </span>
             </router-link>
             <router-link 
@@ -62,7 +105,7 @@
                 <svg class="w-4 h-4 group-hover:scale-110 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"></path>
                 </svg>
-                贈送儲值卡
+                Gift Cards
               </span>
             </router-link>
           </div>
@@ -80,23 +123,23 @@
           </div>
           
           <!-- Wallet Connection -->
-          <div class="hidden md:flex items-center space-x-4">
+          <div class="hidden md:flex items-center space-x-4 justify-end">
             <!-- Network Status -->
             <div v-if="isConnected" class="network-status">
               <div v-if="isArbitrum" class="nav-link group relative overflow-hidden">
                 <div class="absolute inset-0 bg-gradient-to-r from-emerald-100/50 to-teal-100/50 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                <span class="relative flex items-center gap-2 z-10">
+                <span class="relative flex items-center gap-2 z-10 justify-end">
                   <div class="w-2 h-2 rounded-full bg-emerald-500"></div>
                   <span class="text-sm font-medium">Arbitrum</span>
                 </span>
               </div>
               <div v-else class="nav-link group relative overflow-hidden">
                 <div class="absolute inset-0 bg-gradient-to-r from-red-100/50 to-pink-100/50 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                <span class="relative flex items-center gap-2 z-10">
+                <span class="relative flex items-center gap-2 z-10 justify-end">
                   <div class="w-2 h-2 rounded-full bg-red-500"></div>
-                  <span class="text-sm font-medium">錯誤網路</span>
+                  <span class="text-sm font-medium">Wrong Network</span>
                   <button @click="switchToArbitrum" class="ml-2 px-2 py-1 bg-red-500 hover:bg-red-600 text-white text-xs rounded-lg transition-colors">
-                    切換
+                    Switch
                   </button>
                 </span>
               </div>
@@ -108,7 +151,7 @@
                 <div class="absolute inset-0 bg-gradient-to-r from-emerald-100/50 to-teal-100/50 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                 <span class="relative flex items-center gap-3 z-10">
                   <div class="text-lg">💰</div>
-                  <div class="balance-info">
+                  <div class="balance-info text-right">
                     <div class="balance-amount text-sm font-bold">${{ usdcBalance }}</div>
                     <div class="balance-label text-xs text-emerald-600">USDC</div>
                   </div>
@@ -124,7 +167,7 @@
                   <svg class="w-4 h-4 group-hover:scale-110 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path>
                   </svg>
-                  連接錢包
+                  Connect Wallet
                 </span>
               </button>
             </div>
@@ -137,16 +180,16 @@
                   <div class="w-8 h-8 rounded-full bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center">
                     <div class="w-3 h-3 bg-white rounded-full"></div>
                   </div>
-                  <div class="wallet-details">
+                  <div class="wallet-details text-right">
                     <div class="wallet-address text-sm font-medium">{{ formatAddress(account) }}</div>
-                    <div class="wallet-status text-xs text-emerald-600">已連接</div>
+                    <div class="wallet-status text-xs text-emerald-600">Connected</div>
                   </div>
                 </span>
               </div>
               <button 
                 @click="disconnectWallet"
                 class="nav-link group relative overflow-hidden"
-                title="斷開錢包"
+                title="Disconnect Wallet"
               >
                 <div class="absolute inset-0 bg-gradient-to-r from-red-100/50 to-pink-100/50 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                 <span class="relative flex items-center gap-2 z-10">
@@ -169,19 +212,19 @@
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
               </svg>
-              首頁
+              Home
             </router-link>
             <router-link to="/card-management" class="mobile-nav-link" @click="showMobileMenu = false">
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
               </svg>
-              儲值卡管理
+              Card Management
             </router-link>
             <router-link to="/gas-exchange" class="mobile-nav-link" @click="showMobileMenu = false">
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
               </svg>
-              兌換Gas
+              Exchange Gas
             </router-link>
           </div>
           
@@ -192,7 +235,7 @@
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path>
                 </svg>
-                連接錢包
+                Connect Wallet
               </button>
             </div>
             
@@ -204,24 +247,24 @@
                   </div>
                   <div class="mobile-wallet-details">
                     <div class="mobile-wallet-address">{{ formatAddress(account) }}</div>
-                    <div class="mobile-wallet-status">已連接</div>
+                    <div class="mobile-wallet-status">Connected</div>
                   </div>
                 </div>
                 
                 <div v-if="isArbitrum" class="mobile-balance">
-                  <div class="mobile-balance-label">USDC 餘額</div>
+                  <div class="mobile-balance-label">USDC Balance</div>
                   <div class="mobile-balance-amount">${{ usdcBalance }}</div>
                 </div>
                 
                 <div v-else class="mobile-network-warning">
-                  <div class="warning-text">請切換到 Arbitrum 網路</div>
+                  <div class="warning-text">Please switch to Arbitrum network</div>
                   <button @click="switchToArbitrum" class="mobile-switch-btn">
-                    切換網路
+                    Switch Network
                   </button>
                 </div>
                 
                 <button @click="disconnectWallet" class="mobile-disconnect-btn">
-                  斷開錢包
+                  Disconnect Wallet
                 </button>
               </div>
             </div>
@@ -231,7 +274,7 @@
     </nav>
     
     <!-- Main Content -->
-    <main class="flex-1">
+    <main class="flex-1 relative z-10">
       <slot />
     </main>
   </div>
@@ -245,6 +288,115 @@ const showMobileMenu = ref(false)
 const usdcBalance = ref('0.00')
 
 const { account, chainId, isConnected, isArbitrum, connectWallet, disconnectWallet, switchToArbitrum, formatAddress, getUSDCBalance } = useWeb3()
+
+// Metallic particle system
+const getParticleStyle = (index) => {
+  const size = Math.random() * 6 + 3
+  const x = Math.random() * 100
+  const y = Math.random() * 100
+  const delay = Math.random() * 5
+  const duration = Math.random() * 15 + 10
+  
+  // Metallic colors
+  const metallicColors = [
+    'linear-gradient(45deg, #37b694, #5ee4b9, #ffffff)',
+    'linear-gradient(45deg, #10b981, #34d399, #6ee7b7)',
+    'linear-gradient(45deg, #059669, #10b981, #34d399)',
+    'linear-gradient(45deg, #047857, #059669, #10b981)'
+  ]
+  
+  return {
+    position: 'absolute',
+    width: `${size}px`,
+    height: `${size}px`,
+    left: `${x}%`,
+    top: `${y}%`,
+    background: metallicColors[Math.floor(Math.random() * metallicColors.length)],
+    borderRadius: '50%',
+    opacity: Math.random() * 0.8 + 0.3,
+    animation: `metallic-float-particle ${duration}s ${delay}s infinite linear`,
+    pointerEvents: 'none',
+    boxShadow: '0 0 10px rgba(55, 182, 148, 0.5), inset 0 0 5px rgba(255, 255, 255, 0.3)',
+    filter: 'blur(0.5px)'
+  }
+}
+
+// Tech Animation Functions
+const getGridLineStyle = (type, index) => {
+  const delay = Math.random() * 3
+  const duration = Math.random() * 4 + 6
+  
+  if (type === 'horizontal') {
+    return {
+      position: 'absolute',
+      top: `${(index - 1) * 12.5}%`,
+      left: '0',
+      width: '100%',
+      height: '1px',
+      background: 'linear-gradient(90deg, transparent, rgba(55, 182, 148, 0.6), transparent)',
+      animation: `grid-line-horizontal ${duration}s ${delay}s infinite ease-in-out`,
+      pointerEvents: 'none'
+    }
+  } else {
+    return {
+      position: 'absolute',
+      left: `${(index - 1) * 8.33}%`,
+      top: '0',
+      width: '1px',
+      height: '100%',
+      background: 'linear-gradient(180deg, transparent, rgba(55, 182, 148, 0.6), transparent)',
+      animation: `grid-line-vertical ${duration}s ${delay}s infinite ease-in-out`,
+      pointerEvents: 'none'
+    }
+  }
+}
+
+const getTechElementStyle = (index) => {
+  const size = Math.random() * 20 + 15
+  const x = Math.random() * 100
+  const y = Math.random() * 100
+  const delay = Math.random() * 5
+  const duration = Math.random() * 8 + 6
+  
+  return {
+    position: 'absolute',
+    width: `${size}px`,
+    height: `${size}px`,
+    left: `${x}%`,
+    top: `${y}%`,
+    animation: `tech-element-float ${duration}s ${delay}s infinite ease-in-out`,
+    pointerEvents: 'none',
+    opacity: Math.random() * 0.6 + 0.3
+  }
+}
+
+const getDataStreamStyle = (index) => {
+  const width = Math.random() * 3 + 2
+  const delay = Math.random() * 2
+  const duration = Math.random() * 3 + 4
+  
+  const positions = [
+    { top: '20%', left: '10%', angle: '45deg' },
+    { top: '60%', left: '80%', angle: '135deg' },
+    { top: '40%', left: '20%', angle: '90deg' },
+    { top: '80%', left: '70%', angle: '0deg' }
+  ]
+  
+  const pos = positions[index - 1] || positions[0]
+  
+  return {
+    position: 'absolute',
+    width: `${width}px`,
+    height: '200px',
+    top: pos.top,
+    left: pos.left,
+    background: 'linear-gradient(180deg, transparent, rgba(94, 228, 185, 0.8), transparent)',
+    animation: `data-stream-flow ${duration}s ${delay}s infinite ease-in-out`,
+    pointerEvents: 'none',
+    transform: `rotate(${pos.angle})`,
+    opacity: Math.random() * 0.7 + 0.3
+  }
+}
 
 // Load USDC balance
 const loadBalance = async () => {
@@ -307,15 +459,15 @@ watch(isConnected, (newConnected, oldConnected) => {
 
 /* Navigation */
 .nav-link {
-  @apply flex items-center gap-2 text-gray-600 hover:text-emerald-600 hover:bg-emerald-50 px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 hover:scale-105;
+  @apply flex items-center gap-2 text-white/80 hover:text-emerald-300 hover:bg-white/10 px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 hover:scale-105;
 }
 
 .nav-link-active {
-  @apply text-emerald-600 bg-gradient-to-r from-emerald-50 to-teal-50 shadow-sm;
+  @apply text-emerald-300 bg-white/10 shadow-sm;
 }
 
 .mobile-menu-btn {
-  @apply p-2 text-gray-600 hover:text-gray-800 transition-colors;
+  @apply p-2 text-white/80 hover:text-white transition-colors;
 }
 
 /* Wallet Info */
@@ -328,11 +480,11 @@ watch(isConnected, (newConnected, oldConnected) => {
 }
 
 .wallet-address {
-  @apply text-sm font-medium text-gray-800;
+  @apply text-sm font-medium text-white/90;
 }
 
 .wallet-status {
-  @apply text-xs text-gray-600;
+  @apply text-xs text-emerald-300;
 }
 
 .disconnect-btn {
@@ -341,7 +493,7 @@ watch(isConnected, (newConnected, oldConnected) => {
 
 /* Mobile Menu */
 .mobile-menu {
-  @apply hidden bg-emerald-500/10 backdrop-blur-md border-t border-emerald-300/30 shadow-lg;
+  @apply hidden bg-transparent backdrop-blur-md shadow-lg;
 }
 
 .mobile-menu-open {
@@ -357,16 +509,16 @@ watch(isConnected, (newConnected, oldConnected) => {
 }
 
 .mobile-nav-link {
-  @apply flex items-center gap-3 text-gray-700 hover:text-emerald-600 hover:bg-emerald-50 px-4 py-3 rounded-xl font-medium transition-all duration-300;
+  @apply flex items-center gap-3 text-white/80 hover:text-emerald-300 hover:bg-white/10 px-4 py-3 rounded-xl font-medium transition-all duration-300;
 }
 
 /* Mobile Wallet */
 .mobile-wallet-section {
-  @apply border-t border-gray-200 pt-6;
+  @apply pt-6;
 }
 
 .mobile-wallet-card {
-  @apply bg-gray-50 rounded-xl p-4;
+  @apply bg-white/10 backdrop-blur-md rounded-xl p-4;
 }
 
 .mobile-connect-btn {
@@ -402,11 +554,11 @@ watch(isConnected, (newConnected, oldConnected) => {
 }
 
 .mobile-wallet-address {
-  @apply font-medium text-gray-800;
+  @apply font-medium text-white/90;
 }
 
 .mobile-wallet-status {
-  @apply text-sm text-gray-600;
+  @apply text-sm text-emerald-300;
 }
 
 .mobile-balance {
@@ -414,11 +566,11 @@ watch(isConnected, (newConnected, oldConnected) => {
 }
 
 .mobile-balance-label {
-  @apply text-sm text-gray-600;
+  @apply text-sm text-emerald-300;
 }
 
 .mobile-balance-amount {
-  @apply font-bold text-gray-800;
+  @apply font-bold text-white/90;
 }
 
 .mobile-network-warning {
@@ -434,7 +586,7 @@ watch(isConnected, (newConnected, oldConnected) => {
 }
 
 .mobile-disconnect-btn {
-  @apply w-full bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-2 px-4 rounded-xl transition-all duration-300;
+  @apply w-full bg-white/10 hover:bg-white/20 text-white/90 font-semibold py-2 px-4 rounded-xl transition-all duration-300;
 }
 
 /* Web3Modal 樣式 - 完全重寫 */
@@ -504,5 +656,285 @@ watch(isConnected, (newConnected, oldConnected) => {
   background: linear-gradient(135deg, #d97706, #b45309);
   box-shadow: 0 6px 20px rgba(245, 158, 11, 0.4);
   transform: translateY(-2px) scale(1.02);
+}
+
+/* Metallic Navigation */
+.metallic-nav {
+  position: relative;
+  overflow: hidden;
+}
+
+.metallic-nav::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(55, 182, 148, 0.05), transparent);
+  animation: metallic-sweep 12s ease-in-out infinite;
+}
+
+@keyframes metallic-sweep {
+  0% { left: -100%; }
+  50% { left: 100%; }
+  100% { left: -100%; }
+}
+
+/* Metallic Background */
+.metallic-bg {
+  background: 
+    linear-gradient(135deg, #1e293b 0%, #334155 25%, #475569 50%, #334155 75%, #1e293b 100%),
+    radial-gradient(circle at 20% 80%, rgba(55, 182, 148, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(20, 184, 166, 0.1) 0%, transparent 50%);
+  background-size: 100% 100%, 800px 800px, 600px 600px;
+  animation: metallic-shift 20s ease-in-out infinite;
+}
+
+/* Metallic Grid */
+.bg-metallic-grid {
+  background-image: 
+    linear-gradient(rgba(55, 182, 148, 0.1) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(55, 182, 148, 0.1) 1px, transparent 1px),
+    linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+  background-size: 50px 50px, 50px 50px, 10px 10px, 10px 10px;
+}
+
+/* Particle container */
+.particles-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+/* Tech Animation Styles */
+.tech-grid-lines {
+  @apply absolute inset-0 pointer-events-none;
+}
+
+.grid-line {
+  @apply absolute;
+}
+
+.tech-elements {
+  @apply absolute inset-0 pointer-events-none;
+}
+
+.tech-element {
+  @apply absolute flex items-center justify-center;
+}
+
+.data-streams {
+  @apply absolute inset-0 pointer-events-none;
+}
+
+.data-stream {
+  @apply absolute;
+}
+
+.holographic-overlay {
+  @apply absolute inset-0 pointer-events-none;
+  background: 
+    radial-gradient(circle at 20% 20%, rgba(55, 182, 148, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(20, 184, 166, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 40% 60%, rgba(94, 228, 185, 0.05) 0%, transparent 50%);
+  animation: holographic-shift 15s ease-in-out infinite;
+}
+
+/* Metallic Wave Lines */
+.metallic-waves {
+  @apply absolute top-0 right-0 w-1/3 h-1/2 pointer-events-none;
+}
+
+.wave-line {
+  @apply absolute;
+  background: linear-gradient(135deg, 
+    transparent 0%, 
+    rgba(55, 182, 148, 0.1) 20%, 
+    rgba(94, 228, 185, 0.3) 50%, 
+    rgba(55, 182, 148, 0.1) 80%, 
+    transparent 100%);
+  filter: blur(1px);
+  animation: wave-flow 8s ease-in-out infinite;
+}
+
+.wave-1 {
+  top: 10%;
+  right: 5%;
+  width: 200px;
+  height: 2px;
+  animation-delay: 0s;
+  transform: rotate(-15deg);
+}
+
+.wave-2 {
+  top: 20%;
+  right: 10%;
+  width: 180px;
+  height: 2px;
+  animation-delay: 2s;
+  transform: rotate(-10deg);
+}
+
+.wave-3 {
+  top: 30%;
+  right: 8%;
+  width: 160px;
+  height: 2px;
+  animation-delay: 4s;
+  transform: rotate(-20deg);
+}
+
+.wave-4 {
+  top: 40%;
+  right: 12%;
+  width: 140px;
+  height: 2px;
+  animation-delay: 6s;
+  transform: rotate(-5deg);
+}
+
+/* Metallic Animations */
+@keyframes metallic-shift {
+  0%, 100% { background-position: 0% 0%, 0% 0%, 100% 100%; }
+  50% { background-position: 100% 100%, 100% 100%, 0% 0%; }
+}
+
+@keyframes metallic-float-particle {
+  0% { transform: translateY(100vh) rotate(0deg) scale(0.5); opacity: 0; }
+  10% { opacity: 1; transform: scale(1); }
+  90% { opacity: 1; transform: scale(1); }
+  100% { transform: translateY(-100px) rotate(360deg) scale(0.5); opacity: 0; }
+}
+
+/* Tech Animations */
+@keyframes grid-line-horizontal {
+  0%, 100% { 
+    opacity: 0; 
+    transform: scaleX(0); 
+  }
+  50% { 
+    opacity: 0.8; 
+    transform: scaleX(1); 
+  }
+}
+
+@keyframes grid-line-vertical {
+  0%, 100% { 
+    opacity: 0; 
+    transform: scaleY(0); 
+  }
+  50% { 
+    opacity: 0.8; 
+    transform: scaleY(1); 
+  }
+}
+
+@keyframes tech-element-float {
+  0%, 100% { 
+    transform: translateY(0) rotate(0deg) scale(1); 
+    opacity: 0.3; 
+  }
+  25% { 
+    transform: translateY(-20px) rotate(90deg) scale(1.1); 
+    opacity: 0.6; 
+  }
+  50% { 
+    transform: translateY(-40px) rotate(180deg) scale(1.2); 
+    opacity: 0.8; 
+  }
+  75% { 
+    transform: translateY(-20px) rotate(270deg) scale(1.1); 
+    opacity: 0.6; 
+  }
+}
+
+@keyframes data-stream-flow {
+  0% { 
+    opacity: 0; 
+    transform: translateY(-100px) scaleY(0.5); 
+  }
+  50% { 
+    opacity: 0.8; 
+    transform: translateY(0) scaleY(1); 
+  }
+  100% { 
+    opacity: 0; 
+    transform: translateY(100px) scaleY(0.5); 
+  }
+}
+
+@keyframes wave-flow {
+  0%, 100% { 
+    opacity: 0.2; 
+    transform: scaleX(0.8) translateX(20px); 
+  }
+  50% { 
+    opacity: 0.8; 
+    transform: scaleX(1.2) translateX(-10px); 
+  }
+}
+
+@keyframes holographic-shift {
+  0%, 100% { 
+    background-position: 0% 0%, 100% 100%, 50% 50%; 
+  }
+  33% { 
+    background-position: 100% 0%, 0% 100%, 25% 75%; 
+  }
+  66% { 
+    background-position: 0% 100%, 100% 0%, 75% 25%; 
+  }
+}
+
+/* Logo Fluorescent Effect */
+.logo-fluorescent {
+  filter: 
+    drop-shadow(0 0 15px rgba(55, 182, 148, 1))
+    drop-shadow(0 0 25px rgba(94, 228, 185, 0.8))
+    drop-shadow(0 0 35px rgba(55, 182, 148, 0.6))
+    drop-shadow(0 0 45px rgba(94, 228, 185, 0.4))
+    brightness(1.2)
+    contrast(1.2);
+  animation: logo-fluorescent-glow 4s ease-in-out infinite;
+  transition: all 0.3s ease;
+}
+
+.logo-fluorescent:hover {
+  filter: 
+    drop-shadow(0 0 20px rgba(55, 182, 148, 1))
+    drop-shadow(0 0 30px rgba(94, 228, 185, 1))
+    drop-shadow(0 0 40px rgba(55, 182, 148, 0.8))
+    drop-shadow(0 0 50px rgba(94, 228, 185, 0.6))
+    drop-shadow(0 0 60px rgba(55, 182, 148, 0.4))
+    brightness(1.3)
+    contrast(1.3);
+  transform: scale(1.05);
+}
+
+@keyframes logo-fluorescent-glow {
+  0%, 100% { 
+    filter: 
+      drop-shadow(0 0 15px rgba(55, 182, 148, 1))
+      drop-shadow(0 0 25px rgba(94, 228, 185, 0.8))
+      drop-shadow(0 0 35px rgba(55, 182, 148, 0.6))
+      drop-shadow(0 0 45px rgba(94, 228, 185, 0.4))
+      brightness(1.2)
+      contrast(1.2);
+  }
+  50% { 
+    filter: 
+      drop-shadow(0 0 18px rgba(55, 182, 148, 1))
+      drop-shadow(0 0 28px rgba(94, 228, 185, 0.9))
+      drop-shadow(0 0 38px rgba(55, 182, 148, 0.7))
+      drop-shadow(0 0 48px rgba(94, 228, 185, 0.5))
+      brightness(1.25)
+      contrast(1.25);
+  }
 }
 </style>
