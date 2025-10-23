@@ -112,9 +112,120 @@ export async function precheck(bridgeParams, { delegatorPkpEthAddress }) {
 export async function getSignedBridgeQuote(bridgeParams, { delegatorPkpEthAddress }) {
   await ensureInitialized();
   const params = withEnvDefaults(bridgeParams);
-  return await abilityClient.getSignedBridgeQuote(params, {
-    delegatorPkpEthAddress,
-  });
+  
+  // 直接呼叫 Bungee Quote API
+  const BUNGEE_API_BASE_URL = "https://public-backend.bungee.exchange";
+  console.log('Bungee API Base URL:', BUNGEE_API_BASE_URL);
+  const quoteParams = {
+    userAddress: delegatorPkpEthAddress,
+    receiverAddress: delegatorPkpEthAddress,
+    originChainId: parseInt(params.fromChainId),
+    destinationChainId: parseInt(params.toChainId),
+    inputToken: params.fromToken,
+    outputToken: params.toToken,
+    inputAmount: params.amount,
+    slippageBps: 1,
+  };
+  
+  try {
+    const url = `${BUNGEE_API_BASE_URL}/api/v1/bungee/quote`;
+    const queryParams = new URLSearchParams(quoteParams);
+    const fullUrl = `${url}?${queryParams}`;
+    
+    console.log('Bungee Quote API URL:', fullUrl);
+    
+    const response = await fetch(fullUrl);
+    const data = await response.json();
+    const serverReqId = response.headers.get("server-req-id");
+    
+    console.log('Bungee Quote Response:', { 
+      success: data.success, 
+      statusCode: data.statusCode,
+      serverReqId 
+    });
+
+    console.log('Bungee Quote Full Response:', JSON.stringify(data, null, 2));
+    
+    if (!data.success) {
+      throw new Error(
+        `Quote error: ${data.statusCode}: ${data.message}. server-req-id: ${serverReqId}`
+      );
+    }
+    
+    if (!data.result?.autoRoute) {
+      throw new Error(`No autoRoute available. server-req-id: ${serverReqId}`);
+    }
+    
+    const autoRoute = data.result.autoRoute;
+    const quoteId = autoRoute.quoteId;
+    const requestType = autoRoute.requestType;
+    let witness = null;
+    let signTypedData = null;
+    
+    console.log('AutoRoute structure:', {
+      quoteId: !!quoteId,
+      requestType: !!requestType,
+      hasSignTypedData: !!autoRoute.signTypedData,
+      hasApprovalData: !!autoRoute.approvalData
+    });
+    
+    if (autoRoute.signTypedData) {
+      signTypedData = autoRoute.signTypedData;
+      console.log('SignTypedData structure:', {
+        hasDomain: !!signTypedData.domain,
+        hasTypes: !!signTypedData.types,
+        hasValues: !!signTypedData.values,
+        hasWitness: !!(signTypedData.values && signTypedData.values.witness)
+      });
+      
+      if (signTypedData.values && signTypedData.values.witness) {
+        witness = signTypedData.values.witness;
+        console.log('✅ Witness extracted successfully:', {
+          hasWitness: !!witness,
+          witnessType: typeof witness,
+          witnessKeys: witness ? Object.keys(witness) : null
+        });
+      } else {
+        console.log('❌ Failed to extract witness:', {
+          hasValues: !!signTypedData.values,
+          hasWitness: !!(signTypedData.values && signTypedData.values.witness),
+          valuesKeys: signTypedData.values ? Object.keys(signTypedData.values) : null
+        });
+      }
+    } else {
+      console.log('⚠️ No signTypedData in autoRoute');
+    }
+    
+    const approvalData = autoRoute.approvalData;
+    
+    console.log('📤 Final result structure:', {
+      quoteId: !!quoteId,
+      requestType: !!requestType,
+      witness: !!witness,
+      signTypedData: !!signTypedData,
+      approvalData: !!approvalData
+    });
+    
+    return {
+      success: true,
+      result: {
+        quoteId,
+        requestType,
+        witness,
+        signTypedData,
+        approvalData,
+        autoRoute,
+        fullResponse: data,
+        serverReqId
+      }
+    };
+  } catch (error) {
+    console.error('Bungee Quote API Error:', error);
+    return {
+      success: false,
+      error: error.message || String(error)
+    };
+  }
 }
 
 export async function execute(bridgeParams, { delegatorPkpEthAddress }) {

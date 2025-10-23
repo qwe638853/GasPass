@@ -82,32 +82,6 @@ async function submitToBungee({ requestType, witness, userSignature, quoteId }) 
   return submitResult;
 }
 
-// Orchestrator: precheck -> execute(sign) -> submit
-async function fastSignAndSubmit(bridgeParams, delegator) {
-  // 1) precheck to get signTypedData/quoteId/requestType
-  const pre = await vincentPrecheck(bridgeParams, { delegatorPkpEthAddress: delegator });
-  const hints = extractHintsFromPrecheck(pre);
-  if (!hints?.signTypedData || !hints?.quoteId || !hints?.requestType) {
-    throw new Error('Precheck did not return signTypedData/quoteId/requestType');
-  }
-  const execParams = { ...bridgeParams, ...hints };
-  // 2) execute to get userSignature (+ witness passthrough from ability)
-  const execRes = await vincentExecute(execParams, { delegatorPkpEthAddress: delegator });
-  const payload = execRes?.result ?? execRes;
-  const userSignature = payload?.userSignature;
-  const witness = payload?.witness || payload?.signTypedData?.values?.witness;
-  if (!userSignature || !witness) {
-    return { execute: payload, submit: { error: 'Missing userSignature or witness' } };
-  }
-  // 3) submit to bungee
-  const submit = await submitToBungee({
-    requestType: payload.requestType || hints.requestType,
-    quoteId: payload.quoteId || hints.quoteId,
-    userSignature,
-    witness,
-  });
-  return { execute: { ...payload, witness }, submit };
-}
 
 // Proxy: Bungee status
 async function fetchBungeeStatus(requestHash) {
@@ -239,8 +213,11 @@ app.post('/api/vincent/quote', vincentAuth, withVincentAuth(async (req, res) => 
       delegator = pkpAddr;
     }
 
-    const result = await vincentQuote(bridgeParams, { delegatorPkpEthAddress: delegator });
-    return res.json({ ok: true, result });
+    const quoteResult = await vincentQuote(bridgeParams, { delegatorPkpEthAddress: delegator });
+    if (!quoteResult.success) {
+      return res.status(400).json({ ok: false, error: quoteResult.error });
+    }
+    return res.json({ ok: true, result: quoteResult.result });
   } catch (err) {
     console.error('quote error:', err);
     return res.status(400).json({ ok: false, error: err.message || String(err) });
@@ -265,7 +242,7 @@ app.post('/api/vincent/execute', vincentAuth, withVincentAuth(async (req, res) =
       delegator = pkpAddr;
     }
 
-    // 若未帶快路徑三件套，先執行 precheck 取得簽名參數
+    /* 若未帶快路徑三件套，先執行 precheck 取得簽名參數
     if (!bridgeParams.signTypedData || !bridgeParams.quoteId || !bridgeParams.requestType) {
       const pre = await vincentPrecheck(bridgeParams, { delegatorPkpEthAddress: delegator });
       const hints = extractHintsFromPrecheck(pre);
@@ -288,6 +265,7 @@ app.post('/api/vincent/execute', vincentAuth, withVincentAuth(async (req, res) =
         timestamp: payload?.timestamp 
       });
     }
+      */
 
     // 已帶三件套：僅簽名
     const execRes = await vincentExecute(bridgeParams, { delegatorPkpEthAddress: delegator });

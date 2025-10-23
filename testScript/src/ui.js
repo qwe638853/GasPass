@@ -498,6 +498,283 @@ $('btn-exec-auto').addEventListener('click', async () => {
   }
 });
 
+// 檢查 Permit2 Allowance (前端直接檢查)
+async function checkPermit2Allowance(params) {
+  try {
+    const delegator = $('delegator').value.trim();
+    
+    if (!delegator) {
+      throw new Error('請先連接錢包以取得 PKP 地址');
+    }
+    
+    // 根據鏈 ID 選擇正確的 RPC URL
+    const chainId = Number(params.fromChainId);
+    let rpcUrl = params.rpcUrl;
+    
+    if (!rpcUrl || rpcUrl.includes('yellowstone-rpc.litprotocol.com')) {
+      // 使用預設的 RPC URL
+      switch (chainId) {
+        case 42161: // Arbitrum One
+          rpcUrl = 'https://arb1.arbitrum.io/rpc';
+          break;
+        case 8453: // Base
+          rpcUrl = 'https://mainnet.base.org';
+          break;
+        case 1: // Ethereum
+          rpcUrl = 'https://eth.llamarpc.com';
+          break;
+        default:
+          rpcUrl = 'https://arb1.arbitrum.io/rpc'; // 預設使用 Arbitrum
+      }
+    }
+    
+    log('🔍 前端直接檢查 Permit2 Allowance...');
+    log('檢查參數: ' + JSON.stringify({
+      chainId,
+      tokenAddress: params.fromToken,
+      userAddress: delegator,
+      spenderAddress: '0x000000000022D473030F116dDEE9F6B43aC78BA3',
+      rpcUrl
+    }));
+    
+    // 使用 ethers.js 直接檢查 ERC20 token 對 Permit2 的 allowance
+    const provider = new ethers.JsonRpcProvider(rpcUrl);
+    
+    // ERC20 ABI for allowance function
+    const ERC20_ABI = [
+      {
+        "inputs": [
+          {"internalType": "address", "name": "owner", "type": "address"},
+          {"internalType": "address", "name": "spender", "type": "address"}
+        ],
+        "name": "allowance",
+        "outputs": [
+          {"internalType": "uint256", "name": "", "type": "uint256"}
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      }
+    ];
+    
+    const tokenContract = new ethers.Contract(params.fromToken, ERC20_ABI, provider);
+    
+    // 檢查 ERC20 token 對 Permit2 合約的 allowance
+    const amount = await tokenContract.allowance(
+      delegator,
+      '0x000000000022D473030F116dDEE9F6B43aC78BA3' // Permit2 合約地址
+    );
+    
+    // ERC20 allowance 沒有過期時間，只有數量
+    const hasAllowance = (typeof amount.gt === 'function' ? amount.gt(0) : Number(amount) > 0);
+    
+    const allowance = {
+      amount: amount.toString(),
+      hasAllowance,
+      tokenAddress: params.fromToken,
+      spenderAddress: '0x000000000022D473030F116dDEE9F6B43aC78BA3'
+    };
+    
+    log('✅ Allowance 檢查結果: ' + JSON.stringify(allowance));
+    
+    return allowance;
+  } catch (err) {
+    console.error('Allowance 檢查失敗:', err);
+    log('❌ Allowance 檢查失敗: ' + (err.message || err), 'error');
+    return null;
+  }
+}
+
+// Quote → Execute → Submit 流程
+$('btn-quote-exec-submit').addEventListener('click', async () => {
+  try {
+    const delegator = $('delegator').value.trim();
+    const jwt = $('jwtStr').value.trim();
+    const audience = $('audience').value.trim();
+    if (!jwt) throw new Error('請先登入以取得 JWT');
+    const params = buildAbilityParams();
+    
+    // Step 0: 檢查 Permit2 Allowance
+    log('步驟 0: 檢查 Permit2 Allowance...');
+    const allowance = await checkPermit2Allowance(params);
+    
+    if (!allowance) {
+      log('❌ 無法檢查 Allowance，停止流程', 'error');
+      return;
+    }
+    
+    if (!allowance.hasAllowance) {
+      log('⚠️ Allowance 不足或已過期，需要執行 Permit2 Approval', 'warning');
+      
+      // 自動執行 Permit2 Approval
+      try {
+        log('🔄 自動執行 Permit2 Approval...');
+        const approvalParams = {
+          chainId: Number(params.fromChainId),
+          tokenIn: params.fromToken,
+          amountIn: params.amount,
+          rpcUrl: params.rpcUrl || `https://arb1.arbitrum.io/rpc`,
+          spenderAddress: '0x000000000022D473030F116dDEE9F6B43aC78BA3',
+          alchemyGasSponsor: true,
+          alchemyGasSponsorApiKey: undefined,
+          alchemyGasSponsorPolicyId: undefined,
+        };
+        
+        const appId = $('appId')?.value?.trim();
+        let decodedJWT = null; 
+        try { 
+          const s = localStorage.getItem('VINCENT_AUTH_JWT_DECODED'); 
+          decodedJWT = s ? JSON.parse(s) : null; 
+        } catch {}
+        
+        // 執行 Permit2 Approval
+        const { resp: approveResp, data: approveData, text: approveText } = await postJson('/api/vincent/approve/execute', { 
+          approvalParams, 
+          delegatorPkpEthAddress: delegator, 
+          jwt, 
+          audience, 
+          appId,
+          decodedJWT
+        });
+        
+        if (!approveResp.ok || !approveData?.ok) {
+          throw new Error((approveData && approveData.error) || approveText || `Approval HTTP ${approveResp.status}`);
+        }
+        
+        log('✅ Permit2 Approval 完成: ' + JSON.stringify(approveData.result), 'ok');
+        
+        if (approveData.bundleTxHash) {
+          log('📦 UserOp 已打包: ' + approveData.bundleTxHash, 'ok');
+        }
+        
+        // 等待一下讓 approval 生效
+        log('⏳ 等待 Approval 生效...');
+        await new Promise(resolve => setTimeout(resolve, 3000));
+        
+      } catch (approveErr) {
+        log('❌ Permit2 Approval 失敗: ' + (approveErr.message || approveErr), 'error');
+        return;
+      }
+    } else {
+      log('✅ Allowance 充足，繼續執行流程', 'ok');
+    }
+    
+    // Step 1: 從外部取得 Quote
+    log('步驟 1: 從外部取得 Quote...');
+    const appId = $('appId')?.value?.trim();
+    let decodedJWT = null; 
+    try { 
+      const s = localStorage.getItem('VINCENT_AUTH_JWT_DECODED'); 
+      decodedJWT = s ? JSON.parse(s) : null; 
+    } catch {}
+    
+    const { resp: quoteResp, data: quoteData, text: quoteText } = await postJson('/api/vincent/quote', { 
+      bridgeParams: params, 
+      delegatorPkpEthAddress: delegator, 
+      jwt, 
+      audience, 
+      appId, 
+      decodedJWT 
+    });
+    
+    if (!quoteResp.ok || !quoteData?.ok) {
+      throw new Error((quoteData && quoteData.error) || quoteText || `Quote HTTP ${quoteResp.status}`);
+    }
+    
+    log('Quote 回應: ' + JSON.stringify({ 
+      quoteId: quoteData.result?.quoteId, 
+      requestType: quoteData.result?.requestType,
+      signTypedData: quoteData.result?.signTypedData ? 'present' : 'missing'
+    }));
+    
+    // Step 2: 使用 Quote 結果執行 Execute
+    log('步驟 2: 執行 Execute (使用 Quote 結果)...');
+    const executeParams = {
+      ...params,
+      signTypedData: quoteData.result?.signTypedData,
+      quoteId: quoteData.result?.quoteId,
+      requestType: quoteData.result?.requestType
+    };
+    
+    const { resp: execResp, data: execData, text: execText } = await postJson('/api/vincent/execute', { 
+      bridgeParams: executeParams, 
+      delegatorPkpEthAddress: delegator, 
+      jwt, 
+      audience, 
+      appId, 
+      decodedJWT 
+    });
+    
+    if (!execResp.ok || !execData?.ok) {
+      throw new Error((execData && execData.error) || execText || `Execute HTTP ${execResp.status}`);
+    }
+    
+    log('Execute 回應: ' + JSON.stringify({ 
+      result: execData.result, 
+      requestType: execData.requestType, 
+      quoteId: execData.quoteId, 
+      userSignature: execData.userSignature ? 'present' : 'missing',
+      witness: execData.witness ? 'present' : 'missing'
+    }));
+    
+    // 驗證 EIP-712 簽名
+    if (execData?.userSignature && execData?.signTypedData) {
+      log('驗證 EIP-712 簽名...');
+      const verification = verifyEIP712Signature(execData.userSignature, execData.signTypedData, delegator);
+      if (verification.valid) {
+        log('✅ EIP-712 簽名驗證通過: ' + verification.message, 'ok');
+      } else {
+        log('❌ EIP-712 簽名驗證失敗: ' + verification.error, 'error');
+        return;
+      }
+    }
+    
+    // Step 3: 前端執行 Submit
+    if (execData?.userSignature && execData?.witness && execData?.quoteId && execData?.requestType) {
+      log('步驟 3: 前端 Submit 到 Bungee...');
+      try {
+        const submitBody = {
+          requestType: execData.requestType,
+          request: execData.witness,
+          userSignature: execData.userSignature,
+          quoteId: execData.quoteId,
+        };
+        
+        log('Submit 請求: ' + JSON.stringify(submitBody));
+        const submitResp = await fetch('https://public-backend.bungee.exchange/api/v1/bungee/submit', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(submitBody),
+        });
+        
+        const serverReqId = submitResp.headers.get('server-req-id');
+        const submitData = await submitResp.json();
+        
+        log('Submit 回應: ' + JSON.stringify({ 
+          http: submitResp.status, 
+          serverReqId: serverReqId, 
+          data: submitData 
+        }));
+        
+        if (submitData?.success && submitData?.result?.requestHash) {
+          log('✅ Bungee 已接收請求: ' + submitData.result.requestHash + '，開始輪詢狀態...', 'ok');
+          await pollBungeeStatusUI(submitData.result.requestHash);
+        } else {
+          log('❌ Submit 失敗: ' + JSON.stringify(submitData), 'error');
+        }
+      } catch (submitErr) {
+        log('❌ Submit 失敗: ' + (submitErr.message || submitErr), 'error');
+      }
+    } else {
+      log('❌ 缺少必要參數，無法執行 Submit', 'error');
+    }
+    
+    log('✅ Quote → Execute → Submit 流程完成！', 'ok');
+  } catch (err) {
+    console.error(err);
+    log('❌ Quote → Execute → Submit 失敗: ' + (err.message || err), 'error');
+  }
+});
+
 async function pollBungeeStatusUI(requestHash, intervalMs = 10000, maxAttempts = 60) {
   let attempts = 0;
   while (attempts < maxAttempts) {
