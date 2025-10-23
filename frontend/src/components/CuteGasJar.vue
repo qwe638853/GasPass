@@ -275,7 +275,6 @@ const handleSubmit = async () => {
       result = await contractService.mintGasPassCard({
         to: account.value,
         amount: amount.value,
-        agent: account.value // Temporarily use user address as agent
       })
       
       if (result.success) {

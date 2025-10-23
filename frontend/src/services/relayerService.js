@@ -44,7 +44,7 @@ class RelayerService {
    */
   async relayMint(typedData, signature) {
     try {
-      const response = await fetch(`${this.baseURL}/relay/mint`, {
+      const response = await fetch(`${this.baseURL}/api/relayer/mint`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -73,7 +73,7 @@ class RelayerService {
    */
   async relayMintBatch(typedData, signature) {
     try {
-      const response = await fetch(`${this.baseURL}/relay/mint-batch`, {
+      const response = await fetch(`${this.baseURL}/api/relayer/mint-batch`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -102,7 +102,7 @@ class RelayerService {
    */
   async relayDeposit(typedData, signature) {
     try {
-      const response = await fetch(`${this.baseURL}/relay/deposit`, {
+      const response = await fetch(`${this.baseURL}/api/relayer/deposit`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -131,7 +131,7 @@ class RelayerService {
    */
   async relaySetRefuelPolicy(typedData, signature) {
     try {
-      const response = await fetch(`${this.baseURL}/relay/set-refuel-policy`, {
+      const response = await fetch(`${this.baseURL}/api/relayer/set-refuel-policy`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -160,7 +160,7 @@ class RelayerService {
    */
   async relayCancelRefuelPolicy(typedData, signature) {
     try {
-      const response = await fetch(`${this.baseURL}/relay/cancel-refuel-policy`, {
+      const response = await fetch(`${this.baseURL}/api/relayer/cancel-refuel-policy`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -189,7 +189,7 @@ class RelayerService {
    */
   async relaySetAgent(typedData, signature) {
     try {
-      const response = await fetch(`${this.baseURL}/relay/set-agent`, {
+      const response = await fetch(`${this.baseURL}/api/relayer/set-agent`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

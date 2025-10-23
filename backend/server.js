@@ -3,6 +3,8 @@ import { ethers } from 'ethers';
 import express from 'express';
 import cors from 'cors';
 import { GAS_PASS_CONFIG, GAS_PASS_ABI, SUPPORTED_CHAINS } from './config/gasPassConfig.js';
+import apiRouter from './routes/index.js';
+import { createRelayerService } from './relayer/index.js';
 
 /**
  * GasPass 統一服務器
@@ -40,7 +42,14 @@ console.log(`🌐 RPC 端點: ${RPC_URL}`);
 console.log(`📋 合約地址: ${GAS_PASS_CONFIG.contractAddress}`);
 console.log(`🔗 網絡: ${GAS_PASS_CONFIG.network.name} (${GAS_PASS_CONFIG.network.chainId})`);
 
-// ==================== RELAYER 功能 ====================
+// 初始化 Relayer 服務
+const relayerService = createRelayerService(wallet);
+console.log(`🔧 Relayer 服務已初始化: ${relayerService.getRelayerInfo().address}`);
+
+// 整合 API 路由
+app.use('/api', apiRouter);
+
+// ==================== 基本端點 ====================
 
 // 健康檢查
 app.get('/health', (req, res) => {
@@ -76,195 +85,6 @@ app.get('/config', (req, res) => {
       nativeSymbol: SUPPORTED_CHAINS[chainId].nativeSymbol
     }))
   });
-});
-
-// 代送 mintWithSig 交易
-app.post('/relay/mint', async (req, res) => {
-  try {
-    const { typedData, signature } = req.body;
-    
-    console.log(`📤 代送 mintWithSig 交易...`);
-    console.log(`👤 用戶: ${typedData.to}`);
-    console.log(`💰 金額: ${ethers.formatUnits(typedData.value, 6)} USDC`);
-    
-    const tx = await contract.mintWithSig(typedData, signature);
-    console.log(`📝 交易哈希: ${tx.hash}`);
-    
-    const receipt = await tx.wait();
-    console.log(`✅ 交易確認: ${receipt.transactionHash}`);
-    
-    res.json({
-      success: true,
-      txHash: receipt.transactionHash,
-      blockNumber: receipt.blockNumber,
-      gasUsed: receipt.gasUsed.toString()
-    });
-    
-  } catch (error) {
-    console.error('❌ mintWithSig 失敗:', error.message);
-    res.status(400).json({
-      success: false,
-      error: error.message
-    });
-  }
-});
-
-// 代送 mintBatchWithSig 交易
-app.post('/relay/mint-batch', async (req, res) => {
-  try {
-    const { typedData, signature } = req.body;
-    
-    console.log(`📤 代送 mintBatchWithSig 交易...`);
-    console.log(`👤 用戶: ${typedData.to}`);
-    console.log(`📦 數量: ${typedData.amount}`);
-    console.log(`💰 單價: ${ethers.formatUnits(typedData.singleValue, 6)} USDC`);
-    
-    const tx = await contract.mintBatchWithSig(typedData, signature);
-    console.log(`📝 交易哈希: ${tx.hash}`);
-    
-    const receipt = await tx.wait();
-    console.log(`✅ 交易確認: ${receipt.transactionHash}`);
-    
-    res.json({
-      success: true,
-      txHash: receipt.transactionHash,
-      blockNumber: receipt.blockNumber,
-      gasUsed: receipt.gasUsed.toString()
-    });
-    
-  } catch (error) {
-    console.error('❌ mintBatchWithSig 失敗:', error.message);
-    res.status(400).json({
-      success: false,
-      error: error.message
-    });
-  }
-});
-
-// 代送 depositWithSig 交易
-app.post('/relay/deposit', async (req, res) => {
-  try {
-    const { typedData, signature } = req.body;
-    
-    console.log(`📤 代送 depositWithSig 交易...`);
-    console.log(`🎫 Token ID: ${typedData.tokenId}`);
-    console.log(`💰 金額: ${ethers.formatUnits(typedData.amount, 6)} USDC`);
-    
-    const tx = await contract.depositWithSig(typedData, signature);
-    console.log(`📝 交易哈希: ${tx.hash}`);
-    
-    const receipt = await tx.wait();
-    console.log(`✅ 交易確認: ${receipt.transactionHash}`);
-    
-    res.json({
-      success: true,
-      txHash: receipt.transactionHash,
-      blockNumber: receipt.blockNumber,
-      gasUsed: receipt.gasUsed.toString()
-    });
-    
-  } catch (error) {
-    console.error('❌ depositWithSig 失敗:', error.message);
-    res.status(400).json({
-      success: false,
-      error: error.message
-    });
-  }
-});
-
-// 代送 setRefuelPolicyWithSig 交易
-app.post('/relay/set-refuel-policy', async (req, res) => {
-  try {
-    const { typedData, signature } = req.body;
-    
-    console.log(`📤 代送 setRefuelPolicyWithSig 交易...`);
-    console.log(`🎫 Token ID: ${typedData.tokenId}`);
-    console.log(`⛓️ 目標鏈: ${typedData.targetChainId}`);
-    console.log(`💰 Gas 金額: ${ethers.formatUnits(typedData.gasAmount, 6)} USDC`);
-    console.log(`⚠️ 觸發閾值: ${ethers.formatEther(typedData.threshold)} ETH`);
-    
-    const tx = await contract.setRefuelPolicyWithSig(typedData, signature);
-    console.log(`📝 交易哈希: ${tx.hash}`);
-    
-    const receipt = await tx.wait();
-    console.log(`✅ 交易確認: ${receipt.transactionHash}`);
-    
-    res.json({
-      success: true,
-      txHash: receipt.transactionHash,
-      blockNumber: receipt.blockNumber,
-      gasUsed: receipt.gasUsed.toString()
-    });
-    
-  } catch (error) {
-    console.error('❌ setRefuelPolicyWithSig 失敗:', error.message);
-    res.status(400).json({
-      success: false,
-      error: error.message
-    });
-  }
-});
-
-// 代送 cancelRefuelPolicyWithSig 交易
-app.post('/relay/cancel-refuel-policy', async (req, res) => {
-  try {
-    const { typedData, signature } = req.body;
-    
-    console.log(`📤 代送 cancelRefuelPolicyWithSig 交易...`);
-    console.log(`🎫 Token ID: ${typedData.tokenId}`);
-    console.log(`⛓️ 目標鏈: ${typedData.targetChainId}`);
-    
-    const tx = await contract.cancelRefuelPolicyWithSig(typedData, signature);
-    console.log(`📝 交易哈希: ${tx.hash}`);
-    
-    const receipt = await tx.wait();
-    console.log(`✅ 交易確認: ${receipt.transactionHash}`);
-    
-    res.json({
-      success: true,
-      txHash: receipt.transactionHash,
-      blockNumber: receipt.blockNumber,
-      gasUsed: receipt.gasUsed.toString()
-    });
-    
-  } catch (error) {
-    console.error('❌ cancelRefuelPolicyWithSig 失敗:', error.message);
-    res.status(400).json({
-      success: false,
-      error: error.message
-    });
-  }
-});
-
-// 代送 setAgentToWalletWithSig 交易
-app.post('/relay/set-agent', async (req, res) => {
-  try {
-    const { typedData, signature } = req.body;
-    
-    console.log(`📤 代送 setAgentToWalletWithSig 交易...`);
-    console.log(`🤖 Agent: ${typedData.agent}`);
-    console.log(`👤 Wallet: ${typedData.wallet}`);
-    
-    const tx = await contract.setAgentToWalletWithSig(typedData, signature);
-    console.log(`📝 交易哈希: ${tx.hash}`);
-    
-    const receipt = await tx.wait();
-    console.log(`✅ 交易確認: ${receipt.transactionHash}`);
-    
-    res.json({
-      success: true,
-      txHash: receipt.transactionHash,
-      blockNumber: receipt.blockNumber,
-      gasUsed: receipt.gasUsed.toString()
-    });
-    
-  } catch (error) {
-    console.error('❌ setAgentToWalletWithSig 失敗:', error.message);
-    res.status(400).json({
-      success: false,
-      error: error.message
-    });
-  }
 });
 
 // ==================== MONITOR 功能 ====================
@@ -479,6 +299,9 @@ app.listen(PORT, () => {
   console.log(`📡 API 端點: http://localhost:${PORT}`);
   console.log(`🔍 健康檢查: http://localhost:${PORT}/health`);
   console.log(`📊 監控狀態: http://localhost:${PORT}/monitor/status`);
+  console.log(`🔗 Vincent API: http://localhost:${PORT}/api/vincent`);
+  console.log(`⚡ GasPass API: http://localhost:${PORT}/api/gaspass`);
+  console.log(`🚀 Relayer API: http://localhost:${PORT}/api/relayer`);
 });
 
 export default app;

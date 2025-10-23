@@ -1,23 +1,27 @@
 import { Router } from 'express';
-import { getAuthenticateUserExpressHandler } from '../middleware/vincentAuth.mjs';
-import { executeBungeeBridge, executeSponsorAutoRefuel } from '../vincent/bridge.js';
+import vincentRouter from './vincent.js';
+import gaspassRouter from './gaspass.js';
+import relayerRouter from '../relayer/index.js';
 
 const router = Router();
 
-// 建立 Vincent 驗證中間件
-const vincentAuth = getAuthenticateUserExpressHandler({
-  allowedAudience: process.env.VITE_VINCENT_APP_ID ? 
-    `https://${process.env.VITE_VINCENT_APP_ID}.vincent.app` : 
-    'http://localhost:5173',
-  requiredAppId: parseInt(process.env.VITE_VINCENT_APP_ID) || undefined,
-  userKey: 'vincentUser'
-});
-
 // 基本 API 端點
 router.get('/', (req, res) => {
-  res.json({ message: 'API is reachable' });
+  res.json({ 
+    message: 'GasPass API is reachable',
+    version: '1.0.0',
+    endpoints: {
+      vincent: '/api/vincent',
+      gaspass: '/api/gaspass',
+      relayer: '/api/relayer'
+    }
+  });
 });
 
+// 整合所有子路由
+router.use('/vincent', vincentRouter);
+router.use('/gaspass', gaspassRouter);
+router.use('/relayer', relayerRouter);
 
 export default router;
 

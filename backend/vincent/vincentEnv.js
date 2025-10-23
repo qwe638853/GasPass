@@ -32,12 +32,12 @@ await litNodeClient.connect();
 console.log('Connected to Lit Network');
 
 const sponsorAbilityClient = getVincentAbilityClient({
-  sponsorBundledVincentAbility,
+  bundledVincentAbility: sponsorBundledVincentAbility,
   ethersSigner: delegateeSigner,
 });
 
 const bungeeAbilityClient = getVincentAbilityClient({
-  bungeeBundledVincentAbility,
+  bundledVincentAbility: bungeeBundledVincentAbility,
   ethersSigner: delegateeSigner,
 });
 
@@ -46,4 +46,4 @@ export function getDelegateeAddress() {
   return delegateeSigner ? delegateeSigner.address : null;
 }
 
-export { sponsorAbilityClient, bungeeAbilityClient, rpcUrl};
+export { sponsorAbilityClient, bungeeAbilityClient, alchemyGasSponsorApiKey, alchemyGasSponsorPolicyId,rpcUrl};
