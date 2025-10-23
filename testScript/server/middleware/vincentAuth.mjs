@@ -55,7 +55,7 @@ export function jwtAuthMiddleware(req, res, next) {
 }
 
 // 錯誤處理中間件
-export default function errorHandler(err, req, res, next) {
+export function errorHandler(err, req, res, next) {
   // Only log server-side to avoid leaking internals
   // eslint-disable-next-line no-console
   console.error(err);
@@ -65,6 +65,6 @@ export default function errorHandler(err, req, res, next) {
 }
 
 // 404 處理中間件
-export default function notFound(req, res, next) {
+export function notFound(req, res, next) {
   res.status(404).json({ error: 'Not Found' });
 }
