@@ -29,6 +29,18 @@
         <div class="gas-symbols">
           <div class="symbol" v-for="n in 3" :key="n" :style="symbolStyle(n)">⛽</div>
         </div>
+        
+        <!-- 裝飾性線條 -->
+        <div class="decorative-lines">
+          <div class="line line-1"></div>
+          <div class="line line-2"></div>
+          <div class="line line-3"></div>
+        </div>
+        
+        <!-- 能量指示器 -->
+        <div class="energy-indicators">
+          <div class="indicator" v-for="n in 4" :key="n" :class="{ 'active': liquidHeight > n * 20 }"></div>
+        </div>
       </div>
       
       <!-- 罐子蓋子 -->
@@ -59,9 +71,7 @@
         <div class="amount-input-wrapper">
           <input 
             v-model="amount"
-            type="number" 
-            step="0.01"
-            min="10"
+            type="text" 
             placeholder="輸入金額"
             class="amount-input"
             @input="onAmountChange"
@@ -113,7 +123,7 @@
           {{ isFirstTime ? '鑄造中...' : '儲值中...' }}
         </span>
         <span v-else>
-          {{ isFirstTime ? '🎉 創建 GasPass' : '💰 立即儲值' }}
+          {{ isFirstTime ? '創建 GasPass' : '立即儲值' }}
         </span>
       </button>
 
@@ -349,10 +359,11 @@ const getBubbleStyle = (index) => {
     height: `${size}px`,
     left: `${x}%`,
     bottom: '0',
-    background: 'rgba(255, 255, 255, 0.6)',
+    background: 'rgba(16, 185, 129, 0.6)',
     borderRadius: '50%',
     animation: `bubble-rise ${duration}s ${delay}s infinite ease-out`,
-    pointerEvents: 'none'
+    pointerEvents: 'none',
+    boxShadow: '0 0 8px rgba(16, 185, 129, 0.4)'
   }
 }
 
@@ -399,34 +410,60 @@ watch(amount, (newValue) => {
 
 .jar-body {
   position: relative;
-  width: 150px;
-  height: 180px;
-  background: linear-gradient(145deg, #f3f4f6, #e5e7eb);
-  border-radius: 10px 10px 25px 25px;
-  border: 3px solid #9ca3af;
+  width: 160px;
+  height: 200px;
+  background: linear-gradient(145deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+  border-radius: 20px 20px 30px 30px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
   overflow: hidden;
   box-shadow: 
-    0 10px 30px rgba(0,0,0,0.1),
-    inset 0 2px 10px rgba(255,255,255,0.3);
+    0 20px 40px rgba(0,0,0,0.4),
+    0 0 30px rgba(16, 185, 129, 0.3),
+    inset 0 1px 0 rgba(255,255,255,0.1),
+    inset 0 -1px 0 rgba(0,0,0,0.2);
+}
+
+.jar-body::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(145deg, #10b981, #059669, #047857);
+  border-radius: inherit;
+  padding: 2px;
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
 }
 
 .liquid {
   position: absolute;
   bottom: 0;
   width: 100%;
-  background: linear-gradient(45deg, #f59e0b, #d97706);
+  background: linear-gradient(180deg, 
+    rgba(16, 185, 129, 0.9) 0%, 
+    rgba(5, 150, 105, 0.95) 50%, 
+    rgba(4, 120, 87, 1) 100%);
   transition: height 0.8s cubic-bezier(0.4, 0, 0.2, 1);
-  border-radius: 0 0 20px 20px;
+  border-radius: 0 0 28px 28px;
+  box-shadow: 
+    inset 0 2px 4px rgba(255,255,255,0.2),
+    0 0 20px rgba(16, 185, 129, 0.4);
 }
 
 .liquid-wave {
   position: absolute;
-  top: -10px;
+  top: -15px;
   left: 0;
   width: 100%;
-  height: 20px;
-  background: radial-gradient(ellipse at center, rgba(245,158,11,0.8) 0%, transparent 70%);
-  animation: wave 2s ease-in-out infinite;
+  height: 30px;
+  background: radial-gradient(ellipse at center, rgba(16,185,129,0.6) 0%, transparent 80%);
+  animation: wave 3s ease-in-out infinite;
+  border-radius: 50%;
 }
 
 .jar-face {
@@ -439,17 +476,32 @@ watch(amount, (newValue) => {
 
 .eyes {
   display: flex;
-  gap: 15px;
+  gap: 20px;
   justify-content: center;
-  margin-bottom: 8px;
+  margin-bottom: 12px;
 }
 
 .eye {
-  width: 12px;
-  height: 12px;
-  background: #374151;
+  width: 16px;
+  height: 16px;
+  background: linear-gradient(145deg, #10b981, #059669);
   border-radius: 50%;
-  transition: height 0.1s ease;
+  transition: all 0.3s ease;
+  box-shadow: 
+    0 0 12px rgba(16, 185, 129, 0.6),
+    inset 0 2px 4px rgba(255,255,255,0.3);
+  position: relative;
+}
+
+.eye::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 6px;
+  height: 6px;
+  background: rgba(255,255,255,0.8);
+  border-radius: 50%;
 }
 
 .eye.blink {
@@ -457,43 +509,55 @@ watch(amount, (newValue) => {
 }
 
 .mouth {
-  width: 20px;
-  height: 10px;
+  width: 24px;
+  height: 12px;
   margin: 0 auto;
-  border-radius: 0 0 20px 20px;
+  border-radius: 0 0 24px 24px;
   transition: all 0.3s ease;
+  position: relative;
 }
 
 .mouth-neutral {
-  border: 2px solid #9ca3af;
+  border: 2px solid #6b7280;
   border-top: none;
+  background: linear-gradient(180deg, transparent 0%, rgba(107, 114, 128, 0.1) 100%);
 }
 
 .mouth-smile {
-  border: 2px solid #f59e0b;
+  border: 2px solid #10b981;
   border-top: none;
   transform: scale(1.1);
+  background: linear-gradient(180deg, transparent 0%, rgba(16, 185, 129, 0.2) 100%);
+  box-shadow: 0 0 12px rgba(16, 185, 129, 0.4);
 }
 
 .mouth-excited {
-  background: #f59e0b;
+  background: linear-gradient(145deg, #10b981, #059669);
   border-radius: 50%;
   animation: bounce-slow 2s infinite;
+  box-shadow: 
+    0 0 15px rgba(16, 185, 129, 0.6),
+    inset 0 2px 4px rgba(255,255,255,0.3);
 }
 
 .mouth-happy {
-  background: #f59e0b;
+  background: linear-gradient(145deg, #10b981, #059669);
   border-radius: 50%;
-  width: 25px;
-  height: 15px;
+  width: 28px;
+  height: 16px;
   animation: pulse-slow 1s infinite;
+  box-shadow: 
+    0 0 15px rgba(16, 185, 129, 0.6),
+    inset 0 2px 4px rgba(255,255,255,0.3);
 }
 
 .mouth-nervous {
-  border: 2px solid #f59e0b;
+  border: 2px solid #10b981;
   border-radius: 50%;
   border-top: none;
+  background: linear-gradient(180deg, transparent 0%, rgba(16, 185, 129, 0.2) 100%);
   animation: wiggle 0.5s infinite;
+  box-shadow: 0 0 12px rgba(16, 185, 129, 0.4);
 }
 
 .gas-symbols {
@@ -507,30 +571,56 @@ watch(amount, (newValue) => {
 
 .symbol {
   position: absolute;
-  color: #9ca3af;
+  color: #10b981;
   animation: float 3s ease-in-out infinite;
+  text-shadow: 0 0 8px rgba(16, 185, 129, 0.5);
 }
 
 .jar-lid {
   position: relative;
-  width: 160px;
-  height: 15px;
-  background: linear-gradient(145deg, #d1d5db, #9ca3af);
-  border-radius: 8px;
-  margin: -3px auto 0;
-  box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+  width: 170px;
+  height: 20px;
+  background: linear-gradient(145deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+  border-radius: 12px;
+  margin: -4px auto 0;
+  box-shadow: 
+    0 8px 20px rgba(0,0,0,0.4), 
+    0 0 15px rgba(16, 185, 129, 0.3),
+    inset 0 1px 0 rgba(255,255,255,0.1);
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+.jar-lid::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(145deg, #10b981, #059669, #047857);
+  border-radius: inherit;
+  padding: 2px;
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
 }
 
 .lid-handle {
   position: absolute;
-  top: -8px;
+  top: -10px;
   left: 50%;
   transform: translateX(-50%);
-  width: 20px;
-  height: 16px;
-  background: linear-gradient(145deg, #d1d5db, #9ca3af);
+  width: 24px;
+  height: 20px;
+  background: linear-gradient(145deg, #10b981, #059669);
   border-radius: 50%;
-  box-shadow: inset 0 2px 5px rgba(0,0,0,0.2);
+  box-shadow: 
+    inset 0 2px 6px rgba(0,0,0,0.3), 
+    0 0 12px rgba(16, 185, 129, 0.5),
+    0 4px 8px rgba(0,0,0,0.2);
+  border: 1px solid rgba(255,255,255,0.1);
 }
 
 .sparkles {
@@ -557,12 +647,13 @@ watch(amount, (newValue) => {
 .jar-title {
   font-size: 1.5rem;
   font-weight: 700;
-  color: #374151;
+  color: #ffffff;
   margin-bottom: 0.5rem;
+  text-shadow: 0 0 10px rgba(16, 185, 129, 0.3);
 }
 
 .jar-description {
-  color: #6b7280;
+  color: #a7f3d0;
   margin-bottom: 1.5rem;
   line-height: 1.5;
 }
@@ -579,19 +670,25 @@ watch(amount, (newValue) => {
 .amount-input {
   width: 100%;
   padding: 1rem 4rem 1rem 1rem;
-  border: 3px solid #dee2e6;
+  border: 2px solid #10b981;
   border-radius: 12px;
   font-size: 1.2rem;
   font-weight: 600;
   text-align: center;
-  background: white;
+  background: rgba(30, 41, 59, 0.8);
+  color: #ffffff;
   transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
 }
 
 .amount-input:focus {
   outline: none;
-  border-color: #f59e0b;
-  box-shadow: 0 0 0 3px rgba(245,158,11,0.2);
+  border-color: #10b981;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2), 0 0 20px rgba(16, 185, 129, 0.3);
+}
+
+.amount-input::placeholder {
+  color: #a7f3d0;
 }
 
 .currency-label {
@@ -600,7 +697,7 @@ watch(amount, (newValue) => {
   top: 50%;
   transform: translateY(-50%);
   font-weight: 600;
-  color: #6b7280;
+  color: #10b981;
 }
 
 .quick-amounts {
@@ -611,32 +708,37 @@ watch(amount, (newValue) => {
 
 .quick-amount-btn {
   padding: 0.5rem;
-  border: 2px solid #e5e7eb;
+  border: 2px solid #10b981;
   border-radius: 8px;
-  background: white;
-  color: #6b7280;
+  background: rgba(30, 41, 59, 0.8);
+  color: #a7f3d0;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
 }
 
 .quick-amount-btn:hover {
-  border-color: #f59e0b;
-  color: #d97706;
+  border-color: #10b981;
+  color: #ffffff;
+  background: rgba(16, 185, 129, 0.2);
+  box-shadow: 0 0 10px rgba(16, 185, 129, 0.3);
 }
 
 .quick-amount-btn.active {
-  border-color: #f59e0b;
-  background: #f59e0b;
+  border-color: #10b981;
+  background: #10b981;
   color: white;
+  box-shadow: 0 0 15px rgba(16, 185, 129, 0.5);
 }
 
 .cost-estimate {
-  background: #f9fafb;
+  background: rgba(30, 41, 59, 0.8);
   border-radius: 12px;
   padding: 1rem;
   margin-bottom: 1.5rem;
-  border: 2px solid #e5e7eb;
+  border: 2px solid #10b981;
+  backdrop-filter: blur(10px);
 }
 
 .estimate-row {
@@ -644,6 +746,7 @@ watch(amount, (newValue) => {
   justify-content: space-between;
   margin-bottom: 0.5rem;
   font-size: 0.9rem;
+  color: #a7f3d0;
 }
 
 .estimate-row:last-child {
@@ -651,20 +754,21 @@ watch(amount, (newValue) => {
 }
 
 .estimate-row.total {
-  border-top: 1px solid #e5e7eb;
+  border-top: 1px solid #10b981;
   padding-top: 0.5rem;
   font-weight: 600;
+  color: #ffffff;
 }
 
 .highlight {
-  color: #d97706;
+  color: #10b981;
   font-weight: 600;
 }
 
 .submit-btn {
   width: 100%;
   padding: 1rem 2rem;
-  background: linear-gradient(145deg, #f59e0b, #d97706);
+  background: linear-gradient(145deg, #10b981, #059669);
   color: white;
   border: none;
   border-radius: 12px;
@@ -672,12 +776,12 @@ watch(amount, (newValue) => {
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 15px rgba(245,158,11,0.3);
+  box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
 }
 
 .submit-btn:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(245,158,11,0.4);
+  box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
 }
 
 .submit-btn:disabled {
@@ -704,12 +808,13 @@ watch(amount, (newValue) => {
 }
 
 .success-message {
-  background: linear-gradient(145deg, #d4edda, #c3e6cb);
-  border: 2px solid #28a745;
+  background: linear-gradient(145deg, rgba(16, 185, 129, 0.1), rgba(5, 150, 105, 0.1));
+  border: 2px solid #10b981;
   border-radius: 12px;
   padding: 2rem;
   margin-top: 1.5rem;
   text-align: center;
+  backdrop-filter: blur(10px);
 }
 
 .success-icon {
@@ -718,28 +823,31 @@ watch(amount, (newValue) => {
 }
 
 .success-message h3 {
-  color: #155724;
+  color: #ffffff;
   margin-bottom: 0.5rem;
+  text-shadow: 0 0 10px rgba(16, 185, 129, 0.3);
 }
 
 .success-message p {
-  color: #155724;
+  color: #a7f3d0;
   margin-bottom: 1.5rem;
 }
 
 .continue-btn {
-  background: #28a745;
+  background: #10b981;
   color: white;
   border: none;
   padding: 0.75rem 1.5rem;
   border-radius: 8px;
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.3s ease;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
 }
 
 .continue-btn:hover {
-  background: #218838;
+  background: #059669;
+  box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
 }
 
 /* Animations */
@@ -800,7 +908,7 @@ watch(amount, (newValue) => {
   left: -20px;
   right: -20px;
   bottom: -20px;
-  background: radial-gradient(circle, rgba(245, 158, 11, 0.3) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(16, 185, 129, 0.3) 0%, transparent 70%);
   border-radius: 50%;
   opacity: 0;
   transition: opacity 0.3s ease;
@@ -820,5 +928,79 @@ watch(amount, (newValue) => {
   height: 100%;
   pointer-events: none;
   overflow: hidden;
+}
+
+/* 裝飾性線條 */
+.decorative-lines {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.line {
+  position: absolute;
+  background: linear-gradient(90deg, transparent, rgba(16, 185, 129, 0.3), transparent);
+  height: 1px;
+  animation: line-glow 4s ease-in-out infinite;
+}
+
+.line-1 {
+  top: 20%;
+  left: 10%;
+  width: 80%;
+  animation-delay: 0s;
+}
+
+.line-2 {
+  top: 40%;
+  left: 15%;
+  width: 70%;
+  animation-delay: 1.3s;
+}
+
+.line-3 {
+  top: 60%;
+  left: 20%;
+  width: 60%;
+  animation-delay: 2.6s;
+}
+
+/* 能量指示器 */
+.energy-indicators {
+  position: absolute;
+  right: 8px;
+  top: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  pointer-events: none;
+}
+
+.indicator {
+  width: 4px;
+  height: 12px;
+  background: rgba(16, 185, 129, 0.2);
+  border-radius: 2px;
+  transition: all 0.3s ease;
+}
+
+.indicator.active {
+  background: linear-gradient(180deg, #10b981, #059669);
+  box-shadow: 0 0 8px rgba(16, 185, 129, 0.6);
+}
+
+/* 線條發光動畫 */
+@keyframes line-glow {
+  0%, 100% { 
+    opacity: 0.3;
+    transform: scaleX(0.8);
+  }
+  50% { 
+    opacity: 0.8;
+    transform: scaleX(1);
+  }
 }
 </style>
