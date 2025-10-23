@@ -96,9 +96,13 @@ const updateProviderAndSigner = async () => {
                   ))
                 }
                 
+                // 使用 getAddress() 獲取當前地址，確保一致性
+                const currentAddress = accountData.address
+                console.log('🔍 useWeb3 signTypedData 使用地址:', currentAddress)
+                
                 return await window.ethereum.request({
                   method: 'eth_signTypedData_v4',
-                  params: [accountData.address, JSON.stringify(serializeBigInt({
+                  params: [currentAddress, JSON.stringify(serializeBigInt({
                     domain,
                     types,
                     primaryType,

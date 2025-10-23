@@ -22,20 +22,82 @@ export function getStoredVincentAuth() {
   return { jwtStr, decodedJWT }
 }
 
-export function clearStoredVincentAuth() {
+export function clearStoredVincentAuth(clearPkpAddress = false) {
   localStorage.removeItem(STORAGE_JWT)
   localStorage.removeItem(STORAGE_DECODED)
-  localStorage.removeItem(STORAGE_PKP_ADDR)
+  if (clearPkpAddress) {
+    localStorage.removeItem(STORAGE_PKP_ADDR)
+    console.log('🗑️ 清除 PKP 地址')
+  } else {
+    console.log('💾 保留 PKP 地址（因為它不會過期）')
+  }
 }
 
 function extractPkpEthAddress(decodedJWT) {
-  return decodedJWT?.payload?.pkpInfo?.ethAddress ?? decodedJWT?.pkp?.ethAddress ?? null
+  // 參考 testScript 的邏輯：優先使用 payload.pkpInfo.ethAddress，回退到 pkp.ethAddress
+  const result = decodedJWT?.payload?.pkpInfo?.ethAddress ?? decodedJWT?.pkp?.ethAddress ?? null
+  
+  console.log('🔍 extractPkpEthAddress 調試:', {
+    decodedJWT: decodedJWT,
+    payload: decodedJWT?.payload,
+    pkpInfo: decodedJWT?.payload?.pkpInfo,
+    pkp: decodedJWT?.pkp,
+    pkpInfoEthAddress: decodedJWT?.payload?.pkpInfo?.ethAddress,
+    pkpEthAddress: decodedJWT?.pkp?.ethAddress,
+    result
+  })
+  
+  return result
 }
 
 export function getStoredPkpEthAddress() {
-  return localStorage.getItem(STORAGE_PKP_ADDR) || null
+  // 立即檢查 localStorage 狀態
+  const allKeys = Object.keys(localStorage)
+  const vincentKeys = allKeys.filter(key => key.includes('VINCENT'))
+  const pkpKeys = allKeys.filter(key => key.includes('PKP'))
+  
+  console.log('🔍 getStoredPkpEthAddress 立即檢查:', {
+    storageKey: STORAGE_PKP_ADDR,
+    localStorageSize: localStorage.length,
+    allKeys: allKeys,
+    vincentKeys: vincentKeys,
+    pkpKeys: pkpKeys
+  })
+  
+  // 嘗試讀取 PKP 地址
+  const pkp = localStorage.getItem(STORAGE_PKP_ADDR)
+  
+  console.log('🔍 getStoredPkpEthAddress 讀取結果:', {
+    storageKey: STORAGE_PKP_ADDR,
+    rawValue: pkp,
+    isNull: pkp === null,
+    isEmpty: pkp === '',
+    type: typeof pkp,
+    length: pkp ? pkp.length : 0
+  })
+  
+  // 檢查是否有其他可能的 PKP 地址存儲
+  for (const key of allKeys) {
+    if (key.toLowerCase().includes('pkp') || key.toLowerCase().includes('address')) {
+      const value = localStorage.getItem(key)
+      console.log(`🔍 發現可能的 PKP 相關鍵: ${key} = ${value}`)
+    }
+  }
+  
+  // 如果讀取失敗，嘗試從 JWT 重新提取
+  if (!pkp) {
+    console.log('⚠️ PKP 地址為空，嘗試從 JWT 重新提取...')
+    const extracted = extractAndSetPkpFromJWT()
+    if (extracted) {
+      console.log('✅ 從 JWT 重新提取 PKP 地址成功:', extracted)
+      return extracted
+    }
+  }
+  
+  return pkp || null
 }
 
+// 參考 testScript 的簡潔實現
 export async function bootstrapAuthFlow(vincentAppClient, audienceOverride) {
   const safeIsExpired = (jwtStr) => {
     try {
@@ -45,129 +107,59 @@ export async function bootstrapAuthFlow(vincentAppClient, audienceOverride) {
     }
   }
 
-  // 嘗試多種 audience 格式
-  const baseOrigin = audienceOverride || window.location.origin
-  const possibleAudiences = [
-    baseOrigin + '/',
-    baseOrigin,
-    baseOrigin + '/card-management',
-    baseOrigin + '/card-management/',
-    'http://localhost:5173',
-    'http://localhost:5173/',
-    'http://localhost:5173/card-management',
-    'http://localhost:5173/card-management/'
-  ]
-  
-  // 先嘗試最常見的格式
-  const audience = baseOrigin + '/'
+  // 參考 testScript 的邏輯：使用 audience + '/'
+  const audience = (audienceOverride || window.location.origin) + '/'
+  console.log('🔍 bootstrapAuthFlow 調試:', {
+    audienceOverride,
+    windowOrigin: window.location.origin,
+    finalAudience: audience,
+    uriContainsVincentJWT: vincentAppClient.uriContainsVincentJWT()
+  })
 
   if (vincentAppClient.uriContainsVincentJWT()) {
-    let jwtAudiences = []
-    
-    // 先嘗試從 URL 中提取 JWT 並手動解析，看看實際的 audience 是什麼
+    // 參考 testScript 的簡潔邏輯
+    let result
     try {
-      const url = new URL(window.location.href)
-      const jwtParam = url.searchParams.get('jwt')
-      if (jwtParam) {
-        // 手動解析 JWT payload（不驗證簽名）
-        const parts = jwtParam.split('.')
-        if (parts.length === 3) {
-          const payload = JSON.parse(atob(parts[1]))
-          
-          // 如果 audience 是數組，添加到可能的 audience 列表中
-          if (Array.isArray(payload.aud)) {
-            possibleAudiences.push(...payload.aud)
-            jwtAudiences = payload.aud
-          }
-        }
-      }
-    } catch (error) {
-      // 靜默處理錯誤
-    }
-    
-    let result = null
-    let successfulAudience = null
-    
-    // 將 JWT audience 放在測試列表的前面
-    const prioritizedAudiences = [...jwtAudiences, ...possibleAudiences.filter(aud => !jwtAudiences.includes(aud))]
-    
-    // 嘗試每種 audience 格式
-    for (const testAudience of prioritizedAudiences) {
-      try {
-        result = await vincentAppClient.decodeVincentJWTFromUri(testAudience)
-        if (result && (result.jwtStr || result.jwt || result.token)) {
-          successfulAudience = testAudience
-          break
-        }
-      } catch (error) {
-        // 如果是 appId mismatch 錯誤，嘗試使用字符串格式的 appId
-        if (error.message.includes('appId mismatch')) {
-          try {
-            const stringAppIdClient = createWebAuth(String(vincentAppClient.appId || appId))
-            result = await stringAppIdClient.decodeVincentJWTFromUri(testAudience)
-            if (result && (result.jwtStr || result.jwt || result.token)) {
-              successfulAudience = testAudience
-              break
-            }
-          } catch (retryError) {
-            // 靜默處理重試錯誤
-          }
-        }
-        continue
-      }
-    }
-    
-    // 如果所有 audience 都失敗了，嘗試直接使用 JWT 內容（跳過 SDK 驗證）
-    if (!result || (!result.jwtStr && !result.jwt && !result.token)) {
-      try {
-        const url = new URL(window.location.href)
-        const jwtParam = url.searchParams.get('jwt')
-        if (jwtParam) {
-          // 直接使用 JWT，不通過 SDK 驗證
-          const parts = jwtParam.split('.')
-          if (parts.length === 3) {
-            const payload = JSON.parse(atob(parts[1]))
-            
-            // 檢查 JWT 是否過期
-            const now = Math.floor(Date.now() / 1000)
-            if (payload.exp && payload.exp < now) {
-              throw new Error('JWT has expired')
-            }
-            
-            // 直接使用 JWT 內容
-            localStorage.setItem(STORAGE_JWT, jwtParam)
-            localStorage.setItem(STORAGE_DECODED, JSON.stringify(payload))
-            const pkp = extractPkpEthAddress(payload)
-            if (pkp) localStorage.setItem(STORAGE_PKP_ADDR, pkp)
-            
-            vincentAppClient.removeVincentJWTFromURI()
-            return { decodedJWT: payload, jwtStr: jwtParam }
-          }
-        }
-      } catch (directError) {
-        // 靜默處理直接提取錯誤
-      }
-      
-      throw new Error('Failed to decode JWT with any audience format')
+      result = await vincentAppClient.decodeVincentJWTFromUri(audience)
+      console.log('🔍 decodeVincentJWTFromUri 結果:', result)
+    } catch (e) {
+      console.warn('decodeVincentJWTFromUri 失敗:', e.message)
+      throw e
     }
     
     const jwtStr = result?.jwtStr ?? result?.jwt ?? result?.token ?? null
     const decodedJWT = result?.decodedJWT ?? result?.decoded ?? null
+    
+    console.log('🔍 JWT 解析結果:', { jwtStr: !!jwtStr, decodedJWT: !!decodedJWT })
+    
     if (jwtStr) localStorage.setItem(STORAGE_JWT, jwtStr)
     if (decodedJWT) {
       localStorage.setItem(STORAGE_DECODED, JSON.stringify(decodedJWT))
       const pkp = extractPkpEthAddress(decodedJWT)
-      if (pkp) localStorage.setItem(STORAGE_PKP_ADDR, pkp)
+      if (pkp) {
+        console.log('💾 存儲 PKP 地址到 localStorage (SDK 結果):', { pkp, key: STORAGE_PKP_ADDR })
+        localStorage.setItem(STORAGE_PKP_ADDR, pkp)
+      } else {
+        console.log('⚠️ 無法從 SDK 結果提取 PKP 地址，跳過存儲')
+      }
     }
+    
     vincentAppClient.removeVincentJWTFromURI()
     return { decodedJWT, jwtStr }
   } else {
+    // 參考 testScript 的邏輯：從 localStorage 讀取
     const storedJwt = localStorage.getItem(STORAGE_JWT)
     const expired = storedJwt ? safeIsExpired(storedJwt) : true
     if (!storedJwt || expired) {
-      clearStoredVincentAuth()
+      // 清除壞資料避免下次還是讀到錯誤狀態
+      // 但保留 PKP 地址，因為它不會過期
+      localStorage.removeItem(STORAGE_JWT)
+      localStorage.removeItem(STORAGE_DECODED)
+      // 不刪除 PKP 地址：localStorage.removeItem(STORAGE_PKP_ADDR)
+      console.log('⚠️ JWT 過期，清除 JWT 但保留 PKP 地址')
       return { needsRedirect: true }
     }
+    
     let decodedJWT = null
     try {
       const decoded = localStorage.getItem(STORAGE_DECODED)
@@ -175,14 +167,22 @@ export async function bootstrapAuthFlow(vincentAppClient, audienceOverride) {
     } catch (_) {
       decodedJWT = null
     }
+    
     // 確保 PKP 地址存在於儲存中
     try {
       const existing = localStorage.getItem(STORAGE_PKP_ADDR)
+      console.log('🔍 檢查現有 PKP 地址:', { existing, hasDecodedJWT: !!decodedJWT })
       if (!existing && decodedJWT) {
         const pkp = extractPkpEthAddress(decodedJWT)
-        if (pkp) localStorage.setItem(STORAGE_PKP_ADDR, pkp)
+        if (pkp) {
+          console.log('💾 補充存儲 PKP 地址到 localStorage:', { pkp, key: STORAGE_PKP_ADDR })
+          localStorage.setItem(STORAGE_PKP_ADDR, pkp)
+        } else {
+          console.log('⚠️ 無法從現有 JWT 提取 PKP 地址')
+        }
       }
     } catch {}
+    
     return { decodedJWT, jwtStr: storedJwt }
   }
 }
@@ -212,17 +212,126 @@ export async function ensureVincentAuth(appId, audienceOverride, options = {}) {
   try {
     if (state?.decodedJWT) {
       const pkp = extractPkpEthAddress(state.decodedJWT)
-      if (pkp) localStorage.setItem(STORAGE_PKP_ADDR, pkp)
+      if (pkp) {
+        console.log('💾 確保成功狀態時存儲 PKP 地址:', { pkp, key: STORAGE_PKP_ADDR })
+        localStorage.setItem(STORAGE_PKP_ADDR, pkp)
+      } else {
+        console.log('⚠️ 無法從成功狀態的 JWT 提取 PKP 地址')
+      }
     }
-  } catch {}
+  } catch (error) {
+    console.error('❌ 存儲 PKP 地址時發生錯誤:', error)
+  }
   return { redirected: false, client, ...state }
 }
 
 export function getPkpEthAddress(decodedJWT) {
   const d = decodedJWT || getStoredVincentAuth().decodedJWT
   const fromDecoded = extractPkpEthAddress(d)
+  const fromStorage = getStoredPkpEthAddress()
+  
+  console.log('🔍 getPkpEthAddress 調試:', {
+    hasDecodedJWT: !!decodedJWT,
+    hasStoredJWT: !!d,
+    fromDecoded,
+    fromStorage,
+    finalResult: fromDecoded || fromStorage
+  })
+  
   if (fromDecoded) return fromDecoded
-  return getStoredPkpEthAddress()
+  return fromStorage
 }
 
+// 手動設置 PKP 地址的函數
+export function setPkpEthAddress(pkpAddress) {
+  if (!pkpAddress) {
+    console.warn('⚠️ PKP 地址為空，無法設置')
+    return false
+  }
+  
+  try {
+    localStorage.setItem(STORAGE_PKP_ADDR, pkpAddress)
+    console.log('✅ 手動設置 PKP 地址成功:', { pkpAddress, key: STORAGE_PKP_ADDR })
+    return true
+  } catch (error) {
+    console.error('❌ 設置 PKP 地址失敗:', error)
+    return false
+  }
+}
 
+// 從 JWT 手動提取並設置 PKP 地址
+export function extractAndSetPkpFromJWT() {
+  try {
+    const decoded = localStorage.getItem(STORAGE_DECODED)
+    if (!decoded) {
+      console.warn('⚠️ 沒有找到 decoded JWT')
+      return null
+    }
+    
+    const parsed = JSON.parse(decoded)
+    const pkpAddress = extractPkpEthAddress(parsed)
+    
+    if (pkpAddress) {
+      setPkpEthAddress(pkpAddress)
+      console.log('✅ 從 JWT 提取並設置 PKP 地址成功:', pkpAddress)
+      return pkpAddress
+    } else {
+      console.warn('⚠️ 無法從 JWT 提取 PKP 地址')
+      return null
+    }
+  } catch (error) {
+    console.error('❌ 從 JWT 提取 PKP 地址時發生錯誤:', error)
+    return null
+  }
+}
+
+// 檢查 PKP 地址是否仍然有效
+export function validatePkpAddress() {
+  const storedPkp = localStorage.getItem(STORAGE_PKP_ADDR)
+  const jwt = localStorage.getItem(STORAGE_JWT)
+  const decoded = localStorage.getItem(STORAGE_DECODED)
+  
+  console.log('🔍 PKP 地址驗證:', {
+    hasStoredPkp: !!storedPkp,
+    hasJwt: !!jwt,
+    hasDecoded: !!decoded,
+    storedPkp: storedPkp
+  })
+  
+  // 如果沒有存儲的 PKP 地址，嘗試從 JWT 提取
+  if (!storedPkp && decoded) {
+    console.log('⚠️ 沒有存儲的 PKP 地址，嘗試從 JWT 提取...')
+    return extractAndSetPkpFromJWT()
+  }
+  
+  return storedPkp
+}
+
+// 調試函數：檢查所有 localStorage 中的 Vincent 相關數據
+export function debugVincentStorage() {
+  console.log('🔍 Vincent Storage 調試報告:')
+  console.log('所有 localStorage 鍵:', Object.keys(localStorage))
+  console.log('Vincent 相關鍵:', Object.keys(localStorage).filter(key => key.includes('VINCENT')))
+  console.log('PKP 地址鍵:', STORAGE_PKP_ADDR)
+  console.log('PKP 地址值:', localStorage.getItem(STORAGE_PKP_ADDR))
+  console.log('JWT 值:', localStorage.getItem(STORAGE_JWT))
+  console.log('Decoded JWT 值:', localStorage.getItem(STORAGE_DECODED))
+  
+  // 嘗試解析 decoded JWT
+  try {
+    const decoded = localStorage.getItem(STORAGE_DECODED)
+    if (decoded) {
+      const parsed = JSON.parse(decoded)
+      console.log('解析後的 JWT payload:', parsed)
+      console.log('從 JWT 提取的 PKP 地址:', extractPkpEthAddress(parsed))
+      
+      // 嘗試自動提取並設置 PKP 地址
+      const extractedPkp = extractAndSetPkpFromJWT()
+      if (extractedPkp) {
+        console.log('✅ 自動提取並設置 PKP 地址成功:', extractedPkp)
+      }
+    }
+  } catch (error) {
+    console.error('解析 JWT 時發生錯誤:', error)
+  }
+}

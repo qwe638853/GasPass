@@ -2,6 +2,7 @@
 import { ethers, formatUnits, parseUnits, parseEther, formatEther } from 'ethers'
 import { GAS_PASS_CONFIG } from '@/config/gasPassConfig.js'
 import relayerService from './relayerService.js'
+import { getStoredPkpEthAddress } from './vincentAuthService.js'
 
 // 自定義 splitSignature 函數 (ethers v6 中已移除)
 function splitSignature(signature) {
@@ -234,21 +235,41 @@ class ContractService {
   // Mint GasPass token (使用 Relayer)
   async mintGasPassCard(params) {
     try {
-      const { to, amount, agent } = params
+      const { to, amount } = params
       
       console.log('🚀 開始鑄造 GasPass 儲值卡...')
-      console.log('參數:', { to, amount, agent })
+      console.log('參數:', { to, amount })
       
       const usdcAmount = parseUnits(amount, 6) // USDC 有 6 位小數
       const deadline = Math.floor(Date.now() / 1000) + 3600
       
-      // 獲取用戶的實際 nonce
-      const nonce = await this.getUserNonce(to)
-      console.log('用戶 nonce:', nonce.toString())
+      // 檢查 signer 是否初始化
+      if (!this.signer) {
+        throw new Error('Signer not initialized. Please call init() first.')
+      }
       
-      // 創建 USDC permit 簽名
+      // 獲取當前簽名者地址
+      const signerAddress = await this.signer.getAddress()
+      console.log('🔍 當前簽名者地址:', signerAddress)
+      console.log('🔍 接收者地址:', to)
+      console.log('🔍 this.signer 對象:', this.signer)
+      console.log('🔍 this.signer.provider:', this.signer.provider)
+      
+      // 檢查 signerAddress 與 to 是否匹配
+      if (signerAddress.toLowerCase() !== to.toLowerCase()) {
+        console.warn('⚠️ 簽名者地址與接收者地址不匹配！')
+        console.warn('⚠️ 這可能導致簽名驗證失敗')
+      }
+      
+      // 獲取簽名者的實際 nonce
+      const nonce = await this.getUserNonce(signerAddress)
+      console.log('簽名者 nonce:', nonce.toString())
+      
+      // 創建 USDC permit 簽名（使用簽名者地址）
       console.log('📝 創建 USDC permit 簽名...')
-      const permitData = await this.createUSDCPermit(to, CONTRACT_CONFIG.address, amount, deadline)
+      const permitData = await this.createUSDCPermit(signerAddress, CONTRACT_CONFIG.address, amount, deadline)
+      console.log('🔍 permitData.owner:', permitData.owner)
+      console.log('🔍 permitData.owner 與 signerAddress 匹配:', permitData.owner.toLowerCase() === signerAddress.toLowerCase())
       
       // 創建 EIP-712 簽名數據
       const domain = {
@@ -258,26 +279,40 @@ class ContractService {
         verifyingContract: CONTRACT_CONFIG.address
       }
 
-      const types = {
-        MintWithSig: [
-          { name: 'to', type: 'address' },
-          { name: 'value', type: 'uint256' },
-          { name: 'permitData', type: 'StablecoinPermitData' },
-          { name: 'agent', type: 'address' },
-          { name: 'nonce', type: 'uint256' },
-          { name: 'deadline', type: 'uint256' }
-        ],
-        StablecoinPermitData: [
-          { name: 'owner', type: 'address' },
-          { name: 'spender', type: 'address' },
-          { name: 'value', type: 'uint256' },
-          { name: 'deadline', type: 'uint256' },
-          { name: 'v', type: 'uint8' },
-          { name: 'r', type: 'bytes32' },
-          { name: 's', type: 'bytes32' }
+      // 計算 permitHash（與合約邏輯一致）
+      const permitHash = ethers.keccak256(ethers.AbiCoder.defaultAbiCoder().encode(
+        ['bytes32', 'address', 'address', 'uint256', 'uint256', 'uint8', 'bytes32', 'bytes32'],
+        [
+          ethers.keccak256(ethers.toUtf8Bytes('StablecoinPermitData(address owner,address spender,uint256 value,uint256 deadline,uint8 v,bytes32 r,bytes32 s)')),
+          permitData.owner,
+          permitData.spender,
+          permitData.value,
+          permitData.deadline,
+          permitData.v,
+          permitData.r,
+          permitData.s
         ]
-      }
+      ))
 
+      const types = {
+        StablecoinPermitData: [
+          { name: "owner",    type: "address" },
+          { name: "spender",  type: "address" },
+          { name: "value",    type: "uint256" },
+          { name: "deadline", type: "uint256" },
+          { name: "v",        type: "uint8"   },
+          { name: "r",        type: "bytes32" },
+          { name: "s",        type: "bytes32" },
+        ],
+        MintWithSig: [
+          { name: "to",         type: "address" },
+          { name: "value",      type: "uint256" },
+          { name: "permitData", type: "StablecoinPermitData" }, // ← 關鍵
+          { name: "agent",      type: "address" },
+          { name: "nonce",      type: "uint256" },
+          { name: "deadline",   type: "uint256" },
+        ],
+      };
       const typedData = {
         to: to,
         value: usdcAmount.toString(),
@@ -290,14 +325,64 @@ class ContractService {
           r: permitData.r,
           s: permitData.s
         },
-        agent: agent || to,
+        agent: getStoredPkpEthAddress(),
         nonce: nonce.toString(),
         deadline: deadline.toString()
       }
 
       console.log('✍️ 簽署 EIP-712 數據...')
       console.log('🔍 typedData 內容:', JSON.stringify(typedData, null, 2))
-      const signature = await this.signer.signTypedData(domain, types, typedData, 'MintWithSig')
+      console.log('🔍 domain 內容:', JSON.stringify(domain, null, 2))
+      console.log('🔍 types 內容:', JSON.stringify(types, null, 2))
+      
+      // 手動計算 EIP-712 hash 來調試
+      let signature
+      try {
+        // 創建用於簽名的 typedData（使用 permitHash）
+        const signatureTypedData = {
+          to: to,
+          value: usdcAmount.toString(),
+          permitData: {
+            owner: permitData.owner,
+            spender: permitData.spender,
+            value: permitData.value.toString(),  // 轉換 BigInt 為字符串
+            deadline: permitData.deadline.toString(),
+            v: permitData.v,
+            r: permitData.r,
+            s: permitData.s,
+          },
+          agent: getStoredPkpEthAddress(),
+          nonce: nonce.toString(),
+          deadline: deadline.toString()
+        }
+        
+        console.log('🔍 簽名用的 typedData:', JSON.stringify(signatureTypedData, (key, value) => 
+          typeof value === 'bigint' ? value.toString() : value, 2))
+        console.log('🔍 permitHash:', permitHash)
+        console.log('🔍 agent:', getStoredPkpEthAddress())
+        console.log('🔍 nonce:', nonce.toString())
+        
+        const structHash = ethers.TypedDataEncoder.hashStruct('MintWithSig', types, signatureTypedData)
+        const domainSeparator = ethers.TypedDataEncoder.hashDomain(domain)
+        const digest = ethers.keccak256(ethers.concat(['0x1901', domainSeparator, structHash]))
+        console.log('🔍 手動計算的 EIP-712 digest:', digest)
+        
+        signature = await this.signer.signTypedData(domain, types, signatureTypedData)
+        console.log('🔍 簽名結果:', signature)
+        
+        // 驗證簽名者
+        const recoveredAddress = ethers.recoverAddress(digest, signature)
+        console.log('🔍 簽名者地址:', recoveredAddress)
+        console.log('🔍 期望的簽名者:', permitData.owner)
+        console.log('🔍 簽名者匹配:', recoveredAddress.toLowerCase() === permitData.owner.toLowerCase())
+        
+        if (recoveredAddress.toLowerCase() !== permitData.owner.toLowerCase()) {
+          throw new Error(`簽名者不匹配: 期望 ${permitData.owner}, 實際 ${recoveredAddress}`)
+        }
+      } catch (error) {
+        console.error('❌ EIP-712 計算錯誤:', error)
+        throw error
+      }
       
       console.log('📤 通過 Relayer 發送交易...')
       console.log('🔍 發送給後端的數據:', { typedData, signature })
@@ -347,22 +432,28 @@ class ContractService {
         verifyingContract: CONTRACT_CONFIG.address
       }
 
+      // 計算 permitHash（與合約邏輯一致）
+      const permitHash = ethers.keccak256(ethers.AbiCoder.defaultAbiCoder().encode(
+        ['bytes32', 'address', 'address', 'uint256', 'uint256', 'uint8', 'bytes32', 'bytes32'],
+        [
+          ethers.keccak256(ethers.toUtf8Bytes('StablecoinPermitData(address owner,address spender,uint256 value,uint256 deadline,uint8 v,bytes32 r,bytes32 s)')),
+          permitData.owner,
+          permitData.spender,
+          permitData.value,
+          permitData.deadline,
+          permitData.v,
+          permitData.r,
+          permitData.s
+        ]
+      ))
+
       const types = {
         DepositWithSig: [
           { name: 'tokenId', type: 'uint256' },
           { name: 'amount', type: 'uint256' },
-          { name: 'permitData', type: 'StablecoinPermitData' },
+          { name: 'permitData', type: 'bytes32' },  // 使用 bytes32 來表示 permitHash
           { name: 'nonce', type: 'uint256' },
           { name: 'deadline', type: 'uint256' }
-        ],
-        StablecoinPermitData: [
-          { name: 'owner', type: 'address' },
-          { name: 'spender', type: 'address' },
-          { name: 'value', type: 'uint256' },
-          { name: 'deadline', type: 'uint256' },
-          { name: 'v', type: 'uint8' },
-          { name: 'r', type: 'bytes32' },
-          { name: 's', type: 'bytes32' }
         ]
       }
 
@@ -383,7 +474,23 @@ class ContractService {
       }
 
       console.log('✍️ 簽署 EIP-712 數據...')
-      const signature = await this.signer.signTypedData(domain, types, typedData, 'DepositWithSig')
+      let signature
+      try {
+        // 創建用於簽名的 typedData（使用 permitHash）
+        const signatureTypedData = {
+          tokenId: tokenId.toString(),
+          amount: usdcAmount.toString(),
+          permitData: permitHash,  // 簽名時使用 permitHash
+          nonce: nonce.toString(),
+          deadline: deadline.toString()
+        }
+        
+        signature = await this.signer.signTypedData(domain, types, signatureTypedData)
+        console.log('🔍 簽名結果:', signature)
+      } catch (error) {
+        console.error('❌ EIP-712 計算錯誤:', error)
+        throw error
+      }
       
       console.log('📤 通過 Relayer 發送交易...')
       const result = await relayerService.relayDeposit(typedData, signature)
@@ -406,14 +513,13 @@ class ContractService {
   // 設置 refuel policy
   async setRefuelPolicy(params) {
     try {
-      const { tokenId, targetChainId, gasAmount, threshold, agent } = params
+      const { tokenId, targetChainId, gasAmount, threshold } = params
       
       const tx = await this.gasPassContract.setRefuelPolicy(
         tokenId,
         targetChainId,
         parseUnits(gasAmount, 6), // gasAmount in USDC
         parseEther(threshold), // threshold in ETH
-        agent
       )
       
       const receipt = await tx.wait()
@@ -446,7 +552,7 @@ class ContractService {
             chainId: chainId,
             gasAmount: formatUnits(policy.gasAmount, 6),
             threshold: formatEther(policy.threshold),
-            agent: policy.agent,
+            agent: getStoredPkpEthAddress(),
             lastRefueled: policy.lastRefueled.toString()
           })
         }
