@@ -133,6 +133,8 @@
 <script setup>
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import { gasPassService } from '../services/gasPassService.js'
+import { contractService } from '../services/contractService.js'
+import { useWeb3 } from '../composables/useWeb3.js'
 
 // Props
 const props = defineProps({
@@ -148,6 +150,9 @@ const props = defineProps({
 
 // Emits
 const emit = defineEmits(['success', 'error'])
+
+// Web3 composable
+const { account, provider, signer } = useWeb3()
 
 // Data
 const amount = ref('')
@@ -234,19 +239,26 @@ const startBlinking = () => {
 }
 
 const handleSubmit = async () => {
+  if (!account.value || !provider.value || !signer.value) {
+    emit('error', '請先連接錢包')
+    return
+  }
+
   isLoading.value = true
   showSparkles.value = true
   
   try {
+    // 初始化合約服務
+    await contractService.init(provider.value, signer.value)
+    
     let result
     
     if (props.isFirstTime) {
       // 鑄造新儲值卡
-      result = await gasPassService.mintGasPassCard({
-        to: '0x742d35Cc6635C0532925a3b8D400A296', // 模擬地址
+      result = await contractService.mintGasPassCard({
+        to: account.value,
         amount: amount.value,
-        permitData: {},
-        deadline: Date.now() + 3600000 // 1小時後過期
+        agent: account.value // 暫時使用用戶地址作為 agent
       })
       
       if (result.success) {
@@ -254,11 +266,9 @@ const handleSubmit = async () => {
       }
     } else {
       // 為現有卡片儲值
-      result = await gasPassService.depositToCard({
+      result = await contractService.depositToCard({
         tokenId: props.existingCard.tokenId,
-        amount: amount.value,
-        permitData: {},
-        deadline: Date.now() + 3600000
+        amount: amount.value
       })
       
       if (result.success) {

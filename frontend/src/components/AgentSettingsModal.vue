@@ -1,427 +1,367 @@
 <template>
   <div class="modal-overlay" @click="$emit('close')">
-    <div class="modal-content" @click.stop>
+    <div class="modal-container" @click.stop>
       <div class="modal-header">
-        <h2 class="modal-title">🤖 AI Agent 智能補充設定</h2>
-        <button @click="$emit('close')" class="close-btn">
+        <h3 class="modal-title">🤖 AI Agent 設定</h3>
+        <button @click="$emit('close')" class="modal-close">
           <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
           </svg>
         </button>
       </div>
-
-      <div class="modal-body">
-        <!-- Agent Status Overview -->
-        <div class="section">
-          <div class="agent-status-card">
-            <div class="status-header">
-              <div class="agent-avatar">🤖</div>
-              <div class="agent-info">
-                <h3 class="agent-name">GasPass AI Agent</h3>
-                <p class="agent-description">為您智能管理多鏈 Gas 餘額</p>
-              </div>
-              <div class="agent-toggle">
-                <label class="toggle-switch">
-                  <input 
-                    v-model="agentEnabled" 
-                    type="checkbox" 
-                    @change="toggleAgent"
-                  />
-                  <span class="toggle-slider"></span>
-                </label>
+      
+      <div class="modal-content">
+        <form @submit.prevent="handleSubmit" class="space-y-6">
+          <!-- Agent Status -->
+          <div class="status-section">
+            <div class="flex items-center justify-between mb-4">
+              <h4 class="text-lg font-semibold text-gray-900">Agent 狀態</h4>
+              <div class="status-indicator" :class="agentStatus.isActive ? 'active' : 'inactive'">
+                {{ agentStatus.isActive ? '運行中' : '已停止' }}
               </div>
             </div>
             
-            <div v-if="agentEnabled" class="status-stats">
+            <div class="grid grid-cols-2 gap-4 text-sm">
               <div class="stat-item">
-                <span class="stat-value">{{ activePolicies.length }}</span>
-                <span class="stat-label">活躍策略</span>
+                <span class="stat-label">監控錢包:</span>
+                <span class="stat-value">{{ agentStatus.monitoringWallets }}</span>
               </div>
               <div class="stat-item">
-                <span class="stat-value">{{ totalExecutions }}</span>
-                <span class="stat-label">執行次數</span>
+                <span class="stat-label">監控鏈:</span>
+                <span class="stat-value">{{ agentStatus.monitoringChains }}</span>
               </div>
               <div class="stat-item">
-                <span class="stat-value">${{ totalSaved }}</span>
-                <span class="stat-label">節省費用</span>
+                <span class="stat-label">今日執行:</span>
+                <span class="stat-value">{{ agentStatus.todayExecutions }} 次</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-label">成功率:</span>
+                <span class="stat-value">{{ agentStatus.successRate }}%</span>
               </div>
             </div>
           </div>
-        </div>
 
-        <!-- Existing Policies -->
-        <div v-if="agentEnabled" class="section">
-          <div class="section-header">
-            <h3 class="section-title">現有監控策略</h3>
-            <button @click="showAddPolicy = true" class="add-policy-btn">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-              </svg>
-              新增策略
-            </button>
+          <!-- Agent Control -->
+          <div class="control-section">
+            <h4 class="text-lg font-semibold text-gray-900 mb-4">Agent 控制</h4>
+            
+            <div class="flex items-center justify-between">
+              <div>
+                <h5 class="font-medium text-gray-900">啟用 AI Agent</h5>
+                <p class="text-sm text-gray-600">讓 AI 自動監控和管理您的 Gas 費用</p>
+              </div>
+              <label class="toggle-switch">
+                <input v-model="agentEnabled" type="checkbox" />
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
           </div>
 
-          <div v-if="policies.length === 0" class="empty-state">
-            <div class="empty-icon">📝</div>
-            <p class="empty-title">尚未設定任何監控策略</p>
-            <p class="empty-description">點擊上方按鈕創建您的第一個智能補充策略</p>
-          </div>
+          <!-- Monitoring Settings -->
+          <div v-if="agentEnabled" class="monitoring-section">
+            <h4 class="text-lg font-semibold text-gray-900 mb-4">監控設定</h4>
+            
+            <div class="space-y-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">監控頻率</label>
+                <select v-model="monitoringFrequency" class="select-input">
+                  <option value="5">每 5 分鐘</option>
+                  <option value="15">每 15 分鐘</option>
+                  <option value="30">每 30 分鐘</option>
+                  <option value="60">每小時</option>
+                </select>
+              </div>
 
-          <div v-else class="policies-grid">
-            <div 
-              v-for="policy in policies" 
-              :key="policy.id"
-              class="policy-card"
-              :class="{ 'active': policy.status === 'active', 'inactive': policy.status === 'inactive' }"
-            >
-              <div class="policy-header">
-                <div class="chain-info">
-                  <span class="chain-icon">{{ getChainIcon(policy.chainId) }}</span>
-                  <div>
-                    <div class="chain-name">{{ policy.chainName }}</div>
-                    <div class="chain-symbol">{{ policy.symbol }}</div>
-                  </div>
-                </div>
-                <div class="policy-status">
-                  <label class="status-toggle">
-                    <input 
-                      v-model="policy.status" 
-                      type="checkbox" 
-                      :value="'active'"
-                      :true-value="'active'"
-                      :false-value="'inactive'"
-                      @change="updatePolicyStatus(policy)"
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-3">監控的區塊鏈</label>
+                <div class="grid grid-cols-2 gap-3">
+                  <label
+                    v-for="chain in supportedChains"
+                    :key="chain.id"
+                    class="chain-checkbox"
+                  >
+                    <input
+                      v-model="monitoringChains"
+                      :value="chain.id"
+                      type="checkbox"
+                      class="checkbox-input"
                     />
-                    <span class="status-slider"></span>
+                    <div class="checkbox-content">
+                      <img v-if="chain.logo" :src="chain.logo" :alt="chain.name" class="w-5 h-5" />
+                      <span v-else class="text-lg">{{ chain.icon }}</span>
+                      <span class="chain-name">{{ chain.name }}</span>
+                    </div>
                   </label>
                 </div>
               </div>
-
-              <div class="policy-details">
-                <div class="detail-row">
-                  <span class="detail-label">觸發閾值:</span>
-                  <span class="detail-value">< {{ policy.threshold }} {{ policy.symbol }}</span>
-                </div>
-                <div class="detail-row">
-                  <span class="detail-label">補充數量:</span>
-                  <span class="detail-value">{{ policy.gasAmount }} {{ policy.symbol }}</span>
-                </div>
-                <div class="detail-row">
-                  <span class="detail-label">最後執行:</span>
-                  <span class="detail-value">{{ policy.lastTriggered || '未執行' }}</span>
-                </div>
-                <div class="detail-row">
-                  <span class="detail-label">執行次數:</span>
-                  <span class="detail-value">{{ policy.executeCount }} 次</span>
-                </div>
-              </div>
-
-              <div class="policy-actions">
-                <button @click="editPolicy(policy)" class="action-btn edit">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-                  </svg>
-                  編輯
-                </button>
-                <button @click="deletePolicy(policy)" class="action-btn delete">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                  </svg>
-                  刪除
-                </button>
-              </div>
             </div>
           </div>
-        </div>
 
-        <!-- Global Settings -->
-        <div v-if="agentEnabled" class="section">
-          <h3 class="section-title">全域設定</h3>
-          <div class="settings-grid">
-            <div class="setting-item">
-              <label class="setting-label">每日最大支出限制</label>
-              <div class="setting-input-wrapper">
-                <input 
-                  v-model="globalSettings.maxDailySpend"
-                  type="number" 
-                  step="10"
-                  min="0"
-                  class="setting-input"
-                />
-                <span class="setting-unit">USDC</span>
-              </div>
-            </div>
+          <!-- Strategy Settings -->
+          <div v-if="agentEnabled" class="strategy-section">
+            <h4 class="text-lg font-semibold text-gray-900 mb-4">策略設定</h4>
             
-            <div class="setting-item">
-              <label class="setting-label">檢查頻率</label>
-              <select v-model="globalSettings.checkInterval" class="setting-select">
-                <option value="5">每 5 分鐘</option>
-                <option value="15">每 15 分鐘</option>
-                <option value="30">每 30 分鐘</option>
-                <option value="60">每小時</option>
-              </select>
-            </div>
+            <div class="space-y-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">預設補充策略</label>
+                <select v-model="defaultStrategy" class="select-input">
+                  <option value="conservative">保守型 (低頻率，小額補充)</option>
+                  <option value="balanced">平衡型 (中等頻率，適中補充)</option>
+                  <option value="aggressive">積極型 (高頻率，大額補充)</option>
+                  <option value="custom">自定義</option>
+                </select>
+              </div>
 
-            <div class="setting-item">
-              <label class="setting-label">通知設定</label>
-              <div class="notification-toggles">
-                <label class="notification-item">
-                  <input 
-                    v-model="globalSettings.notifications.execution" 
-                    type="checkbox"
-                  />
-                  <span>執行通知</span>
-                </label>
-                <label class="notification-item">
-                  <input 
-                    v-model="globalSettings.notifications.errors" 
-                    type="checkbox"
-                  />
-                  <span>錯誤通知</span>
-                </label>
-                <label class="notification-item">
-                  <input 
-                    v-model="globalSettings.notifications.lowBalance" 
-                    type="checkbox"
-                  />
-                  <span>餘額不足警告</span>
-                </label>
+              <div v-if="defaultStrategy === 'custom'" class="custom-strategy">
+                <div class="grid grid-cols-2 gap-4">
+                  <div>
+                    <label class="block text-sm text-gray-600 mb-1">最低餘額閾值</label>
+                    <input
+                      v-model="customThresholds.minBalance"
+                      type="number"
+                      step="0.001"
+                      min="0"
+                      placeholder="0.01"
+                      class="threshold-input"
+                    />
+                  </div>
+                  <div>
+                    <label class="block text-sm text-gray-600 mb-1">補充數量</label>
+                    <input
+                      v-model="customThresholds.refuelAmount"
+                      type="number"
+                      step="0.001"
+                      min="0"
+                      placeholder="0.05"
+                      class="threshold-input"
+                    />
+                  </div>
+                </div>
               </div>
             </div>
           </div>
-        </div>
 
-        <!-- Save Button -->
-        <div v-if="agentEnabled" class="section">
-          <button @click="saveSettings" class="save-btn" :disabled="isLoading">
-            <span v-if="isLoading" class="loading-content">
+          <!-- Notification Settings -->
+          <div v-if="agentEnabled" class="notification-section">
+            <h4 class="text-lg font-semibold text-gray-900 mb-4">通知設定</h4>
+            
+            <div class="space-y-3">
+              <label class="flex items-center gap-3">
+                <input
+                  v-model="notifications.email"
+                  type="checkbox"
+                  class="checkbox-input"
+                />
+                <span class="text-sm text-gray-700">郵件通知</span>
+              </label>
+              
+              <label class="flex items-center gap-3">
+                <input
+                  v-model="notifications.browser"
+                  type="checkbox"
+                  class="checkbox-input"
+                />
+                <span class="text-sm text-gray-700">瀏覽器通知</span>
+              </label>
+              
+              <label class="flex items-center gap-3">
+                <input
+                  v-model="notifications.telegram"
+                  type="checkbox"
+                  class="checkbox-input"
+                />
+                <span class="text-sm text-gray-700">Telegram 通知</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Advanced Settings -->
+          <div v-if="agentEnabled" class="advanced-section">
+            <h4 class="text-lg font-semibold text-gray-900 mb-4">進階設定</h4>
+            
+            <div class="space-y-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">最大每日執行次數</label>
+                <input
+                  v-model="maxDailyExecutions"
+                  type="number"
+                  min="1"
+                  max="100"
+                  class="threshold-input"
+                />
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Gas 價格策略</label>
+                <select v-model="gasStrategy" class="select-input">
+                  <option value="fast">快速 (高 Gas 費)</option>
+                  <option value="standard">標準 (中等 Gas 費)</option>
+                  <option value="slow">慢速 (低 Gas 費)</option>
+                </select>
+              </div>
+
+              <div class="flex items-center gap-2">
+                <input
+                  v-model="enableEmergencyMode"
+                  type="checkbox"
+                  class="checkbox-input"
+                />
+                <label class="text-sm text-gray-700">啟用緊急模式 (忽略費用限制)</label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Submit Button -->
+          <button
+            type="submit"
+            class="submit-btn"
+            :disabled="!canSubmit || isLoading"
+          >
+            <span v-if="isLoading" class="flex items-center justify-center gap-2">
               <div class="loading-spinner"></div>
-              儲存中...
+              設定中...
             </span>
-            <span v-else>
-              💾 儲存設定
-            </span>
+            <span v-else>儲存設定</span>
           </button>
-        </div>
+        </form>
       </div>
     </div>
-
-    <!-- Add/Edit Policy Modal -->
-    <PolicyFormModal 
-      v-if="showAddPolicy || editingPolicy"
-      :policy="editingPolicy"
-      :supported-chains="supportedChains"
-      @close="closeAddPolicy"
-      @success="handlePolicySuccess"
-    />
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
-import { gasPassService } from '../services/gasPassService.js'
-import { supportedChains } from '../utils/mockData.js'
-import PolicyFormModal from './PolicyFormModal.vue'
-
-const props = defineProps({
-  selectedCard: {
-    type: Object,
-    required: true
-  }
-})
+import { ref, computed } from 'vue'
 
 const emit = defineEmits(['close', 'success'])
 
 // Data
-const agentEnabled = ref(false)
-const policies = ref([])
+const agentEnabled = ref(true)
+const monitoringFrequency = ref(15)
+const monitoringChains = ref([1, 42161])
+const defaultStrategy = ref('balanced')
+const customThresholds = ref({
+  minBalance: 0.01,
+  refuelAmount: 0.05
+})
+const notifications = ref({
+  email: true,
+  browser: true,
+  telegram: false
+})
+const maxDailyExecutions = ref(20)
+const gasStrategy = ref('standard')
+const enableEmergencyMode = ref(false)
 const isLoading = ref(false)
-const showAddPolicy = ref(false)
-const editingPolicy = ref(null)
 
-const globalSettings = ref({
-  maxDailySpend: '100',
-  checkInterval: '15',
-  notifications: {
-    execution: true,
-    errors: true,
-    lowBalance: true
-  }
+const supportedChains = [
+  { id: 1, name: 'Ethereum', symbol: 'ETH', icon: 'Ξ', logo: null },
+  { id: 137, name: 'Polygon', symbol: 'MATIC', icon: '⬟', logo: null },
+  { id: 56, name: 'BSC', symbol: 'BNB', icon: '🔶', logo: null },
+  { id: 42161, name: 'Arbitrum', symbol: 'ETH', icon: '🔵', logo: null }
+]
+
+const agentStatus = ref({
+  isActive: true,
+  monitoringWallets: 1,
+  monitoringChains: 2,
+  todayExecutions: 5,
+  successRate: 95
 })
 
 // Computed
-const activePolicies = computed(() => {
-  return policies.value.filter(p => p.status === 'active')
-})
-
-const totalExecutions = computed(() => {
-  return policies.value.reduce((total, policy) => total + policy.executeCount, 0)
-})
-
-const totalSaved = computed(() => {
-  return (totalExecutions.value * 2.5).toFixed(1)
+const canSubmit = computed(() => {
+  if (!agentEnabled.value) return true
+  return monitoringChains.value.length > 0
 })
 
 // Methods
-const loadAgentSettings = async () => {
-  try {
-    const settings = await gasPassService.getAgentSettings(props.selectedCard.tokenId)
-    agentEnabled.value = settings.enabled
-    policies.value = settings.policies || []
-    
-    if (settings.globalSettings) {
-      globalSettings.value = { ...globalSettings.value, ...settings.globalSettings }
-    }
-  } catch (error) {
-    console.error('Failed to load agent settings:', error)
-  }
-}
-
-const toggleAgent = async () => {
-  try {
-    await gasPassService.toggleAgent(props.selectedCard.tokenId, agentEnabled.value)
-    if (!agentEnabled.value) {
-      policies.value = []
-    }
-  } catch (error) {
-    console.error('Failed to toggle agent:', error)
-    agentEnabled.value = !agentEnabled.value // 回復狀態
-  }
-}
-
-const updatePolicyStatus = async (policy) => {
-  try {
-    await gasPassService.updatePolicyStatus(policy.id, policy.status)
-  } catch (error) {
-    console.error('Failed to update policy status:', error)
-  }
-}
-
-const editPolicy = (policy) => {
-  editingPolicy.value = { ...policy }
-  showAddPolicy.value = true
-}
-
-const deletePolicy = async (policy) => {
-  if (confirm(`確定要刪除 ${policy.chainName} 的監控策略嗎？`)) {
-    try {
-      await gasPassService.deletePolicy(policy.id)
-      policies.value = policies.value.filter(p => p.id !== policy.id)
-    } catch (error) {
-      console.error('Failed to delete policy:', error)
-    }
-  }
-}
-
-const closeAddPolicy = () => {
-  showAddPolicy.value = false
-  editingPolicy.value = null
-}
-
-const handlePolicySuccess = (policyData) => {
-  if (editingPolicy.value) {
-    const index = policies.value.findIndex(p => p.id === editingPolicy.value.id)
-    if (index !== -1) {
-      policies.value[index] = policyData
-    }
-  } else {
-    policies.value.push(policyData)
-  }
-  closeAddPolicy()
-}
-
-const getChainIcon = (chainId) => {
-  const chain = supportedChains.find(c => c.id === chainId)
-  return chain ? chain.icon : '🔗'
-}
-
-const saveSettings = async () => {
+const handleSubmit = async () => {
+  if (!canSubmit.value) return
+  
   isLoading.value = true
+  
   try {
-    await gasPassService.saveAgentSettings(props.selectedCard.tokenId, {
-      enabled: agentEnabled.value,
-      policies: policies.value,
-      globalSettings: globalSettings.value
-    })
+    // Mock API call
+    await new Promise(resolve => setTimeout(resolve, 2000))
     
-    emit('success')
+    const config = {
+      enabled: agentEnabled.value,
+      monitoringFrequency: monitoringFrequency.value,
+      monitoringChains: monitoringChains.value,
+      defaultStrategy: defaultStrategy.value,
+      customThresholds: customThresholds.value,
+      notifications: notifications.value,
+      maxDailyExecutions: maxDailyExecutions.value,
+      gasStrategy: gasStrategy.value,
+      enableEmergencyMode: enableEmergencyMode.value
+    }
+    
+    emit('success', config)
+    emit('close')
   } catch (error) {
-    console.error('Failed to save settings:', error)
-    alert('儲存設定失敗：' + error.message)
+    console.error('Agent settings failed:', error)
+    alert('設定失敗，請稍後再試')
   } finally {
     isLoading.value = false
   }
 }
-
-// Lifecycle
-onMounted(() => {
-  loadAgentSettings()
-})
 </script>
 
 <style scoped>
 .modal-overlay {
-  @apply fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4;
+  @apply fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 backdrop-blur-sm;
 }
 
-.modal-content {
-  @apply bg-white rounded-xl shadow-xl max-w-5xl w-full max-h-90vh overflow-y-auto;
+.modal-container {
+  @apply bg-white rounded-2xl shadow-2xl max-w-3xl w-full mx-4 max-h-[90vh] overflow-hidden;
 }
 
 .modal-header {
-  @apply flex items-center justify-between p-6 border-b border-gaspass-gray-200;
+  @apply flex items-center justify-between p-6 border-b border-gray-200;
 }
 
 .modal-title {
-  @apply text-2xl font-bold text-gaspass-gray-800;
+  @apply text-xl font-bold text-gray-900;
 }
 
-.close-btn {
-  @apply text-gaspass-gray-400 hover:text-gaspass-gray-600 transition-colors;
+.modal-close {
+  @apply p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-all duration-300;
 }
 
-.modal-body {
-  @apply p-6 space-y-8;
+.modal-content {
+  @apply p-6 max-h-[70vh] overflow-y-auto;
 }
 
-.section {
-  @apply space-y-4;
+.status-section {
+  @apply p-4 bg-gray-50 rounded-xl border border-gray-200;
 }
 
-.section-header {
-  @apply flex items-center justify-between;
+.status-indicator {
+  @apply px-3 py-1 rounded-full text-sm font-medium;
 }
 
-.section-title {
-  @apply text-lg font-semibold text-gaspass-gray-800;
+.status-indicator.active {
+  @apply bg-green-100 text-green-800;
 }
 
-.agent-status-card {
-  @apply bg-gradient-to-r from-gaspass-gray-50 to-gaspass-gray-100 rounded-xl p-6 border border-gaspass-gray-200;
+.status-indicator.inactive {
+  @apply bg-red-100 text-red-800;
 }
 
-.status-header {
-  @apply flex items-center gap-4 mb-4;
+.stat-item {
+  @apply flex justify-between;
 }
 
-.agent-avatar {
-  @apply text-4xl;
+.stat-label {
+  @apply text-gray-600;
 }
 
-.agent-info {
-  @apply flex-1;
+.stat-value {
+  @apply font-semibold text-gray-900;
 }
 
-.agent-name {
-  @apply text-xl font-bold text-gaspass-gray-800;
-}
-
-.agent-description {
-  @apply text-gaspass-gray-600;
-}
-
-.agent-toggle {
-  @apply flex-shrink-0;
+.control-section {
+  @apply p-4 bg-blue-50 rounded-xl border border-blue-200;
 }
 
 .toggle-switch {
@@ -433,7 +373,7 @@ onMounted(() => {
 }
 
 .toggle-slider {
-  @apply absolute cursor-pointer top-0 left-0 right-0 bottom-0 bg-gaspass-gray-300 rounded-full transition-all duration-300;
+  @apply absolute cursor-pointer inset-0 bg-gray-300 rounded-full transition-all duration-300;
 }
 
 .toggle-slider:before {
@@ -441,194 +381,53 @@ onMounted(() => {
 }
 
 input:checked + .toggle-slider {
-  @apply bg-gaspass-yellow-400;
+  @apply bg-amber-500;
 }
 
 input:checked + .toggle-slider:before {
   @apply transform translate-x-6;
 }
 
-.status-stats {
-  @apply grid grid-cols-3 gap-4;
+.monitoring-section,
+.strategy-section,
+.notification-section,
+.advanced-section {
+  @apply p-4 bg-white rounded-xl border border-gray-200;
 }
 
-.stat-item {
-  @apply text-center;
+.chain-checkbox {
+  @apply flex items-center p-3 border-2 border-gray-200 rounded-xl hover:border-amber-400 transition-all duration-300 cursor-pointer;
 }
 
-.stat-value {
-  @apply block text-2xl font-bold text-gaspass-gray-800;
+.checkbox-input {
+  @apply mr-3 w-4 h-4 text-amber-600 border-gray-300 rounded focus:ring-amber-500;
 }
 
-.stat-label {
-  @apply text-sm text-gaspass-gray-600;
-}
-
-.add-policy-btn {
-  @apply flex items-center gap-2 bg-gaspass-yellow-400 hover:bg-gaspass-yellow-500 text-gaspass-gray-800 font-semibold px-4 py-2 rounded-lg transition-colors;
-}
-
-.empty-state {
-  @apply text-center py-12;
-}
-
-.empty-icon {
-  @apply text-6xl mb-4;
-}
-
-.empty-title {
-  @apply text-xl font-semibold text-gaspass-gray-800 mb-2;
-}
-
-.empty-description {
-  @apply text-gaspass-gray-600;
-}
-
-.policies-grid {
-  @apply grid grid-cols-1 md:grid-cols-2 gap-4;
-}
-
-.policy-card {
-  @apply bg-white border-2 rounded-xl p-4 transition-all;
-}
-
-.policy-card.active {
-  @apply border-gaspass-yellow-400 bg-gaspass-yellow-50;
-}
-
-.policy-card.inactive {
-  @apply border-gaspass-gray-200 bg-gaspass-gray-50;
-}
-
-.policy-header {
-  @apply flex items-center justify-between mb-4;
-}
-
-.chain-info {
-  @apply flex items-center gap-3;
-}
-
-.chain-icon {
-  @apply text-2xl;
+.checkbox-content {
+  @apply flex items-center gap-2;
 }
 
 .chain-name {
-  @apply font-semibold text-gaspass-gray-800;
+  @apply text-sm font-medium text-gray-700;
 }
 
-.chain-symbol {
-  @apply text-sm text-gaspass-gray-600;
+.select-input {
+  @apply w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20 focus:outline-none transition-all duration-300;
 }
 
-.policy-status {
-  @apply flex-shrink-0;
+.threshold-input {
+  @apply w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20 focus:outline-none transition-all duration-300;
 }
 
-.status-toggle {
-  @apply relative inline-block w-10 h-5;
+.custom-strategy {
+  @apply mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200;
 }
 
-.status-toggle input {
-  @apply opacity-0 w-0 h-0;
-}
-
-.status-slider {
-  @apply absolute cursor-pointer top-0 left-0 right-0 bottom-0 bg-gaspass-gray-300 rounded-full transition-all duration-300;
-}
-
-.status-slider:before {
-  @apply absolute content-[''] h-4 w-4 left-0.5 bottom-0.5 bg-white rounded-full transition-all duration-300;
-}
-
-input:checked + .status-slider {
-  @apply bg-gaspass-yellow-400;
-}
-
-input:checked + .status-slider:before {
-  @apply transform translate-x-5;
-}
-
-.policy-details {
-  @apply space-y-2 mb-4;
-}
-
-.detail-row {
-  @apply flex justify-between text-sm;
-}
-
-.detail-label {
-  @apply text-gaspass-gray-600;
-}
-
-.detail-value {
-  @apply font-medium text-gaspass-gray-800;
-}
-
-.policy-actions {
-  @apply flex gap-2;
-}
-
-.action-btn {
-  @apply flex items-center gap-1 px-3 py-1 rounded-lg text-sm font-medium transition-colors;
-}
-
-.action-btn.edit {
-  @apply bg-blue-100 text-blue-700 hover:bg-blue-200;
-}
-
-.action-btn.delete {
-  @apply bg-red-100 text-red-700 hover:bg-red-200;
-}
-
-.settings-grid {
-  @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6;
-}
-
-.setting-item {
-  @apply space-y-2;
-}
-
-.setting-label {
-  @apply block text-sm font-medium text-gaspass-gray-700;
-}
-
-.setting-input-wrapper {
-  @apply relative;
-}
-
-.setting-input {
-  @apply w-full px-3 py-2 pr-16 border-2 border-gaspass-gray-200 rounded-lg focus:border-gaspass-yellow-400 focus:outline-none transition-colors;
-}
-
-.setting-unit {
-  @apply absolute right-3 top-1/2 transform -translate-y-1/2 text-sm font-medium text-gaspass-gray-600;
-}
-
-.setting-select {
-  @apply w-full px-3 py-2 border-2 border-gaspass-gray-200 rounded-lg focus:border-gaspass-yellow-400 focus:outline-none transition-colors bg-white;
-}
-
-.notification-toggles {
-  @apply space-y-2;
-}
-
-.notification-item {
-  @apply flex items-center gap-2 text-sm;
-}
-
-.notification-item input {
-  @apply w-4 h-4 text-gaspass-yellow-400 border-gaspass-gray-300 rounded focus:ring-gaspass-yellow-400;
-}
-
-.save-btn {
-  @apply w-full bg-gaspass-yellow-400 hover:bg-gaspass-yellow-500 disabled:bg-gaspass-gray-300 disabled:cursor-not-allowed text-gaspass-gray-800 font-semibold py-4 px-6 rounded-lg transition-all;
-}
-
-.loading-content {
-  @apply flex items-center justify-center gap-2;
+.submit-btn {
+  @apply w-full bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-bold py-3 px-6 rounded-xl transition-all duration-300 transform hover:scale-105 disabled:transform-none;
 }
 
 .loading-spinner {
-  @apply w-5 h-5 border-2 border-gaspass-gray-600 border-t-transparent rounded-full animate-spin;
+  @apply w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin;
 }
 </style>

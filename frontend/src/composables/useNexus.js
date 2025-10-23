@@ -252,6 +252,7 @@ export async function fetchUnifiedUSDC() {
 
     nexusState.usdcAsset = usdcAsset // 保存原始物件
     nexusState.usdcBalances = normalizeUSDC(usdcAsset)
+    nexusState.selectedToken = 'USDC' // 設置選中的代幣
     console.log('Normalized USDC balances:', JSON.parse(JSON.stringify(nexusState.usdcBalances)))
 
     return nexusState.usdcBalances
@@ -297,7 +298,8 @@ export const getUSDCBalances = computed(() => {
 
 // 提供 UI 使用：目前選擇代幣的餘額列表
 export const getSelectedTokenBalances = computed(() => {
-  const src = nexusState.currentBalances || nexusState.usdcBalances
+  // 根據選中的代幣類型選擇正確的數據源
+  const src = nexusState.selectedToken === 'USDC' ? nexusState.usdcBalances : nexusState.currentBalances
   if (!src) return []
   return Object.entries(src).map(([chainId, data]) => ({
     chainId: parseInt(chainId),
@@ -328,12 +330,13 @@ export const getTotalUSDCBalance = computed(() => {
 
 // 目前選擇代幣的總餘額
 export const getSelectedTokenTotal = computed(() => {
-  // 若已載入 currentAsset，優先用它
-  if (nexusState.currentAsset?.balance) {
+  // 根據選中的代幣類型選擇正確的數據源
+  if (nexusState.selectedToken === 'USDC') {
+    return getTotalUSDCBalance.value
+  } else if (nexusState.currentAsset?.balance) {
     return parseFloat(nexusState.currentAsset.balance).toFixed(2)
   }
-  // 回退到 USDC 的總額（初始化時）
-  return getTotalUSDCBalance.value
+  return '0.00'
 })
 
 // 探索 Nexus 的能力和支援的鏈 (使用官方 SDK utilities)

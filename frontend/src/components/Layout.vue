@@ -83,57 +83,77 @@
           <div class="hidden md:flex items-center space-x-4">
             <!-- Network Status -->
             <div v-if="isConnected" class="network-status">
-              <div v-if="isArbitrum" class="network-indicator arbitrum">
-                <div class="network-dot"></div>
-                <span class="network-name">Arbitrum</span>
+              <div v-if="isArbitrum" class="nav-link group relative overflow-hidden">
+                <div class="absolute inset-0 bg-gradient-to-r from-emerald-100/50 to-teal-100/50 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                <span class="relative flex items-center gap-2 z-10">
+                  <div class="w-2 h-2 rounded-full bg-emerald-500"></div>
+                  <span class="text-sm font-medium">Arbitrum</span>
+                </span>
               </div>
-              <div v-else class="network-indicator wrong">
-                <div class="network-dot"></div>
-                <span class="network-name">錯誤網路</span>
-                <button @click="switchToArbitrum" class="switch-network-btn">
-                  切換
-                </button>
+              <div v-else class="nav-link group relative overflow-hidden">
+                <div class="absolute inset-0 bg-gradient-to-r from-red-100/50 to-pink-100/50 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                <span class="relative flex items-center gap-2 z-10">
+                  <div class="w-2 h-2 rounded-full bg-red-500"></div>
+                  <span class="text-sm font-medium">錯誤網路</span>
+                  <button @click="switchToArbitrum" class="ml-2 px-2 py-1 bg-red-500 hover:bg-red-600 text-white text-xs rounded-lg transition-colors">
+                    切換
+                  </button>
+                </span>
               </div>
             </div>
             
             <!-- USDC Balance -->
             <div v-if="isConnected && isArbitrum" class="balance-display">
-              <div class="balance-icon">💰</div>
-              <div class="balance-info">
-                <div class="balance-amount">${{ usdcBalance }}</div>
-                <div class="balance-label">USDC</div>
+              <div class="nav-link group relative overflow-hidden">
+                <div class="absolute inset-0 bg-gradient-to-r from-emerald-100/50 to-teal-100/50 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                <span class="relative flex items-center gap-3 z-10">
+                  <div class="text-lg">💰</div>
+                  <div class="balance-info">
+                    <div class="balance-amount text-sm font-bold">${{ usdcBalance }}</div>
+                    <div class="balance-label text-xs text-emerald-600">USDC</div>
+                  </div>
+                </span>
               </div>
             </div>
             
             <!-- Web3Modal Button -->
             <div v-if="!isConnected" class="web3modal-container">
-              <button @click="connectWallet" class="custom-connect-btn">
-                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path>
-                </svg>
-                連接錢包
+              <button @click="connectWallet" class="nav-link group relative overflow-hidden">
+                <div class="absolute inset-0 bg-gradient-to-r from-emerald-100/50 to-teal-100/50 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                <span class="relative flex items-center gap-2 z-10">
+                  <svg class="w-4 h-4 group-hover:scale-110 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path>
+                  </svg>
+                  連接錢包
+                </span>
               </button>
             </div>
             
             <!-- Connected Wallet -->
             <div v-else class="wallet-info">
-              <div class="wallet-display">
-                <div class="wallet-avatar">
-                  <div class="avatar-dot"></div>
-                </div>
-                <div class="wallet-details">
-                  <div class="wallet-address">{{ formatAddress(account) }}</div>
-                  <div class="wallet-status">已連接</div>
-                </div>
+              <div class="nav-link group relative overflow-hidden">
+                <div class="absolute inset-0 bg-gradient-to-r from-emerald-100/50 to-teal-100/50 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                <span class="relative flex items-center gap-3 z-10">
+                  <div class="w-8 h-8 rounded-full bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center">
+                    <div class="w-3 h-3 bg-white rounded-full"></div>
+                  </div>
+                  <div class="wallet-details">
+                    <div class="wallet-address text-sm font-medium">{{ formatAddress(account) }}</div>
+                    <div class="wallet-status text-xs text-emerald-600">已連接</div>
+                  </div>
+                </span>
               </div>
               <button 
                 @click="disconnectWallet"
-                class="disconnect-btn"
+                class="nav-link group relative overflow-hidden"
                 title="斷開錢包"
               >
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
-                </svg>
+                <div class="absolute inset-0 bg-gradient-to-r from-red-100/50 to-pink-100/50 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                <span class="relative flex items-center gap-2 z-10">
+                  <svg class="w-4 h-4 group-hover:scale-110 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                  </svg>
+                </span>
               </button>
             </div>
           </div>
@@ -298,83 +318,9 @@ watch(isConnected, (newConnected, oldConnected) => {
   @apply p-2 text-gray-600 hover:text-gray-800 transition-colors;
 }
 
-/* Network Status */
-.network-status {
-  @apply flex items-center;
-}
-
-.network-indicator {
-  @apply flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium;
-}
-
-.network-indicator.arbitrum {
-  @apply bg-blue-100 text-blue-800;
-}
-
-.network-indicator.wrong {
-  @apply bg-red-100 text-red-800;
-}
-
-.network-dot {
-  @apply w-2 h-2 rounded-full;
-}
-
-.network-indicator.arbitrum .network-dot {
-  @apply bg-blue-500;
-}
-
-.network-indicator.wrong .network-dot {
-  @apply bg-red-500;
-}
-
-.switch-network-btn {
-  @apply ml-2 px-2 py-1 bg-red-600 hover:bg-red-700 text-white text-xs rounded transition-colors;
-}
-
-/* Balance Display */
-.balance-display {
-  @apply flex items-center gap-2 bg-gray-50 px-3 py-2 rounded-xl;
-}
-
-.balance-icon {
-  @apply text-lg;
-}
-
-.balance-amount {
-  @apply font-bold text-gray-800;
-}
-
-.balance-label {
-  @apply text-xs text-gray-600;
-}
-
-/* Wallet Connection */
-.connect-btn {
-  @apply flex items-center gap-2 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-amber-500/30 focus:ring-offset-2 shadow-lg hover:shadow-xl hover:scale-105;
-  background: linear-gradient(135deg, #f59e0b, #d97706);
-  box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);
-}
-
-.connect-btn:hover {
-  background: linear-gradient(135deg, #d97706, #b45309);
-  box-shadow: 0 6px 20px rgba(245, 158, 11, 0.4);
-  transform: translateY(-2px) scale(1.02);
-}
-
+/* Wallet Info */
 .wallet-info {
   @apply flex items-center gap-3;
-}
-
-.wallet-display {
-  @apply flex items-center gap-3 bg-gray-50 px-3 py-2 rounded-xl;
-}
-
-.wallet-avatar {
-  @apply w-8 h-8 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center;
-}
-
-.avatar-dot {
-  @apply w-3 h-3 bg-white rounded-full;
 }
 
 .wallet-details {
