@@ -1,22 +1,27 @@
 <template>
   <div class="cute-gas-jar-container">
-    <!-- 可愛的儲值罐 -->
-    <div class="gas-jar" :class="{ 'wiggle': isWiggling, 'filling': isFilling }">
-      <!-- 背景光效 -->
+    <!-- Cute Grenade -->
+    <div class="grenade" :class="{ 'wiggle': isWiggling, 'filling': isFilling }">
+      <!-- Background Glow Effect -->
       <div class="jar-glow"></div>
       
-      <!-- 罐子主體 -->
-      <div class="jar-body">
-        <!-- 液體填充效果 -->
-        <div class="liquid" :style="{ height: liquidHeight + '%' }">
-          <div class="liquid-wave"></div>
-          <!-- 氣泡效果 -->
-          <div class="bubbles">
-            <div class="bubble" v-for="n in 5" :key="n" :style="getBubbleStyle(n)"></div>
+      <!-- Grenade Head -->
+      <div class="grenade-head">
+        <div class="grenade-valve"></div>
+        <div class="grenade-handle"></div>
+      </div>
+      
+      <!-- Grenade Body -->
+      <div class="grenade-body">
+        <!-- Energy Level Indicator -->
+        <div class="energy-level">
+          <div class="energy-fill" :style="{ height: liquidHeight + '%' }"></div>
+          <div class="energy-particles">
+            <div class="particle" v-for="n in 8" :key="n" :style="getEnergyParticleStyle(n)"></div>
           </div>
         </div>
         
-        <!-- 可愛的表情 -->
+        <!-- Cute Face -->
         <div class="jar-face">
           <div class="eyes">
             <div class="eye left" :class="{ 'blink': isBlinking }"></div>
@@ -25,54 +30,56 @@
           <div class="mouth" :class="mouthExpression"></div>
         </div>
         
-        <!-- Gas 符號裝飾 -->
-        <div class="gas-symbols">
-          <div class="symbol" v-for="n in 3" :key="n" :style="symbolStyle(n)">⛽</div>
-        </div>
         
-        <!-- 裝飾性線條 -->
+        <!-- Decorative Lines -->
         <div class="decorative-lines">
           <div class="line line-1"></div>
           <div class="line line-2"></div>
           <div class="line line-3"></div>
         </div>
         
-        <!-- 能量指示器 -->
+        <!-- Energy Indicators -->
         <div class="energy-indicators">
           <div class="indicator" v-for="n in 4" :key="n" :class="{ 'active': liquidHeight > n * 20 }"></div>
         </div>
       </div>
       
-      <!-- 罐子蓋子 -->
-      <div class="jar-lid">
-        <div class="lid-handle"></div>
+      
+      <!-- Gas Flow Animation -->
+      <div class="gas-flow">
+        <div class="flow-stream" v-for="n in 3" :key="n" :style="getFlowStreamStyle(n)"></div>
       </div>
       
-      <!-- 閃光效果 -->
+      <!-- Floating Gas Drops -->
+      <div class="gas-drops">
+        <div class="gas-drop" v-for="n in 5" :key="n" :style="getGasDropStyle(n)"></div>
+      </div>
+      
+      <!-- Sparkle Effects -->
       <div class="sparkles" v-if="showSparkles">
         <div class="sparkle" v-for="n in 6" :key="n" :style="sparkleStyle(n)">✨</div>
       </div>
     </div>
 
-    <!-- 標題和描述 -->
+    <!-- Title and Description -->
     <div class="jar-content">
       <h2 class="jar-title">
-        {{ isFirstTime ? '創建你的第一個 GasPass！' : '為儲值罐充值' }}
+        {{ isFirstTime ? 'Create Your First GasPass!' : 'Refill Your Gas Jar' }}
       </h2>
       <p class="jar-description">
         {{ isFirstTime 
-          ? '使用 USDC 鑄造可愛的跨鏈 Gas 儲值罐，開始你的無憂 DeFi 之旅！' 
-          : '為你的可愛儲值罐充值更多 USDC，保持 Gas 充足！' 
+          ? 'Mint a cute cross-chain Gas jar with USDC and start your worry-free DeFi journey!' 
+          : 'Refill your cute Gas jar with more USDC to keep your Gas topped up!' 
         }}
       </p>
       
-      <!-- 金額輸入 -->
+      <!-- Amount Input -->
       <div class="amount-input-container">
         <div class="amount-input-wrapper">
           <input 
             v-model="amount"
             type="text" 
-            placeholder="輸入金額"
+            placeholder="Enter amount"
             class="amount-input"
             @input="onAmountChange"
             @focus="startWiggle"
@@ -81,7 +88,7 @@
           <span class="currency-label">USDC</span>
         </div>
         
-        <!-- 快速選擇按鈕 -->
+        <!-- Quick Selection Buttons -->
         <div class="quick-amounts">
           <button 
             v-for="quickAmount in quickAmounts" 
@@ -95,23 +102,23 @@
         </div>
       </div>
 
-      <!-- 費用預估 -->
+      <!-- Cost Estimate -->
       <div v-if="costEstimate" class="cost-estimate">
         <div class="estimate-row">
-          <span>{{ isFirstTime ? '鑄造' : '儲值' }}金額:</span>
+          <span>{{ isFirstTime ? 'Mint' : 'Refill' }} Amount:</span>
           <span class="highlight">{{ amount }} USDC</span>
         </div>
         <div class="estimate-row">
-          <span>Gas 費用:</span>
+          <span>Gas Fee:</span>
           <span>≈ {{ costEstimate.gas }} ETH</span>
         </div>
         <div class="estimate-row total">
-          <span>總費用:</span>
+          <span>Total Cost:</span>
           <span class="highlight">{{ costEstimate.total }} USDC</span>
         </div>
       </div>
 
-      <!-- 操作按鈕 -->
+      <!-- Action Button -->
       <button 
         @click="handleSubmit"
         :disabled="!canSubmit"
@@ -120,20 +127,20 @@
       >
         <span v-if="isLoading" class="loading-content">
           <div class="loading-spinner"></div>
-          {{ isFirstTime ? '鑄造中...' : '儲值中...' }}
+          {{ isFirstTime ? 'Minting...' : 'Refilling...' }}
         </span>
         <span v-else>
-          {{ isFirstTime ? '創建 GasPass' : '立即儲值' }}
+          {{ isFirstTime ? 'Create GasPass' : 'Refill Now' }}
         </span>
       </button>
 
-      <!-- 成功訊息 -->
+      <!-- Success Message -->
       <div v-if="showSuccess" class="success-message">
         <div class="success-icon">🎉</div>
-        <h3>{{ isFirstTime ? '恭喜！儲值罐創建成功！' : '儲值完成！' }}</h3>
+        <h3>{{ isFirstTime ? 'Congratulations! Gas jar created successfully!' : 'Refill completed!' }}</h3>
         <p>{{ successMessage }}</p>
         <button @click="$emit('success')" class="continue-btn">
-          繼續探索 GasPass
+          Continue Exploring GasPass
         </button>
       </div>
     </div>
@@ -203,14 +210,14 @@ const canSubmit = computed(() => {
 // Methods
 const onAmountChange = async () => {
   if (amount.value && parseFloat(amount.value) > 0) {
-    // 模擬費用估算
+    // Simulate cost estimation
     await new Promise(resolve => setTimeout(resolve, 300))
     costEstimate.value = {
       gas: '0.001',
       total: (parseFloat(amount.value) + 0.5).toFixed(2)
     }
     
-    // 觸發填充動畫
+    // Trigger fill animation
     isFilling.value = true
     setTimeout(() => {
       isFilling.value = false
@@ -250,7 +257,7 @@ const startBlinking = () => {
 
 const handleSubmit = async () => {
   if (!account.value || !provider.value || !signer.value) {
-    emit('error', '請先連接錢包')
+    emit('error', 'Please connect your wallet first')
     return
   }
 
@@ -258,40 +265,40 @@ const handleSubmit = async () => {
   showSparkles.value = true
   
   try {
-    // 初始化合約服務
+    // Initialize contract service
     await contractService.init(provider.value, signer.value)
     
     let result
     
     if (props.isFirstTime) {
-      // 鑄造新儲值卡
+      // Mint new GasPass card
       result = await contractService.mintGasPassCard({
         to: account.value,
         amount: amount.value,
-        agent: account.value // 暫時使用用戶地址作為 agent
+        agent: account.value // Temporarily use user address as agent
       })
       
       if (result.success) {
-        successMessage.value = `成功創建儲值卡 #${result.tokenId}，充值了 ${amount.value} USDC！`
+        successMessage.value = `Successfully created GasPass card #${result.tokenId} with ${amount.value} USDC!`
       }
     } else {
-      // 為現有卡片儲值
+      // Refill existing card
       result = await contractService.depositToCard({
         tokenId: props.existingCard.tokenId,
         amount: amount.value
       })
       
       if (result.success) {
-        successMessage.value = `成功為儲值卡充值 ${amount.value} USDC！`
+        successMessage.value = `Successfully refilled GasPass card with ${amount.value} USDC!`
       }
     }
     
     if (result.success) {
       showSuccess.value = true
-      // 觸發慶祝動畫
+      // Trigger celebration animation
       celebrateSuccess()
     } else {
-      throw new Error(result.error || '操作失敗')
+      throw new Error(result.error || 'Operation failed')
     }
     
   } catch (error) {
@@ -304,7 +311,7 @@ const handleSubmit = async () => {
 }
 
 const celebrateSuccess = () => {
-  // 連續閃爍
+  // Continuous blinking
   let blinkCount = 0
   const blinkInterval = setInterval(() => {
     isBlinking.value = !isBlinking.value
@@ -315,25 +322,13 @@ const celebrateSuccess = () => {
     }
   }, 200)
   
-  // 閃光效果
+  // Sparkle effect
   showSparkles.value = true
   setTimeout(() => {
     showSparkles.value = false
   }, 2000)
 }
 
-const symbolStyle = (index) => {
-  const positions = [
-    { top: '20%', left: '15%', animationDelay: '0s' },
-    { top: '40%', right: '10%', animationDelay: '1s' },
-    { top: '60%', left: '20%', animationDelay: '2s' }
-  ]
-  return {
-    ...positions[index - 1],
-    fontSize: '0.8rem',
-    opacity: '0.6'
-  }
-}
 
 const sparkleStyle = (index) => {
   const angle = (index - 1) * 60
@@ -347,9 +342,51 @@ const sparkleStyle = (index) => {
   }
 }
 
-const getBubbleStyle = (index) => {
-  const size = Math.random() * 8 + 4
+// Gas Tank Animation Functions
+const getEnergyParticleStyle = (index) => {
+  const size = Math.random() * 3 + 2
   const x = Math.random() * 80 + 10
+  const y = Math.random() * 60 + 20
+  const delay = Math.random() * 2
+  const duration = Math.random() * 3 + 2
+  
+  return {
+    position: 'absolute',
+    width: `${size}px`,
+    height: `${size}px`,
+    left: `${x}%`,
+    top: `${y}%`,
+    background: 'radial-gradient(circle, #5ee4b9, #37b694)',
+    borderRadius: '50%',
+    opacity: Math.random() * 0.8 + 0.4,
+    animation: `energy-bubble ${duration}s ${delay}s infinite ease-in-out`,
+    pointerEvents: 'none',
+    boxShadow: '0 0 8px rgba(94, 228, 185, 0.6)'
+  }
+}
+
+const getFlowStreamStyle = (index) => {
+  const width = Math.random() * 2 + 1
+  const delay = Math.random() * 1
+  const duration = Math.random() * 2 + 1.5
+  
+  return {
+    position: 'absolute',
+    width: `${width}px`,
+    height: '40px',
+    left: `${20 + index * 15}%`,
+    top: '0',
+    background: 'linear-gradient(to bottom, transparent, #5ee4b9, transparent)',
+    opacity: Math.random() * 0.6 + 0.4,
+    animation: `gas-flow-stream ${duration}s ${delay}s infinite ease-in-out`,
+    pointerEvents: 'none',
+    borderRadius: '2px'
+  }
+}
+
+const getGasDropStyle = (index) => {
+  const size = Math.random() * 4 + 3
+  const x = Math.random() * 100
   const delay = Math.random() * 3
   const duration = Math.random() * 4 + 3
   
@@ -358,12 +395,13 @@ const getBubbleStyle = (index) => {
     width: `${size}px`,
     height: `${size}px`,
     left: `${x}%`,
-    bottom: '0',
-    background: 'rgba(16, 185, 129, 0.6)',
+    top: '100%',
+    background: 'radial-gradient(circle, #5ee4b9, #37b694)',
     borderRadius: '50%',
-    animation: `bubble-rise ${duration}s ${delay}s infinite ease-out`,
+    opacity: Math.random() * 0.7 + 0.3,
+    animation: `gas-drop-float ${duration}s ${delay}s infinite ease-in-out`,
     pointerEvents: 'none',
-    boxShadow: '0 0 8px rgba(16, 185, 129, 0.4)'
+    boxShadow: '0 0 6px rgba(94, 228, 185, 0.5)'
   }
 }
 
@@ -398,73 +436,159 @@ watch(amount, (newValue) => {
   padding: 2rem;
 }
 
-.gas-jar {
+.grenade {
   position: relative;
   margin-bottom: 2rem;
   transition: transform 0.3s ease;
+  width: 200px;
+  height: 250px;
+  margin: -3rem auto 0;
 }
 
-.gas-jar.wiggle {
+.grenade.wiggle {
   animation: wiggle 0.5s ease-in-out;
 }
 
-.jar-body {
-  position: relative;
-  width: 160px;
-  height: 200px;
-  background: linear-gradient(145deg, #0f172a 0%, #1e293b 50%, #334155 100%);
-  border-radius: 20px 20px 30px 30px;
-  border: 2px solid transparent;
-  background-clip: padding-box;
-  overflow: hidden;
+
+.grenade-head {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60px;
+  height: 40px;
+  background: 
+    linear-gradient(145deg, #8b949e, #6b7280, #4b5563),
+    radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.3) 0%, transparent 50%),
+    radial-gradient(circle at 70% 70%, rgba(0, 0, 0, 0.2) 0%, transparent 50%);
   box-shadow: 
-    0 20px 40px rgba(0,0,0,0.4),
-    0 0 30px rgba(16, 185, 129, 0.3),
-    inset 0 1px 0 rgba(255,255,255,0.1),
-    inset 0 -1px 0 rgba(0,0,0,0.2);
+    inset 0 1px 2px rgba(0, 0, 0, 0.3),
+    inset 0 -1px 2px rgba(255, 255, 255, 0.1),
+    0 2px 4px rgba(0, 0, 0, 0.2),
+    0 0 8px rgba(139, 148, 158, 0.3);
+  clip-path: polygon(30% 0%, 70% 0%, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0% 70%, 0% 30%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.jar-body::before {
+.grenade-valve {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  width: 15px;
+  height: 15px;
+  background: 
+    radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.4) 0%, transparent 50%),
+    linear-gradient(145deg, #d1d5db, #9ca3af, #6b7280);
+  border-radius: 50%;
+  box-shadow: 
+    inset 0 1px 2px rgba(0, 0, 0, 0.3),
+    inset 0 -1px 1px rgba(255, 255, 255, 0.2),
+    0 1px 2px rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.grenade-handle {
+  position: absolute;
+  top: 10px;
+  left: 5px;
+  width: 30px;
+  height: 5px;
+  background: 
+    linear-gradient(90deg, #8b949e, #6b7280, #4b5563),
+    radial-gradient(circle at 20% 50%, rgba(255, 255, 255, 0.2) 0%, transparent 50%);
+  border-radius: 2px;
+  box-shadow: 
+    inset 0 1px 2px rgba(0, 0, 0, 0.3),
+    inset 0 -1px 1px rgba(255, 255, 255, 0.1),
+    0 1px 2px rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.grenade-body {
+  position: relative;
+  width: 100%;
+  height: 200px;
+  background: 
+    linear-gradient(145deg, #6b7280, #4b5563, #374151),
+    radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(0, 0, 0, 0.3) 0%, transparent 50%);
+  border: 2px solid rgba(139, 148, 158, 0.4);
+  margin-top: 40px;
+  box-shadow: 
+    inset 0 2px 4px rgba(0, 0, 0, 0.3),
+    inset 0 -2px 4px rgba(255, 255, 255, 0.1),
+    0 4px 8px rgba(0, 0, 0, 0.2),
+    0 0 12px rgba(139, 148, 158, 0.2);
+  transform: perspective(100px) rotateX(5deg);
+  clip-path: polygon(30% 0%, 70% 0%, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0% 70%, 0% 30%);
+  position: relative;
+  overflow: hidden;
+}
+
+.grenade-body::before {
   content: '';
   position: absolute;
   top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  animation: metallic-shine-sweep 4s ease-in-out infinite;
+}
+
+.energy-level {
+  position: absolute;
+  inset: 20px;
+  overflow: hidden;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.3) 0%, rgba(0, 0, 0, 0.1) 100%);
+  clip-path: polygon(30% 0%, 70% 0%, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0% 70%, 0% 30%);
+}
+
+.energy-fill {
+  position: absolute;
+  bottom: 0;
   left: 0;
   right: 0;
-  bottom: 0;
-  background: linear-gradient(145deg, #10b981, #059669, #047857);
-  border-radius: inherit;
-  padding: 2px;
-  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  mask-composite: exclude;
-  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
-}
-
-.liquid {
-  position: absolute;
-  bottom: 0;
-  width: 100%;
-  background: linear-gradient(180deg, 
-    rgba(16, 185, 129, 0.9) 0%, 
-    rgba(5, 150, 105, 0.95) 50%, 
-    rgba(4, 120, 87, 1) 100%);
-  transition: height 0.8s cubic-bezier(0.4, 0, 0.2, 1);
-  border-radius: 0 0 28px 28px;
+  background: linear-gradient(180deg, #5ee4b9 0%, #37b694 50%, #10b981 100%);
+  animation: energy-pulse 2s ease-in-out infinite;
   box-shadow: 
-    inset 0 2px 4px rgba(255,255,255,0.2),
-    0 0 20px rgba(16, 185, 129, 0.4);
+    inset 0 2px 4px rgba(255, 255, 255, 0.2),
+    0 0 10px rgba(94, 228, 185, 0.4);
+  clip-path: polygon(30% 0%, 70% 0%, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0% 70%, 0% 30%);
+  transition: height 0.8s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.liquid-wave {
-  position: absolute;
-  top: -15px;
-  left: 0;
-  width: 100%;
-  height: 30px;
-  background: radial-gradient(ellipse at center, rgba(16,185,129,0.6) 0%, transparent 80%);
-  animation: wave 3s ease-in-out infinite;
-  border-radius: 50%;
+.grenade:hover .energy-particles .particle {
+  animation: energy-bubble 1.5s ease-in-out infinite, particle-dance 0.6s ease-in-out infinite;
 }
+
+
+.gas-flow {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80px;
+  height: 60px;
+}
+
+.flow-stream {
+  position: absolute;
+}
+
+.gas-drops {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  height: 100px;
+}
+
+.gas-drop {
+  position: absolute;
+}
+
+
 
 .jar-face {
   position: absolute;
@@ -476,30 +600,34 @@ watch(amount, (newValue) => {
 
 .eyes {
   display: flex;
-  gap: 20px;
+  gap: 25px;
   justify-content: center;
-  margin-bottom: 12px;
+  margin-bottom: 15px;
 }
 
 .eye {
-  width: 16px;
-  height: 16px;
-  background: linear-gradient(145deg, #10b981, #059669);
+  width: 20px;
+  height: 20px;
+  background: 
+    radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.4) 0%, transparent 50%),
+    linear-gradient(145deg, #10b981, #059669, #047857);
   border-radius: 50%;
   transition: all 0.3s ease;
   box-shadow: 
-    0 0 12px rgba(16, 185, 129, 0.6),
-    inset 0 2px 4px rgba(255,255,255,0.3);
+    0 0 15px rgba(16, 185, 129, 0.6),
+    inset 0 2px 4px rgba(255,255,255,0.3),
+    inset 0 -1px 2px rgba(0, 0, 0, 0.2);
   position: relative;
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .eye::after {
   content: '';
   position: absolute;
-  top: 3px;
-  left: 3px;
-  width: 6px;
-  height: 6px;
+  top: 4px;
+  left: 4px;
+  width: 8px;
+  height: 8px;
   background: rgba(255,255,255,0.8);
   border-radius: 50%;
 }
@@ -509,10 +637,10 @@ watch(amount, (newValue) => {
 }
 
 .mouth {
-  width: 24px;
-  height: 12px;
+  width: 30px;
+  height: 15px;
   margin: 0 auto;
-  border-radius: 0 0 24px 24px;
+  border-radius: 0 0 30px 30px;
   transition: all 0.3s ease;
   position: relative;
 }
@@ -532,23 +660,31 @@ watch(amount, (newValue) => {
 }
 
 .mouth-excited {
-  background: linear-gradient(145deg, #10b981, #059669);
+  background: 
+    radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.3) 0%, transparent 50%),
+    linear-gradient(145deg, #10b981, #059669, #047857);
   border-radius: 50%;
   animation: bounce-slow 2s infinite;
   box-shadow: 
     0 0 15px rgba(16, 185, 129, 0.6),
-    inset 0 2px 4px rgba(255,255,255,0.3);
+    inset 0 2px 4px rgba(255,255,255,0.3),
+    inset 0 -1px 2px rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .mouth-happy {
-  background: linear-gradient(145deg, #10b981, #059669);
+  background: 
+    radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.3) 0%, transparent 50%),
+    linear-gradient(145deg, #10b981, #059669, #047857);
   border-radius: 50%;
-  width: 28px;
-  height: 16px;
+  width: 35px;
+  height: 20px;
   animation: pulse-slow 1s infinite;
   box-shadow: 
     0 0 15px rgba(16, 185, 129, 0.6),
-    inset 0 2px 4px rgba(255,255,255,0.3);
+    inset 0 2px 4px rgba(255,255,255,0.3),
+    inset 0 -1px 2px rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .mouth-nervous {
@@ -560,68 +696,7 @@ watch(amount, (newValue) => {
   box-shadow: 0 0 12px rgba(16, 185, 129, 0.4);
 }
 
-.gas-symbols {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-}
 
-.symbol {
-  position: absolute;
-  color: #10b981;
-  animation: float 3s ease-in-out infinite;
-  text-shadow: 0 0 8px rgba(16, 185, 129, 0.5);
-}
-
-.jar-lid {
-  position: relative;
-  width: 170px;
-  height: 20px;
-  background: linear-gradient(145deg, #0f172a 0%, #1e293b 50%, #334155 100%);
-  border-radius: 12px;
-  margin: -4px auto 0;
-  box-shadow: 
-    0 8px 20px rgba(0,0,0,0.4), 
-    0 0 15px rgba(16, 185, 129, 0.3),
-    inset 0 1px 0 rgba(255,255,255,0.1);
-  border: 2px solid transparent;
-  background-clip: padding-box;
-}
-
-.jar-lid::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(145deg, #10b981, #059669, #047857);
-  border-radius: inherit;
-  padding: 2px;
-  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  mask-composite: exclude;
-  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
-}
-
-.lid-handle {
-  position: absolute;
-  top: -10px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 24px;
-  height: 20px;
-  background: linear-gradient(145deg, #10b981, #059669);
-  border-radius: 50%;
-  box-shadow: 
-    inset 0 2px 6px rgba(0,0,0,0.3), 
-    0 0 12px rgba(16, 185, 129, 0.5),
-    0 4px 8px rgba(0,0,0,0.2);
-  border: 1px solid rgba(255,255,255,0.1);
-}
 
 .sparkles {
   position: absolute;
@@ -649,6 +724,7 @@ watch(amount, (newValue) => {
   font-weight: 700;
   color: #ffffff;
   margin-bottom: 0.5rem;
+  margin-top: 1rem;
   text-shadow: 0 0 10px rgba(16, 185, 129, 0.3);
 }
 
@@ -886,18 +962,63 @@ watch(amount, (newValue) => {
   50% { transform: scale(1.1); }
 }
 
-@keyframes bubble-rise {
-  0% { 
-    transform: translateY(0) scale(0.8);
-    opacity: 0.8;
+/* Gas Tank Animations */
+@keyframes energy-pulse {
+  0%, 100% { 
+    transform: scaleY(1); 
+    opacity: 0.8; 
   }
   50% { 
-    transform: translateY(-50px) scale(1);
-    opacity: 0.6;
+    transform: scaleY(1.05); 
+    opacity: 1; 
+  }
+}
+
+@keyframes energy-bubble {
+  0% { 
+    transform: translateY(0) scale(0.8); 
+    opacity: 0.4; 
+  }
+  50% { 
+    transform: translateY(-10px) scale(1.2); 
+    opacity: 0.8; 
   }
   100% { 
-    transform: translateY(-100px) scale(0.6);
-    opacity: 0;
+    transform: translateY(-20px) scale(0.6); 
+    opacity: 0.2; 
+  }
+}
+
+@keyframes gas-flow-stream {
+  0% { 
+    transform: translateY(-40px); 
+    opacity: 0; 
+  }
+  50% { 
+    opacity: 0.6; 
+  }
+  100% { 
+    transform: translateY(40px); 
+    opacity: 0; 
+  }
+}
+
+@keyframes particle-dance {
+  0%, 100% { 
+    transform: translateX(0) translateY(0) scale(1); 
+    opacity: 0.4; 
+  }
+  25% { 
+    transform: translateX(-3px) translateY(-2px) scale(1.1); 
+    opacity: 0.7; 
+  }
+  50% { 
+    transform: translateX(0) translateY(-4px) scale(1.2); 
+    opacity: 0.8; 
+  }
+  75% { 
+    transform: translateX(3px) translateY(-2px) scale(1.1); 
+    opacity: 0.7; 
   }
 }
 
@@ -915,22 +1036,12 @@ watch(amount, (newValue) => {
   pointer-events: none;
 }
 
-.gas-jar:hover .jar-glow {
+.grenade:hover .jar-glow {
   opacity: 1;
 }
 
-/* Bubbles container */
-.bubbles {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-  overflow: hidden;
-}
 
-/* 裝飾性線條 */
+/* Decorative Lines */
 .decorative-lines {
   position: absolute;
   top: 0;
@@ -968,7 +1079,7 @@ watch(amount, (newValue) => {
   animation-delay: 2.6s;
 }
 
-/* 能量指示器 */
+/* Energy Indicators */
 .energy-indicators {
   position: absolute;
   right: 8px;
@@ -992,7 +1103,7 @@ watch(amount, (newValue) => {
   box-shadow: 0 0 8px rgba(16, 185, 129, 0.6);
 }
 
-/* 線條發光動畫 */
+/* Line Glow Animation */
 @keyframes line-glow {
   0%, 100% { 
     opacity: 0.3;
