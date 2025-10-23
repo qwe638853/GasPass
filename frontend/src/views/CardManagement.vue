@@ -35,7 +35,7 @@
                 <p class="text-gray-600 mb-6">
                   為了啟用跨鏈 Gas 兌換與自動監測，請先完成 Vincent Agent 登入授權。
                 </p>
-                <div class="flex items-center gap-4">
+              <div class="flex items-center gap-4">
                   <button 
                     class="btn-primary"
                     :disabled="vincentRedirecting"
@@ -61,9 +61,9 @@
                     <div class="flex items-center gap-3">
                       <button class="btn-secondary-sm" @click="confirmVincentCancel">取消</button>
                       <button class="btn-primary" @click="confirmVincentProceed">繼續</button>
-                    </div>
-                  </div>
                 </div>
+                </div>
+              </div>
               </div>
             </div>
           </div>
@@ -82,23 +82,23 @@
                   <p class="text-xl text-gray-600 mb-12 max-w-2xl mx-auto">
                     您還沒有儲值卡，讓我們為您創建第一個可愛的 GasPass 儲值罐，開始您的無憂 DeFi 之旅！
                   </p>
-                  
-                  <!-- Cute Gas Jar Component -->
-                  <CuteGasJar 
-                    :isFirstTime="true"
-                    @success="handleMintSuccess"
-                    @error="handleError"
-                  />
+              
+              <!-- Cute Gas Jar Component -->
+              <CuteGasJar 
+                :isFirstTime="true"
+                @success="handleMintSuccess"
+                @error="handleError"
+              />
                 </div>
-              </div>
             </div>
+          </div>
 
             <!-- 有儲值卡的情況 -->
-            <div v-else>
+          <div v-else>
               <!-- 儲值卡概覽 -->
-              <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
                 <!-- 儲值卡資訊 -->
-                <div class="lg:col-span-2">
+              <div class="lg:col-span-2">
                   <div class="bg-white rounded-3xl shadow-2xl p-8 relative overflow-hidden group">
                     <!-- 背景光效 -->
                     <div class="absolute inset-0 bg-gradient-to-br from-amber-50/30 to-orange-50/30 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
@@ -108,34 +108,34 @@
                         <h3 class="text-2xl font-bold text-gray-900">我的儲值卡</h3>
                         <button @click="refreshCards" class="btn-secondary-sm group">
                           <svg class="w-4 h-4 group-hover:rotate-180 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
-                          </svg>
-                          刷新
-                        </button>
-                      </div>
-                      
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                        </svg>
+                        刷新
+                      </button>
+                  </div>
+                  
                       <div v-for="card in userCards" :key="card.tokenId" class="card-item-enhanced">
-                        <div class="flex items-center justify-between">
+                    <div class="flex items-center justify-between">
                           <div class="flex items-center gap-6">
                             <div class="w-20 h-20 bg-gradient-to-br from-amber-400 to-orange-500 rounded-3xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
                               <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
-                              </svg>
-                            </div>
-                            <div>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
+                          </svg>
+                        </div>
+                        <div>
                               <h4 class="text-2xl font-bold text-gray-900 mb-2">GasPass #{{ card.tokenId }}</h4>
                               <p class="text-lg text-gray-600 mb-1">餘額: {{ card.balance }} USDC</p>
-                              <p class="text-sm text-gray-500">最後更新: {{ card.lastUpdate }}</p>
-                            </div>
-                          </div>
-                          <div class="text-right">
-                            <div class="text-3xl font-bold text-gray-900 mb-1">{{ card.balance }} USDC</div>
-                            <div class="text-sm text-gray-500">可用餘額</div>
-                          </div>
+                          <p class="text-sm text-gray-500">最後更新: {{ card.lastUpdate }}</p>
                         </div>
+                      </div>
+                      <div class="text-right">
+                            <div class="text-3xl font-bold text-gray-900 mb-1">{{ card.balance }} USDC</div>
+                        <div class="text-sm text-gray-500">可用餘額</div>
                       </div>
                     </div>
                   </div>
+                </div>
+              </div>
                 </div>
 
                 <!-- 快速儲值 -->
@@ -150,13 +150,13 @@
                       </svg>
                       快速儲值
                     </h4>
-                    <CuteGasJar 
-                      :isFirstTime="false"
-                      :existingCard="userCards[0]"
-                      @success="handleDepositSuccess"
-                      @error="handleError"
-                    />
-                  </div>
+                  <CuteGasJar 
+                    :isFirstTime="false"
+                    :existingCard="userCards[0]"
+                    @success="handleDepositSuccess"
+                    @error="handleError"
+                  />
+                </div>
                 </div>
               </div>
             </div>
@@ -181,11 +181,11 @@
                   >
                     <span class="relative z-10 flex items-center gap-2">
                       <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
-                      </svg>
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                        </svg>
                       手動兌換
-                    </span>
-                  </button>
+                      </span>
+                    </button>
                   <button 
                     @click="activeTab = 'agent'"
                     class="px-6 py-3 rounded-xl font-semibold transition-all duration-300 relative"
@@ -195,13 +195,13 @@
                   >
                     <span class="relative z-10 flex items-center gap-2">
                       <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
-                      </svg>
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+                        </svg>
                       Agent 自動監測
-                    </span>
-                  </button>
+                      </span>
+                    </button>
+                  </div>
                 </div>
-              </div>
 
               <!-- 手動兌換 Gas -->
               <div v-if="activeTab === 'manual'" class="space-y-6">
@@ -247,9 +247,9 @@
                           placeholder="輸入接收地址"
                           class="w-full p-3 border-2 border-gray-200 rounded-xl focus:border-blue-400 focus:outline-none transition-colors"
                         />
-                      </div>
-                    </div>
-                    
+              </div>
+            </div>
+
                     <button 
                       @click="executeManualRefuel"
                       :disabled="!canExecuteManualRefuel"
@@ -298,7 +298,7 @@
                     <h4 class="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
                       <svg class="w-6 h-6 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
-                      </svg>
+                        </svg>
                       Agent 自動監測設定
                     </h4>
                     
