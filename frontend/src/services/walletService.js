@@ -12,7 +12,7 @@ class WalletService {
       url: window.location.origin, // 使用當前頁面的 URL
       icons: ['https://gaspass.com/icon.png']
     }
-    // 使用主網鏈清單
+    // 使用主網鏈清單，並添加 Arbitrum Sepolia 測試網
     this.chains = [mainnet, optimism, polygon, arbitrum, avalanche, base, bsc]
     this.wagmiConfig = null
     this.modal = null
@@ -339,6 +339,11 @@ class WalletService {
         chainName: null
       }
     }
+  }
+
+  // 獲取 wagmi 配置
+  getWagmiConfig() {
+    return this.wagmiConfig
   }
 
   // 簽名消息

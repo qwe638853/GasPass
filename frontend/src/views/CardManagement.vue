@@ -21,6 +21,22 @@
           </div>
         </div>
 
+        <!-- Network Check -->
+        <div v-if="isConnected && !isArbitrum" class="text-center py-12">
+          <div class="bg-white rounded-2xl shadow-lg p-8 max-w-md mx-auto">
+            <div class="w-16 h-16 bg-gradient-to-br from-red-400 to-pink-500 rounded-full flex items-center justify-center mx-auto mb-6">
+              <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+              </svg>
+            </div>
+            <h3 class="text-xl font-bold text-gray-900 mb-4">請切換到 Arbitrum Mainnet</h3>
+            <p class="text-gray-600 mb-6">您的合約部署在 Arbitrum Mainnet 上，請切換網絡以繼續使用</p>
+            <button @click="switchToArbitrum" class="btn-primary w-full">
+              切換到 Arbitrum Mainnet
+            </button>
+          </div>
+        </div>
+
         <!-- Connected State -->
         <div v-else>
           <!-- Vincent Agent 登入銜接卡片（尚未取得 JWT 時顯示） -->
@@ -428,6 +444,7 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import { useWeb3 } from '../composables/useWeb3.js'
 import { gasPassService } from '../services/gasPassService.js'
+import { contractService} from '../services/contractService.js'
 import { useVincentAuth } from '../composables/useVincentAuth.js'
 import Layout from '../components/Layout.vue'
 import CuteGasJar from '../components/CuteGasJar.vue'
@@ -435,7 +452,7 @@ import ManualRefuelModal from '../components/ManualRefuelModal.vue'
 import AutoRefuelModal from '../components/AutoRefuelModal.vue'
 
 // Web3 composable
-const { account, isConnected, isWalletReady, connectWallet, formatAddress, getUSDCBalance } = useWeb3()
+const { account, isConnected, isWalletReady, connectWallet, formatAddress, getUSDCBalance, provider, signer, isArbitrum, switchToArbitrum } = useWeb3()
 
 // Vincent Auth composable（使用硬編碼的 App ID）
 const { ensureAuth, loadFromStorage, vincentJwt, vincentRedirecting, vincentPkpEthAddress } = useVincentAuth()
@@ -499,17 +516,27 @@ const canSetupAgentRefuel = computed(() => {
 
 // Methods
 const loadUserData = async () => {
-  if (!account.value) return
+  if (!account.value || !provider.value || !signer.value) return
   
   try {
-    // Load user cards
-    userCards.value = await gasPassService.getUserCards(account.value)
+    // 初始化合約服務
+    await contractService.init(provider.value, signer.value)
     
-    // Load transaction history
+    // 檢查是否有 GasPass 卡片
+    const hasCard = await contractService.hasGasPassCard(account.value)
+    
+    if (hasCard) {
+      // 載入用戶卡片
+      userCards.value = await contractService.getUserCards(account.value)
+    } else {
+      userCards.value = []
+    }
+    
+    // Load transaction history (暫時使用模擬數據)
     transactionHistory.value = await gasPassService.getTransactionHistory()
     
     // Load USDC balance
-    usdcBalance.value = await getUSDCBalance()
+    usdcBalance.value = await contractService.getUSDCBalance(account.value)
     
     // 載入 Agent 狀態
     await loadAgentStatus()

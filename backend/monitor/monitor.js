@@ -9,16 +9,10 @@ import { ethers } from 'ethers';
 GASPASS_ADDRESS=0x...  # GasPass 合約地址（部署後填入）
 
 # 可選設定
-BASE_RPC_URL=https://sepolia.base.org  # GasPass 合約部署的鏈（測試網用 Base Sepolia）
+BASE_RPC_URL=https://arb1.arbitrum.io/rpc  # GasPass 合約部署的鏈（主網用 Arbitrum）
 MONITOR_INTERVAL=1  # 監聽間隔（分鐘，預設 1 分鐘）
 
 # 注意：目前只測試監測功能，不實際觸發 autoRefuel
-
-# 測試網 RPC 覆蓋（可選）
-# ARB_SEPOLIA_RPC_URL=https://sepolia-rollup.arbitrum.io/rpc
-# BASE_SEPOLIA_RPC_URL=https://sepolia.base.org
-# ETH_SEPOLIA_RPC_URL=https://sepolia.infura.io/v3/YOUR-API-KEY
-# POLYGON_AMOY_RPC_URL=https://rpc-amoy.polygon.technology
 
 # 主網 RPC 覆蓋（可選）
 # ETH_RPC_URL=https://mainnet.infura.io/v3/YOUR-API-KEY
@@ -27,35 +21,9 @@ MONITOR_INTERVAL=1  # 監聽間隔（分鐘，預設 1 分鐘）
 # POLYGON_RPC_URL=https://polygon-rpc.com
 */
 
-// 測試網和主網的 RPC 配置
+// 主網 RPC 配置
 const CHAIN_CONFIGS = {
-  // 測試網
-  421614: {
-    rpc: 'https://sepolia-rollup.arbitrum.io/rpc', // testnet
-    name: 'Arbitrum Sepolia',
-    nativeSymbol: 'ETH',
-    nativeName: 'Arbitrum Sepolia Ether'
-  },
-  84532: {
-    rpc: 'https://sepolia.base.org',// testnet
-    name: 'Base Sepolia',
-    nativeSymbol: 'ETH',
-    nativeName: 'Base Sepolia Ether'
-  },
-  11155111: {
-    rpc: 'https://sepolia.infura.io/v3/YOUR-API-KEY',// testnet
-    name: 'Ethereum Sepolia',
-    nativeSymbol: 'ETH',
-    nativeName: 'Ethereum Sepolia Ether'
-  },
-  80002: {
-    rpc: 'https://rpc-amoy.polygon.technology',// testnet
-    name: 'Polygon Amoy',
-    nativeSymbol: 'MATIC',
-    nativeName: 'Polygon Amoy'
-  },
-  
-  // 主網（保留原有配置）
+  // 主網
   1: {
     rpc: 'https://mainnet.infura.io/v3/YOUR-API-KEY',
     name: 'Ethereum',

@@ -1,36 +1,20 @@
 <template>
   <Layout>
-    <!-- Header Section -->
-    <section class="bg-gradient-to-br from-gray-100 to-gray-200 py-16">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="text-center">
-          <h1 class="text-4xl sm:text-5xl font-bold text-gray-800 mb-4">
-            <span class="bg-gradient-to-r from-amber-500 to-orange-600 bg-clip-text text-transparent">
-              ⛽ 跨鏈 Gas 兌換
-            </span>
-          </h1>
-          <p class="text-xl text-gray-600 max-w-3xl mx-auto">
-            使用 <span class="text-amber-600 font-semibold">USDC</span> 統一支付，
-            輕鬆為任意主網補充 Gas 費用，由 <span class="text-green-600 font-semibold">Avail Nexus Mainnet</span> 驅動！
-          </p>
-        </div>
-      </div>
-    </section>
 
     <!-- Main Content -->
-    <section class="py-12 bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen">
+    <section class="py-12 bg-gradient-to-br from-slate-900/80 to-gray-900/90 backdrop-blur-xl min-h-screen">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         <!-- Wallet Connection Status -->
         <div v-if="!isConnected" class="text-center py-12">
-          <div class="bg-white rounded-2xl shadow-lg p-8 max-w-md mx-auto">
-            <div class="w-16 h-16 bg-gradient-to-br from-amber-400 to-orange-500 rounded-full flex items-center justify-center mx-auto mb-6">
+          <div class="bg-slate-800/60 backdrop-blur-md border border-emerald-300/30 rounded-2xl shadow-lg p-8 max-w-md mx-auto">
+            <div class="w-16 h-16 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-full flex items-center justify-center mx-auto mb-6">
               <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
               </svg>
             </div>
-            <h3 class="text-xl font-bold text-gray-900 mb-4">請先連接錢包</h3>
-            <p class="text-gray-600 mb-6">連接您的錢包以開始使用跨鏈 Gas 兌換功能</p>
+            <h3 class="text-xl font-bold text-white mb-4">請先連接錢包</h3>
+            <p class="text-emerald-100 mb-6">連接您的錢包以開始使用跨鏈 Gas 兌換功能</p>
             <button @click="connectWallet" class="btn-primary w-full">
               連接錢包
             </button>
@@ -41,14 +25,14 @@
         <div v-else>
           <!-- Nexus Initialization -->
           <div v-if="!nexusState.initialized" class="text-center py-12">
-            <div class="bg-white rounded-2xl shadow-lg p-8 max-w-md mx-auto">
-              <div class="w-16 h-16 bg-gradient-to-br from-blue-400 to-indigo-500 rounded-full flex items-center justify-center mx-auto mb-6">
+            <div class="bg-slate-800/60 backdrop-blur-md border border-emerald-300/30 rounded-2xl shadow-lg p-8 max-w-md mx-auto">
+              <div class="w-16 h-16 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-full flex items-center justify-center mx-auto mb-6">
                 <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
                 </svg>
               </div>
-              <h3 class="text-xl font-bold text-gray-900 mb-4">初始化 Nexus SDK</h3>
-              <p class="text-gray-600 mb-6">正在初始化跨鏈服務，請稍候...</p>
+              <h3 class="text-xl font-bold text-white mb-4">初始化 Nexus SDK</h3>
+              <p class="text-emerald-100 mb-6">正在初始化跨鏈服務，請稍候...</p>
               <button @click="initNexus" :disabled="nexusState.loading" class="btn-primary w-full">
                 <span v-if="nexusState.loading" class="flex items-center justify-center gap-2">
                   <div class="loading-spinner"></div>
@@ -64,15 +48,23 @@
             <!-- Unified Balance Overview -->
             <div class="mb-12">
               <!-- Title + Controls (token switch moved here) -->
-              <div class="flex items-center justify-between mb-6 px-2">
-                <h3 class="text-2xl font-bold text-gray-900"> 全鏈 {{ nexusState.selectedToken }} 餘額</h3>
+              <div class="flex items-center justify-between mb-8 px-2">
+                <div class="flex items-center gap-4">
+                  <div class="flex items-center gap-3">
+                    <div class="w-2 h-10 bg-gradient-to-b from-emerald-400 to-teal-500 rounded-full shadow-lg"></div>
+                    <div class="flex flex-col">
+                      <h3 class="text-xl font-bold text-white tracking-wide">全鏈 {{ nexusState.selectedToken }} 餘額</h3>
+                      <p class="text-sm text-emerald-200/80 font-medium">跨鏈資產統一管理</p>
+                    </div>
+                  </div>
+                </div>
                 <div class="flex items-center gap-3">
                   <div class="token-switch">
                     <button :class="['token-btn', nexusState.selectedToken==='USDC' && 'active']" @click="onSelectToken('USDC')">USDC</button>
                     <button :class="['token-btn', nexusState.selectedToken==='USDT' && 'active']" @click="onSelectToken('USDT')">USDT</button>
                     <button :class="['token-btn', nexusState.selectedToken==='ETH' && 'active']" @click="onSelectToken('ETH')">ETH</button>
                   </div>
-                  <button @click="refreshBalances" :disabled="nexusState.loading" class="refresh-btn">
+                  <button @click="refreshBalances" :disabled="nexusState.loading" class="refresh-header-btn">
                     <svg class="w-5 h-5" :class="{ 'animate-spin': nexusState.loading }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
                     </svg>
@@ -81,16 +73,6 @@
                 </div>
               </div>
 
-              <!-- Centered Total Balance Card -->
-              <div class="flex justify-center mb-10">
-                <div class="w-full max-w-lg">
-                  <div class="total-balance-card premium">
-                    <div class="total-header">總 {{ nexusState.selectedToken }} 餘額</div>
-                    <div class="total-amount">{{ totalUSDCBalance }}</div>
-                    <div class="total-symbol">{{ nexusState.selectedToken }}</div>
-                  </div>
-                </div>
-              </div>
 
               
 
@@ -138,7 +120,13 @@
                 <div class="swap-main-card">
                   <!-- Header -->
                   <div class="swap-header">
-                    <h3 class="swap-title">⚡ 跨鏈 Gas 兌換</h3>
+                    <div class="swap-title-container">
+                      <div class="title-icon">
+                        <div class="icon-bg"></div>
+                        <div class="icon-accent"></div>
+                      </div>
+                      <h3 class="swap-title">跨鏈 Gas 兌換</h3>
+                    </div>
                     <div class="swap-subtitle">
                       使用你的代幣兌換任何鏈的原生 Gas
                     </div>
@@ -149,7 +137,7 @@
                     <!-- From Section -->
                     <div class="swap-section">
                       <div class="section-header">
-                        <span class="section-title">從</span>
+                        <span class="section-title">選擇來源鏈與代幣</span>
                         <span v-if="selectedFromToken" class="balance-hint">
                           餘額: {{ getTokenBalance(selectedFromToken, selectedFromChain) }}
                         </span>
@@ -183,9 +171,6 @@
                           <input 
                             v-model="fromAmount"
                             placeholder="輸入數量"
-                            type="number"
-                            step="0.000001"
-                            min="0"
                             class="amount-input"
                             @input="handleFromAmountChange"
                           />
@@ -212,30 +197,30 @@
                     <!-- To Section -->
                     <div class="swap-section">
                       <div class="section-header">
-                        <span class="section-title">兌換到</span>
-                        <span v-if="selectedToToken && selectedToChain" class="balance-hint">
-                          餘額: {{ getTokenBalance(selectedToToken, selectedToChain) }}
+                        <span class="section-title">兌換為目標鏈 Gas</span>
+                        <span v-if="selectedToChain" class="balance-hint">
+                          將兌換為 {{ getChainName(selectedToChain) }} 的 {{ getChainGasSymbol(selectedToChain) }}
                         </span>
                       </div>
                       
                       <div class="swap-input-group">
-                        <div class="token-selector" @click="showToTokenModal = true">
-                          <div v-if="selectedToToken && selectedToChain" class="selected-token">
-                            <div class="token-icon">
-                              <img v-if="selectedToToken.logo" 
-                                   :src="selectedToToken.logo" 
-                                   :alt="selectedToToken.symbol"
+                        <div class="chain-selector" @click="showToChainModal = true">
+                          <div v-if="selectedToChain" class="selected-chain">
+                            <div class="chain-icon">
+                              <img v-if="getChainLogo(selectedToChain)" 
+                                   :src="getChainLogo(selectedToChain)" 
+                                   :alt="getChainName(selectedToChain)"
                                    class="w-8 h-8 rounded-full"
                               />
-                              <span v-else class="text-xl">{{ selectedToToken.symbol.charAt(0) }}</span>
+                              <span v-else class="text-xl">🌐</span>
                             </div>
-                            <div class="token-details">
-                              <div class="token-symbol">{{ selectedToToken.symbol }}</div>
+                            <div class="chain-details">
+                              <div class="chain-symbol">{{ getChainGasSymbol(selectedToChain) }}</div>
                               <div class="chain-name">{{ getChainName(selectedToChain) }}</div>
                             </div>
                           </div>
-                          <div v-else class="placeholder-token">
-                            <span class="placeholder-text">選擇目標代幣</span>
+                          <div v-else class="placeholder-chain">
+                            <span class="placeholder-text">選擇目標鏈</span>
                           </div>
                           <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
@@ -377,24 +362,30 @@
               <!-- Side Panel -->
               <div class="space-y-6">
                 <!-- Recent Transactions -->
-                <div class="bg-white rounded-2xl shadow-lg p-6">
-                  <h4 class="text-lg font-bold text-gray-900 mb-4">📊 最近交易</h4>
-                  <div v-if="recentTransactions.length === 0" class="text-center py-4 text-gray-500">
+                <div class="bg-slate-800/40 backdrop-blur-md border border-emerald-300/30 rounded-2xl shadow-lg p-6">
+                  <div class="flex items-center gap-3 mb-4">
+                    <div class="transaction-icon">
+                      <div class="icon-bg"></div>
+                      <div class="icon-accent"></div>
+                    </div>
+                    <h4 class="text-lg font-bold text-white">最近交易</h4>
+                  </div>
+                  <div v-if="recentTransactions.length === 0" class="text-center py-4 text-emerald-300">
                     暫無交易記錄
                   </div>
                   <div v-else class="space-y-3">
                     <div v-for="tx in visibleTransactions" :key="tx.id" class="transaction-item">
                       <div class="flex items-center justify-between">
                         <div class="flex-1">
-                          <div class="font-semibold text-gray-900">{{ tx.amount }} {{ tx.symbol }}</div>
-                          <div class="text-sm text-gray-500">{{ tx.chain }}</div>
-                          <div class="text-xs text-gray-400 mt-1">{{ tx.timestamp }}</div>
+                          <div class="font-semibold text-white">{{ tx.amount }} {{ tx.symbol }}</div>
+                          <div class="text-sm text-emerald-200">{{ tx.chain }}</div>
+                          <div class="text-xs text-emerald-300 mt-1">{{ tx.timestamp }}</div>
                         </div>
                         <div class="text-right">
-                          <div class="text-sm text-gray-600">{{ tx.cost }} {{ tx.costSymbol }}</div>
+                          <div class="text-sm text-emerald-200">{{ tx.cost }} {{ tx.costSymbol }}</div>
                           <div class="text-sm" :class="getStatusClass(tx.status)">{{ getStatusText(tx.status) }}</div>
                           <div v-if="tx.explorerURL" class="mt-1">
-                            <a :href="tx.explorerURL" target="_blank" class="text-xs text-blue-600 hover:text-blue-800">
+                            <a :href="tx.explorerURL" target="_blank" class="text-xs text-emerald-400 hover:text-emerald-300">
                               查看詳情 ↗
                             </a>
                           </div>
@@ -403,23 +394,31 @@
                     </div>
                     
                     <!-- Toggle more/less -->
-                    <div v-if="hiddenTransactionCount > 0" class="mt-4 flex justify-center">
-                      <button class="toggle-transactions-btn" @click="showAllTransactions = !showAllTransactions">
-                        <span v-if="!showAllTransactions">顯示其餘 {{ hiddenTransactionCount }} 筆交易</span>
-                        <span v-else>收合交易記錄</span>
+                    <div v-if="hiddenTransactionCount > 0" class="pt-2">
+                      <button 
+                        @click="showAllTransactions = !showAllTransactions"
+                        class="w-full py-2 px-4 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 hover:text-white border border-emerald-400/30 rounded-lg transition-all duration-300 font-medium text-sm"
+                      >
+                        {{ showAllTransactions ? '收合' : `顯示其餘 ${hiddenTransactionCount} 筆交易` }}
                       </button>
                     </div>
                   </div>
                 </div>
 
                 <!-- Supported Chains -->
-                <div class="bg-white rounded-2xl shadow-lg p-6">
-                  <h4 class="text-lg font-bold text-gray-900 mb-4">🔗 Nexus 支援的主網</h4>
-                  <div v-if="supportedChains.length === 0" class="text-center py-4 text-gray-500">
+                <div class="bg-slate-800/40 backdrop-blur-md border border-emerald-300/30 rounded-2xl shadow-lg p-6">
+                  <div class="flex items-center gap-3 mb-4">
+                    <div class="chains-icon">
+                      <div class="icon-bg"></div>
+                      <div class="icon-accent"></div>
+                    </div>
+                    <h4 class="text-lg font-bold text-white">Nexus 支援的主網</h4>
+                  </div>
+                  <div v-if="supportedChains.length === 0" class="text-center py-4 text-emerald-300">
                     <p class="text-sm">載入中...</p>
                   </div>
                   <div v-else class="space-y-3">
-                    <div v-for="chain in supportedChains" :key="chain.id" class="supported-chain-item">
+                    <div v-for="chain in visibleSupportedChains" :key="chain.id" class="supported-chain-item">
                       <div class="flex items-center gap-3">
                         <div class="chain-icon">
                           <img v-if="chain.logo" 
@@ -430,13 +429,23 @@
                           <span v-else class="text-2xl">{{ chain.icon }}</span>
                         </div>
                         <div>
-                          <div class="font-semibold text-gray-900">{{ chain.name }}</div>
-                          <div class="text-sm text-gray-500">{{ chain.symbol }} • ID: {{ chain.id }}</div>
+                          <div class="font-semibold text-white">{{ chain.name }}</div>
+                          <div class="text-sm text-emerald-200">{{ chain.symbol }} • ID: {{ chain.id }}</div>
                         </div>
                       </div>
                     </div>
+                    
+                    <!-- 展開/收合按鈕 -->
+                    <div v-if="hiddenChainCount > 0" class="pt-2">
+                      <button 
+                        @click="showAllChains = !showAllChains"
+                        class="w-full py-2 px-4 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 hover:text-white border border-emerald-400/30 rounded-lg transition-all duration-300 font-medium text-sm"
+                      >
+                        {{ showAllChains ? '收合' : `顯示其餘 ${hiddenChainCount} 條` }}
+                      </button>
+                    </div>
                   </div>
-                  <div v-if="supportedChains.length > 0" class="mt-4 text-xs text-gray-400 text-center">
+                  <div v-if="supportedChains.length > 0" class="mt-4 text-xs text-emerald-300 text-center">
                     由 Avail Nexus API 動態提供
                   </div>
                 </div>
@@ -497,17 +506,19 @@
                   v-for="token in getFilteredFromTokens(fromTokenSearch)" 
                   :key="`${selectedFromChain}-${token.symbol}`"
                   @click="selectFromToken(token, selectedFromChain)"
-                class="token-option"
-              >
-                  <div class="token-icon">
-                    <img v-if="token.logo" :src="token.logo" :alt="token.symbol" class="w-8 h-8 rounded-full" />
-                    <span v-else class="fallback-icon">{{ token.symbol.charAt(0) }}</span>
-                  </div>
-                  <div class="token-details">
-                    <div class="token-symbol">{{ token.symbol }}</div>
-                    <div class="token-name">{{ token.name || token.symbol }}</div>
-                    <div class="token-balance">{{ getTokenBalance(token, selectedFromChain) }}</div>
-                    <div class="token-chains">{{ getTokenChainCount(token) }} chains</div>
+                  class="token-option"
+                >
+                  <div class="token-info">
+                    <div class="token-icon">
+                      <img v-if="token.logo" :src="token.logo" :alt="token.symbol" class="w-8 h-8 rounded-full" />
+                      <span v-else class="fallback-icon">{{ token.symbol.charAt(0) }}</span>
+                    </div>
+                    <div class="token-details">
+                      <div class="token-symbol">{{ token.symbol }}</div>
+                      <div class="token-name">{{ token.name || token.symbol }}</div>
+                      <div class="token-balance">{{ getTokenBalance(token, selectedFromChain) }}</div>
+                      <div class="token-chains">{{ getTokenChainCount(token) }} chains</div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -517,12 +528,12 @@
       </div>
     </div>
 
-    <!-- To Token Selection Modal -->
-    <div v-if="showToTokenModal" class="modal-overlay" @click="showToTokenModal = false">
+    <!-- To Chain Selection Modal -->
+    <div v-if="showToChainModal" class="modal-overlay" @click="showToChainModal = false">
       <div class="modal-container" @click.stop>
         <div class="modal-header">
-          <h3 class="modal-title">選擇目標代幣</h3>
-          <button @click="showToTokenModal = false" class="modal-close">
+          <h3 class="modal-title">選擇目標鏈</h3>
+          <button @click="showToChainModal = false" class="modal-close">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
             </svg>
@@ -533,55 +544,28 @@
           <div class="search-box">
             <input 
               v-model="toTokenSearch"
-              placeholder="搜尋代幣或鏈..."
+              placeholder="搜尋鏈..."
               class="search-input"
             />
           </div>
           
-          <div class="chains-tokens-container">
-            <!-- 左側：目標鏈列表 -->
-            <div class="chains-section">
-              <h4 class="section-title">Destination Chain</h4>
-              <div class="chains-list">
-                <div 
-                  v-for="chain in filteredToChains" 
-                  :key="chain.id"
-                  @click="selectToChain(chain.id)"
-                  :class="['chain-option', { active: selectedToChain === chain.id }]"
-                >
-                  <div class="chain-icon">
-                    <img v-if="chain.logo" :src="chain.logo" :alt="chain.name" class="w-8 h-8 rounded-full" />
-                    <span v-else class="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-xs">🌐</span>
-                  </div>
-                  <div class="chain-name">{{ chain.name }}</div>
-                </div>
+          <div class="chains-grid">
+            <div 
+              v-for="chain in filteredToChains" 
+              :key="chain.id"
+              @click="selectToChain(chain.id)"
+              :class="['chain-card', { active: selectedToChain === chain.id }]"
+            >
+              <div class="chain-icon">
+                <img v-if="chain.logo" :src="chain.logo" :alt="chain.name" class="w-10 h-10 rounded-full" />
+                <span v-else class="w-10 h-10 rounded-full bg-emerald-500/20 flex items-center justify-center text-lg">🌐</span>
               </div>
-              </div>
-              
-            <!-- 右側：目標代幣列表 -->
-            <div class="tokens-section">
-              <h4 class="section-title">Destination Token</h4>
-              <div class="tokens-list">
-                <div 
-                  v-for="token in getFilteredToTokens(toTokenSearch)" 
-                  :key="`${selectedToChain}-${token.symbol}`"
-                  @click="selectToToken(token, selectedToChain)"
-                class="token-option"
-              >
-                  <div class="token-icon">
-                    <img v-if="token.logo" :src="token.logo" :alt="token.symbol" class="w-8 h-8 rounded-full" />
-                    <span v-else class="fallback-icon">{{ token.symbol.charAt(0) }}</span>
-                  </div>
-                  <div class="token-details">
-                    <div class="token-symbol">{{ token.symbol }}</div>
-                    <div class="token-name">{{ token.name || token.symbol }}</div>
-                    <div class="token-balance">{{ getTokenBalance(token, selectedToChain) }}</div>
-                    <div class="token-chains">{{ getTokenChainCount(token) }} chains</div>
-                  </div>
-                </div>
-                </div>
+              <div class="chain-info">
+                <div class="chain-name">{{ chain.name }}</div>
+                <div class="chain-gas-symbol">{{ getChainGasSymbol(chain.id) }}</div>
               </div>
             </div>
+          </div>
         </div>
       </div>
      </div>
@@ -782,6 +766,7 @@ const swapFees = ref(null)
 // Modal states
 const showFromTokenModal = ref(false)
 const showToTokenModal = ref(false)
+const showToChainModal = ref(false)
 const fromTokenSearch = ref('')
 const toTokenSearch = ref('')
 
@@ -794,8 +779,9 @@ const usdcBalances = getSelectedTokenBalances
 
 // show more/less for chain list
 const showAllBalances = ref(false)
+const showAllChains = ref(false)
 const visibleBalances = computed(() => {
-  const list = usdcBalances.value || []
+  const list = getSelectedTokenBalances.value || []
   
   // 按餘額大小排序（從大到小）
   const sortedList = [...list].sort((a, b) => {
@@ -808,20 +794,33 @@ const visibleBalances = computed(() => {
   return sortedList.slice(0, 3)
 })
 const hiddenCount = computed(() => {
-  const total = (usdcBalances.value || []).length
+  const total = (getSelectedTokenBalances.value || []).length
   return total > 3 ? total - 3 : 0
+})
+
+// 可見的支援主網列表
+const visibleSupportedChains = computed(() => {
+  const chains = supportedChains.value || []
+  if (showAllChains.value) return chains
+  return chains.slice(0, 4) // 預設顯示前4個
+})
+
+// 隱藏的主網數量
+const hiddenChainCount = computed(() => {
+  const total = (supportedChains.value || []).length
+  return total > 4 ? total - 4 : 0
 })
 
 // 交易記錄相關 computed
 const visibleTransactions = computed(() => {
   const list = recentTransactions.value || []
   if (showAllTransactions.value) return list
-  return list.slice(0, 3)
+  return list.slice(0, 4) // 預設顯示前4筆
 })
 
 const hiddenTransactionCount = computed(() => {
   const total = (recentTransactions.value || []).length
-  return total > 3 ? total - 3 : 0
+  return total > 4 ? total - 4 : 0
 })
 
 const supportedChains = computed(() => {
@@ -908,7 +907,6 @@ const canSwap = computed(() => {
   
   return selectedFromToken.value && 
          selectedFromChain.value && 
-         selectedToToken.value && 
          selectedToChain.value && 
          fromAmount.value && 
          parseFloat(fromAmount.value) > 0
@@ -1021,12 +1019,12 @@ const getStatusText = (status) => {
 // 獲取狀態樣式類別
 const getStatusClass = (status) => {
   const classMap = {
-    'completed': 'text-green-600',
-    'pending': 'text-yellow-600',
-    'failed': 'text-red-600',
-    'cancelled': 'text-gray-600'
+    'completed': 'text-emerald-400',
+    'pending': 'text-yellow-400',
+    'failed': 'text-red-400',
+    'cancelled': 'text-emerald-300'
   }
-  return classMap[status] || 'text-gray-600'
+  return classMap[status] || 'text-emerald-300'
 }
 
 // ===== Swap 相關方法 =====
@@ -1041,15 +1039,6 @@ const selectFromChain = (chainId) => {
   console.log('[GasExchange] 選擇來源鏈:', chainId)
 }
 
-// 選擇目標鏈
-const selectToChain = (chainId) => {
-  selectedToChain.value = chainId
-  // 清空已選的代幣，因為鏈改變了
-  selectedToToken.value = null
-  // 清空搜尋
-  toTokenSearch.value = ''
-  console.log('[GasExchange] 選擇目標鏈:', chainId)
-}
 
 // 選擇來源代幣
 const selectFromToken = (token, chainId) => {
@@ -1073,6 +1062,22 @@ const selectToToken = (token, chainId) => {
   selectedToChain.value = chainId || token.chainId
   showToTokenModal.value = false
   toTokenSearch.value = ''
+  
+  // 清除舊的估算
+  swapEstimate.value = null
+  toAmount.value = ''
+  
+  // 如果有金額，重新估算
+  if (fromAmount.value) {
+    estimateSwap()
+  }
+}
+
+// 選擇目標鏈
+const selectToChain = (chainId) => {
+  selectedToChain.value = chainId
+  selectedToToken.value = null // 清空代幣選擇，因為我們只選擇鏈
+  showToChainModal.value = false
   
   // 清除舊的估算
   swapEstimate.value = null
@@ -1134,7 +1139,7 @@ const estimateSwap = async () => {
     toAmount.value = estimatedOutput.toFixed(6)
     
     swapEstimate.value = {
-      rate: `1 ${selectedFromToken.value.symbol} = 0.998 ${selectedToToken.value.symbol}`,
+      rate: `1 ${selectedFromToken.value.symbol} = 0.998 ${getChainGasSymbol(selectedToChain.value)}`,
       fees: '0.002',
       estimatedTime: '2-5 分鐘',
       route: `${getChainName(selectedFromChain.value)} → ${getChainName(selectedToChain.value)}`
@@ -1162,17 +1167,12 @@ const executeSwap = async () => {
     // 驗證必要參數  
     console.log('[GasExchange] 開始驗證 swap 參數...')
     console.log('[GasExchange] selectedFromToken:', selectedFromToken.value)
-    console.log('[GasExchange] selectedToToken:', selectedToToken.value)
     console.log('[GasExchange] selectedFromChain:', selectedFromChain.value)
     console.log('[GasExchange] selectedToChain:', selectedToChain.value)
     console.log('[GasExchange] fromAmount:', fromAmount.value)
     
     if (!selectedFromToken.value) {
       throw new Error('請選擇有效的來源代幣')
-    }
-    
-    if (!selectedToToken.value) {
-      throw new Error('請選擇有效的目標代幣')
     }
     
     if (!selectedFromChain.value) {
@@ -1189,34 +1189,33 @@ const executeSwap = async () => {
     
     // 檢查代幣是否有正確的地址屬性（根據 Nexus API 結構）
     const fromTokenAddress = selectedFromToken.value.tokenAddress || selectedFromToken.value.contractAddress
-    const toTokenAddress = selectedToToken.value.tokenAddress || selectedToToken.value.contractAddress
     const fromDecimals = selectedFromToken.value.decimals
+    
+    // 對於目標鏈，我們使用原生 Gas 代幣，不需要代幣地址
+    // 目標鏈的 Gas 代幣由鏈本身決定（ETH、BNB、MATIC 等）
     
     console.log('[GasExchange] 代幣地址檢查:')
     console.log('  - selectedFromToken:', selectedFromToken.value)
-    console.log('  - selectedToToken:', selectedToToken.value)
+    console.log('  - selectedToChain:', selectedToChain.value)
     console.log('  - fromTokenAddress (tokenAddress):', selectedFromToken.value.tokenAddress)
     console.log('  - fromTokenAddress (contractAddress):', selectedFromToken.value.contractAddress)
     console.log('  - fromTokenAddress (final):', fromTokenAddress)
-    console.log('  - toTokenAddress (tokenAddress):', selectedToToken.value.tokenAddress)
-    console.log('  - toTokenAddress (contractAddress):', selectedToToken.value.contractAddress)
-    console.log('  - toTokenAddress (final):', toTokenAddress)
     console.log('  - fromDecimals:', fromDecimals)
+    console.log('  - targetGasSymbol:', getChainGasSymbol(selectedToChain.value))
     
     if (!fromTokenAddress) {
       console.error('[GasExchange] 來源代幣缺少地址:', selectedFromToken.value)
       throw new Error('來源代幣缺少合約地址')
     }
     
-    if (!toTokenAddress) {
-      console.error('[GasExchange] 目標代幣缺少地址:', selectedToToken.value)
-      throw new Error('目標代幣缺少合約地址')
-    }
+    // 獲取目標鏈的原生代幣地址（通常是零地址）
+    const toTokenAddress = '0x0000000000000000000000000000000000000000' // 原生代幣地址
     
     console.log('[GasExchange] 使用地址:')
     console.log('  - fromTokenAddress:', fromTokenAddress)
-    console.log('  - toTokenAddress:', toTokenAddress)
     console.log('  - fromDecimals:', fromDecimals)
+    console.log('  - targetGasSymbol:', getChainGasSymbol(selectedToChain.value))
+    console.log('  - toTokenAddress (native):', toTokenAddress)
     
     const params = {
       fromChainId: selectedFromChain.value,
@@ -1419,6 +1418,24 @@ const getChainSymbol = (chainId) => {
   return chain?.symbol || 'Gas'
 }
 
+// 獲取鏈的 Gas 代幣符號
+const getChainGasSymbol = (chainId) => {
+  const gasSymbolMap = {
+    1: 'ETH',        // Ethereum
+    10: 'ETH',       // OP Mainnet
+    56: 'BNB',       // BSC
+    137: 'MATIC',    // Polygon
+    250: 'FTM',      // Fantom
+    42161: 'ETH',    // Arbitrum One
+    43114: 'AVAX',   // Avalanche
+    8453: 'ETH',     // Base
+    534352: 'ETH',   // Scroll
+    59144: 'ETH',    // Linea
+    81457: 'ETH',    // Blast
+  }
+  return gasSymbolMap[chainId] || 'ETH'
+}
+
 // 獲取代幣圖標 - 使用官方提供的 logo
 const getTokenIcon = (token) => {
   return token.logo
@@ -1571,7 +1588,7 @@ const getTokenChainCount = (token) => {
 // 獲取 swap 按鈕文字
 const getSwapButtonText = () => {
   if (!selectedFromToken.value) {
-    return '選擇來源代幣'
+    return '兌換Gas'
   }
   
   if (!selectedToToken.value) {
@@ -1632,7 +1649,7 @@ onMounted(() => {
 
 <style scoped>
 .btn-primary {
-  @apply bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-amber-500/30 focus:ring-offset-2 shadow-lg hover:shadow-xl hover:scale-105;
+  @apply bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-emerald-500/30 focus:ring-offset-2 shadow-lg hover:shadow-xl hover:scale-105;
 }
 
 .refresh-btn {
@@ -1640,7 +1657,7 @@ onMounted(() => {
 }
 
 .total-balance-card {
-  @apply bg-gradient-to-br from-gray-50 to-gray-200 p-8 rounded-3xl shadow-lg text-center transition-all duration-300 hover:shadow-xl border border-gray-200/80;
+  @apply bg-white/10 backdrop-blur-md border border-emerald-300/30 p-8 rounded-3xl shadow-lg text-center transition-all duration-300 hover:shadow-xl;
 }
 
 /* Premium styling for total card */
@@ -1656,24 +1673,24 @@ onMounted(() => {
   pointer-events: none;
 }
 .total-header {
-  @apply text-sm font-semibold tracking-wide text-gray-600;
+  @apply text-sm font-semibold tracking-wide text-emerald-100;
 }
 .total-amount {
-  @apply text-6xl font-extrabold tracking-tight my-2 text-gray-900 tabular-nums;
+  @apply text-6xl font-extrabold tracking-tight my-2 text-white tabular-nums;
 }
 .total-symbol {
-  @apply text-sm text-gray-500 uppercase tracking-wider;
+  @apply text-sm text-emerald-200 uppercase tracking-wider;
 }
 
 .chain-balance-card {
   @apply bg-white p-6 rounded-2xl shadow-md hover:shadow-lg hover:-translate-y-1 transition-all duration-300 flex flex-col items-center justify-start text-center h-full border border-gray-100 hover:border-gray-200;
 }
 .balance-list {
-  @apply bg-white rounded-3xl border border-gray-200 divide-y divide-gray-100 overflow-hidden shadow;
+  @apply bg-slate-800/50 backdrop-blur-md rounded-3xl border border-emerald-300/30 divide-y divide-emerald-300/20 overflow-hidden shadow;
 }
 
 .balance-row {
-  @apply flex items-center justify-between px-6 py-5 hover:bg-gray-50 transition-colors;
+  @apply flex items-center justify-between px-6 py-5 hover:bg-emerald-500/10 transition-colors;
 }
 
 .row-left {
@@ -1685,15 +1702,15 @@ onMounted(() => {
 }
 
 .fallback-logo {
-  @apply w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 text-gray-500 text-sm;
+  @apply w-8 h-8 flex items-center justify-center rounded-full bg-emerald-500/20 text-emerald-300 text-sm;
 }
 
 .row-chain-name {
-  @apply text-sm font-semibold text-gray-900;
+  @apply text-sm font-semibold text-white;
 }
 
 .row-sub {
-  @apply text-xs text-gray-500;
+  @apply text-xs text-emerald-200;
 }
 
 .row-right {
@@ -1701,29 +1718,26 @@ onMounted(() => {
 }
 
 .row-amount {
-  @apply text-lg font-bold tracking-tight text-gray-900;
+  @apply text-lg font-bold tracking-tight text-white;
 }
 
 .row-symbol {
-  @apply text-xs text-gray-500;
+  @apply text-xs text-emerald-200;
 }
 
 .toggle-list-btn {
-  @apply px-4 py-2 text-sm font-semibold text-amber-700 bg-amber-50 hover:bg-amber-100 border border-amber-200 rounded-lg transition-colors;
+  @apply px-4 py-2 text-sm font-semibold text-emerald-300 bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-400/30 rounded-lg transition-colors;
 }
 
-.toggle-transactions-btn {
-  @apply px-4 py-2 text-sm font-semibold text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-lg transition-colors;
-}
 
 .token-switch {
-  @apply inline-flex items-center bg-white border border-gray-200 rounded-2xl p-1 shadow;
+  @apply inline-flex items-center bg-white/10 backdrop-blur-md border border-emerald-300/30 rounded-2xl p-1 shadow;
 }
 .token-btn {
-  @apply px-5 py-2 text-sm font-semibold rounded-xl text-gray-600 hover:text-gray-900 hover:bg-gray-50 transition-colors;
+  @apply px-5 py-2 text-sm font-semibold rounded-xl text-emerald-200 hover:text-white hover:bg-emerald-500/20 transition-colors;
 }
 .token-btn.active {
-  @apply bg-gradient-to-r from-amber-500 to-orange-600 text-white shadow-md hover:from-amber-600 hover:to-orange-700;
+  @apply bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-md hover:from-emerald-600 hover:to-teal-700;
 }
 
 /* Text styles are now applied directly in the template for more granular control */
@@ -1822,7 +1836,7 @@ onMounted(() => {
 
 <style scoped>
 .btn-primary {
-  @apply bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-amber-500/30 focus:ring-offset-2 shadow-lg hover:shadow-xl hover:scale-105;
+  @apply bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-emerald-500/30 focus:ring-offset-2 shadow-lg hover:shadow-xl hover:scale-105;
 }
 
 .refresh-btn {
@@ -1830,7 +1844,7 @@ onMounted(() => {
 }
 
 .total-balance-card {
-  @apply bg-gradient-to-br from-gray-50 to-gray-200 p-8 rounded-3xl shadow-lg text-center transition-all duration-300 hover:shadow-xl border border-gray-200/80;
+  @apply bg-white/10 backdrop-blur-md border border-emerald-300/30 p-8 rounded-3xl shadow-lg text-center transition-all duration-300 hover:shadow-xl;
 }
 
 .chain-balance-card {
@@ -1958,26 +1972,104 @@ onMounted(() => {
 
 /* Main Swap Card */
 .swap-main-card {
-  @apply bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden;
-  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  @apply rounded-2xl shadow-2xl border border-emerald-400/30 overflow-hidden;
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.98) 0%, rgba(30, 41, 59, 0.98) 50%, rgba(15, 23, 42, 0.98) 100%);
+  backdrop-filter: blur(20px);
+  box-shadow: 
+    0 20px 40px -12px rgba(0, 0, 0, 0.3),
+    0 0 0 1px rgba(16, 185, 129, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  position: relative;
+}
+
+.swap-main-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent 0%, rgba(16, 185, 129, 0.3) 50%, transparent 100%);
 }
 
 /* Header */
 .swap-header {
-  @apply flex items-center justify-between p-6 border-b border-gray-100;
-  background: linear-gradient(90deg, #f8fafc 0%, #ffffff 100%);
+  @apply flex items-center justify-between p-5 border-b border-emerald-400/20;
+  background: linear-gradient(90deg, rgba(16, 185, 129, 0.03) 0%, rgba(20, 184, 166, 0.03) 100%);
+}
+
+/* Title Container */
+.swap-title-container {
+  @apply flex items-center gap-3;
+}
+
+/* Title Icons */
+.title-icon,
+.transaction-icon,
+.chains-icon {
+  @apply relative w-8 h-8 flex items-center justify-center;
+}
+
+.icon-bg {
+  @apply absolute inset-0 rounded-lg;
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.2) 0%, rgba(20, 184, 166, 0.2) 100%);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.icon-accent {
+  @apply absolute inset-1 rounded-md;
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.4) 0%, rgba(20, 184, 166, 0.4) 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+/* Specific icon designs */
+.title-icon::before {
+  content: '';
+  @apply absolute w-3 h-3 bg-emerald-400 rounded-sm z-10;
+  transform: rotate(45deg);
+  box-shadow: 0 0 8px rgba(16, 185, 129, 0.4);
+}
+
+.title-icon::after {
+  content: '';
+  @apply absolute w-2 h-2 bg-emerald-300 rounded-sm z-10;
+  transform: rotate(45deg) translate(2px, -2px);
+  box-shadow: 0 0 6px rgba(16, 185, 129, 0.3);
+}
+
+.transaction-icon::before {
+  content: '';
+  @apply absolute w-4 h-0.5 bg-emerald-400 z-10;
+  transform: rotate(45deg);
+  box-shadow: 0 0 8px rgba(16, 185, 129, 0.4);
+}
+
+.transaction-icon::after {
+  content: '';
+  @apply absolute w-0.5 h-4 bg-emerald-400 z-10;
+  transform: translate(1px, -1px);
+  box-shadow: 0 0 8px rgba(16, 185, 129, 0.4);
+}
+
+.chains-icon::before {
+  content: '';
+  @apply absolute w-3 h-3 border-2 border-emerald-400 rounded-full z-10;
+  box-shadow: 0 0 8px rgba(16, 185, 129, 0.4);
+}
+
+.chains-icon::after {
+  content: '';
+  @apply absolute w-2 h-2 border border-emerald-300 rounded-full z-10;
+  transform: translate(1px, 1px);
+  box-shadow: 0 0 6px rgba(16, 185, 129, 0.3);
 }
 
 .swap-title {
-  @apply text-2xl font-bold text-gray-900;
-  background: linear-gradient(135deg, #1f2937 0%, #374151 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  @apply text-xl font-bold text-white;
 }
 
 .swap-subtitle {
-  @apply text-sm text-gray-600 mt-1;
+  @apply text-sm text-emerald-200/80 mt-1;
 }
 
 /* Mode Toggle */
@@ -2001,7 +2093,7 @@ onMounted(() => {
 
 /* Swap Sections */
 .swap-section {
-  @apply space-y-3;
+  @apply space-y-4 p-5;
 }
 
 .section-header {
@@ -2009,11 +2101,11 @@ onMounted(() => {
 }
 
 .section-title {
-  @apply text-sm font-semibold text-gray-700;
+  @apply text-base font-semibold text-white;
 }
 
 .balance-hint {
-  @apply text-xs text-gray-500;
+  @apply text-sm text-emerald-300/80;
 }
 
 /* Input Groups */
@@ -2022,11 +2114,11 @@ onMounted(() => {
 }
 
 .token-selector {
-  @apply flex items-center justify-between p-4 bg-gray-50 border-2 border-gray-200 rounded-2xl cursor-pointer transition-all duration-300 hover:border-blue-300 hover:bg-blue-50 min-w-[200px];
+  @apply flex items-center justify-between p-4 bg-white/5 backdrop-blur-md border border-emerald-300/20 rounded-xl cursor-pointer transition-all duration-300 hover:border-emerald-400/40 hover:bg-emerald-500/10 min-w-[200px];
 }
 
 .token-selector:hover {
-  box-shadow: 0 4px 20px rgba(59, 130, 246, 0.1);
+  box-shadow: 0 4px 20px rgba(16, 185, 129, 0.2);
 }
 
 .selected-token {
@@ -2034,7 +2126,7 @@ onMounted(() => {
 }
 
 .token-icon {
-  @apply w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center;
+  @apply w-8 h-8 rounded-full bg-white shadow-sm flex items-center justify-center;
 }
 
 .token-details {
@@ -2042,15 +2134,15 @@ onMounted(() => {
 }
 
 .token-symbol {
-  @apply font-bold text-gray-900;
+  @apply font-bold text-white;
 }
 
 .chain-name {
-  @apply text-sm text-gray-600;
+  @apply text-sm text-emerald-200;
 }
 
 .placeholder-token {
-  @apply flex items-center gap-3 text-gray-500;
+  @apply flex items-center gap-3 text-emerald-300;
 }
 
 .placeholder-text {
@@ -2063,11 +2155,11 @@ onMounted(() => {
 }
 
 .amount-input {
-  @apply w-full px-4 py-4 text-xl font-bold text-gray-900 bg-white border-2 border-gray-200 rounded-2xl focus:border-blue-400 focus:ring-4 focus:ring-blue-400/20 focus:outline-none transition-all duration-300 disabled:bg-gray-50 disabled:text-gray-500;
+  @apply w-full px-4 py-4 text-lg font-semibold text-white bg-white/5 backdrop-blur-md border border-emerald-300/20 rounded-xl focus:border-emerald-400/40 focus:ring-2 focus:ring-emerald-400/20 focus:outline-none transition-all duration-300 disabled:bg-emerald-500/10 disabled:text-emerald-300;
 }
 
 .max-button {
-  @apply absolute right-3 top-1/2 transform -translate-y-1/2 px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold rounded-lg transition-all duration-300 hover:scale-105;
+  @apply absolute right-3 top-1/2 transform -translate-y-1/2 px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold rounded-lg transition-all duration-300 hover:scale-105;
 }
 
 /* Swap Arrow */
@@ -2076,12 +2168,34 @@ onMounted(() => {
 }
 
 .swap-arrow {
-  @apply w-12 h-12 bg-white border-2 border-gray-200 rounded-full flex items-center justify-center text-gray-600 hover:text-blue-600 hover:border-blue-300 hover:bg-blue-50 transition-all duration-300 transform hover:scale-110 hover:rotate-180 shadow-lg z-10;
+  @apply w-10 h-10 bg-white/5 backdrop-blur-md border border-emerald-300/20 rounded-full flex items-center justify-center text-emerald-300 hover:text-emerald-400 hover:border-emerald-400/40 hover:bg-emerald-500/10 transition-all duration-300 transform hover:scale-105 hover:rotate-180 shadow-md z-10;
 }
 
 /* Swap Info */
 .swap-info {
-  @apply bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200 rounded-2xl p-4;
+  @apply rounded-2xl p-6 relative overflow-hidden;
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.12) 0%, rgba(20, 184, 166, 0.12) 50%, rgba(16, 185, 129, 0.12) 100%);
+  border: 1px solid rgba(16, 185, 129, 0.4);
+  box-shadow: 
+    0 8px 32px rgba(16, 185, 129, 0.1),
+    0 0 0 1px rgba(16, 185, 129, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  animation: infoGlow 3s ease-in-out infinite;
+}
+
+@keyframes infoGlow {
+  0%, 100% {
+    box-shadow: 
+      0 8px 32px rgba(16, 185, 129, 0.1),
+      0 0 0 1px rgba(16, 185, 129, 0.2),
+      inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  }
+  50% {
+    box-shadow: 
+      0 12px 40px rgba(16, 185, 129, 0.15),
+      0 0 0 1px rgba(16, 185, 129, 0.3),
+      inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  }
 }
 
 .info-header {
@@ -2089,32 +2203,57 @@ onMounted(() => {
 }
 
 .info-title {
-  @apply text-lg font-bold text-blue-900;
+  @apply text-xl font-bold text-white;
+  background: linear-gradient(135deg, #10b981 0%, #14b8a6 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-shadow: 0 0 20px rgba(16, 185, 129, 0.3);
 }
 
 .refresh-btn {
-  @apply p-2 text-blue-600 hover:text-blue-800 hover:bg-blue-100 rounded-lg transition-all duration-300;
+  @apply p-3 text-emerald-300 hover:text-white hover:bg-emerald-500/30 rounded-xl transition-all duration-300;
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.1);
 }
 
 .info-content {
-  @apply space-y-2;
+  @apply space-y-3;
 }
 
 .info-row {
-  @apply flex justify-between text-sm;
+  @apply flex justify-between items-center py-2 px-3 rounded-lg;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  transition: all 0.3s ease;
+}
+
+.info-row:hover {
+  background: rgba(16, 185, 129, 0.1);
+  border-color: rgba(16, 185, 129, 0.3);
+  transform: translateY(-1px);
+}
+
+.info-row span:first-child {
+  @apply text-emerald-200 font-medium text-sm;
+}
+
+.info-row span:last-child {
+  @apply text-white font-semibold text-sm;
 }
 
 /* Progress */
 .swap-progress {
-  @apply bg-gradient-to-br from-green-50 to-emerald-50 border border-green-200 rounded-2xl p-4;
+  @apply bg-gradient-to-br from-emerald-500/10 to-teal-500/10 border border-emerald-300/30 rounded-2xl p-4;
 }
 
 .progress-title {
-  @apply text-lg font-bold text-green-900 mb-4;
+  @apply text-lg font-bold text-emerald-200 mb-4;
 }
 
 .progress-counter {
-  @apply text-sm font-normal text-green-700 bg-green-100 px-2 py-1 rounded-full ml-2;
+  @apply text-sm font-normal text-emerald-300 bg-emerald-500/20 px-2 py-1 rounded-full ml-2;
 }
 
 .progress-steps {
@@ -2126,15 +2265,15 @@ onMounted(() => {
 }
 
 .step-indicator {
-  @apply w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold bg-gray-200 text-gray-600 transition-all duration-300;
+  @apply w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold bg-emerald-500/20 text-emerald-300 transition-all duration-300;
 }
 
 .step-indicator.completed {
-  @apply bg-green-500 text-white;
+  @apply bg-emerald-500 text-white;
 }
 
 .step-indicator.current {
-  @apply bg-blue-500 text-white animate-pulse;
+  @apply bg-teal-500 text-white animate-pulse;
 }
 
 .step-content {
@@ -2142,7 +2281,7 @@ onMounted(() => {
 }
 
 .step-title {
-  @apply font-semibold text-gray-900;
+  @apply font-semibold text-white;
 }
 
 .step-link {
@@ -2151,14 +2290,14 @@ onMounted(() => {
 
 /* Swap Execute Button */
 .swap-execute-btn {
-  @apply w-full py-4 px-6 text-lg font-bold rounded-2xl transition-all duration-300 transform hover:scale-105 disabled:transform-none;
-  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+  @apply w-full py-4 px-6 text-base font-semibold rounded-xl transition-all duration-300 transform hover:scale-105 disabled:transform-none;
+  background: linear-gradient(135deg, #10b981 0%, #14b8a6 100%);
   color: white;
-  box-shadow: 0 10px 25px rgba(59, 130, 246, 0.3);
+  box-shadow: 0 6px 20px rgba(16, 185, 129, 0.25);
 }
 
 .swap-execute-btn:hover:not(:disabled) {
-  box-shadow: 0 15px 35px rgba(59, 130, 246, 0.4);
+  box-shadow: 0 8px 25px rgba(16, 185, 129, 0.35);
 }
 
 .swap-execute-btn:disabled {
@@ -2178,34 +2317,41 @@ onMounted(() => {
 }
 
 .modal-container {
-  @apply bg-white rounded-3xl shadow-2xl max-w-4xl w-full mx-4 max-h-[80vh] overflow-hidden;
+  @apply rounded-2xl shadow-2xl max-w-2xl w-full mx-4 max-h-[70vh] overflow-hidden;
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.98) 0%, rgba(30, 41, 59, 0.98) 50%, rgba(15, 23, 42, 0.98) 100%);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  box-shadow: 
+    0 25px 50px -12px rgba(0, 0, 0, 0.6),
+    0 0 0 1px rgba(16, 185, 129, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
   animation: slideUp 0.3s ease-out;
 }
 
 .modal-header {
-  @apply flex items-center justify-between p-6 border-b border-gray-100;
-  background: linear-gradient(90deg, #f8fafc 0%, #ffffff 100%);
+  @apply flex items-center justify-between p-4 border-b border-emerald-400/30;
+  background: linear-gradient(90deg, rgba(16, 185, 129, 0.05) 0%, rgba(20, 184, 166, 0.05) 100%);
 }
 
 .modal-title {
-  @apply text-xl font-bold text-gray-900;
+  @apply text-xl font-bold text-white;
 }
 
 .modal-close {
-  @apply p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-all duration-300;
+  @apply p-2 text-emerald-300 hover:text-white hover:bg-emerald-500/20 rounded-lg transition-all duration-300;
 }
 
 .modal-content {
-  @apply p-6 max-h-[60vh] overflow-y-auto;
+  @apply p-4 max-h-[50vh] overflow-y-auto;
 }
 
 /* Search Box */
 .search-box {
-  @apply mb-4;
+  @apply mb-3;
 }
 
 .search-input {
-  @apply w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-400 focus:ring-4 focus:ring-blue-400/20 focus:outline-none transition-all duration-300;
+  @apply w-full px-4 py-3 border-2 border-emerald-400/30 rounded-xl focus:border-emerald-400 focus:ring-4 focus:ring-emerald-400/20 focus:outline-none transition-all duration-300 bg-white/5 text-white placeholder-emerald-300;
 }
 
 /* Chain Tabs */
@@ -2235,60 +2381,135 @@ onMounted(() => {
 }
 
 .chain-name {
-  @apply text-sm font-semibold text-gray-700;
+  @apply text-sm font-semibold text-white;
 }
 
 .token-option {
-  @apply flex items-center justify-between p-3 hover:bg-gray-50 rounded-xl cursor-pointer transition-all duration-300 hover:shadow-md;
+  @apply flex items-center p-3 hover:bg-emerald-500/10 rounded-lg cursor-pointer transition-all duration-300;
 }
 
 .token-info {
-  @apply flex items-center gap-3;
+  @apply flex items-center gap-3 flex-1;
+}
+
+.token-details {
+  @apply flex-1 space-y-1;
+}
+
+.token-symbol {
+  @apply text-sm font-semibold text-white;
 }
 
 .token-name {
-  @apply text-sm text-gray-600;
-}
-
-.token-address {
-  @apply text-xs text-gray-500 font-mono;
+  @apply text-xs text-emerald-200;
 }
 
 .token-balance {
-  @apply text-sm font-semibold text-gray-900;
+  @apply text-xs font-medium text-white;
+}
+
+.token-chains {
+  @apply text-xs text-emerald-300;
 }
 
 .fallback-icon {
-  @apply w-8 h-8 bg-gray-200 text-gray-600 rounded-full flex items-center justify-center font-bold;
+  @apply w-6 h-6 bg-white text-emerald-600 rounded-full flex items-center justify-center font-bold text-xs;
 }
 
 /* 新的清單容器樣式 */
 .chains-tokens-container {
-  @apply flex gap-6;
+  @apply flex gap-4;
 }
 
 .chains-section {
-  @apply w-1/3;
+  @apply w-1/2;
 }
 
 .tokens-section {
-  @apply w-2/3;
+  @apply w-1/2;
 }
 
 .section-title {
-  @apply text-lg font-semibold text-gray-900 mb-4;
+  @apply text-base font-semibold text-white mb-3;
 }
 
 .chains-list {
-  @apply space-y-2;
+  @apply space-y-1;
+}
+
+.tokens-list {
+  @apply space-y-1;
 }
 
 .chain-option {
-  @apply flex items-center space-x-3 p-3 hover:bg-gray-50 rounded-lg cursor-pointer transition-colors;
+  @apply flex items-center p-3 hover:bg-emerald-500/10 rounded-lg cursor-pointer transition-all duration-300;
 }
 
 .chain-option.active {
-  @apply bg-blue-50 border border-blue-200;
+  @apply bg-emerald-500/20 border border-emerald-400/50;
+}
+
+.chain-option .chain-icon {
+  @apply flex-shrink-0 mr-3;
+}
+
+.chain-option .chain-icon img,
+.chain-option .chain-icon span {
+  @apply w-8 h-8 rounded-full;
+}
+
+.chain-option .chain-name {
+  @apply text-sm font-semibold text-white;
+}
+
+/* Chain Selection Grid */
+.chains-grid {
+  @apply grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3;
+}
+
+.chain-card {
+  @apply flex flex-col items-center p-4 bg-white/5 border border-emerald-300/20 rounded-lg cursor-pointer transition-all duration-300 hover:bg-emerald-500/10 hover:border-emerald-400/40 hover:shadow-md;
+  min-height: 120px;
+}
+
+.chain-card.active {
+  @apply bg-emerald-500/20 border-emerald-400/60 shadow-md;
+}
+
+.chain-card .chain-icon {
+  @apply mb-3;
+}
+
+.chain-card .chain-info {
+  @apply text-center;
+}
+
+.chain-card .chain-name {
+  @apply text-sm font-semibold text-white mb-1;
+}
+
+.chain-gas-symbol {
+  @apply text-xs text-emerald-300 font-medium;
+}
+
+.chain-selector {
+  @apply flex items-center justify-between p-4 bg-white/5 backdrop-blur-md border border-emerald-300/20 rounded-xl cursor-pointer transition-all duration-300 hover:border-emerald-400/40 hover:bg-emerald-500/10 min-w-[200px];
+}
+
+.selected-chain {
+  @apply flex items-center gap-3;
+}
+
+.chain-details {
+  @apply flex-1;
+}
+
+.chain-symbol {
+  @apply font-bold text-white;
+}
+
+.placeholder-chain {
+  @apply flex items-center gap-3 text-emerald-300;
 }
 
 .chain-icon {
@@ -2469,11 +2690,14 @@ onMounted(() => {
 /* Processing Modal - 樸素灰色風格 */
 .processing-modal {
   @apply max-w-md w-full mx-4;
-  background: linear-gradient(135deg, #F5F5F5 0%, #E8E8E8 50%, #F5F5F5 100%);
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.98) 0%, rgba(30, 41, 59, 0.98) 50%, rgba(15, 23, 42, 0.98) 100%);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(16, 185, 129, 0.3);
   border-radius: 16px;
   box-shadow: 
-    0 8px 25px rgba(0, 0, 0, 0.1),
-    0 0 0 1px rgba(247, 147, 26, 0.2);
+    0 25px 50px -12px rgba(0, 0, 0, 0.6),
+    0 0 0 1px rgba(16, 185, 129, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
   position: relative;
   overflow: hidden;
 }
@@ -2573,13 +2797,12 @@ onMounted(() => {
 }
 
 .processing-title {
-  @apply text-2xl font-bold mb-2;
-  color: #555;
+  @apply text-2xl font-bold mb-2 text-white;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 .processing-subtitle {
-  @apply text-gray-600 mb-6;
+  @apply text-emerald-200 mb-6;
   font-weight: 400;
 }
 
@@ -2641,11 +2864,14 @@ onMounted(() => {
 /* Success Modal - 樸素灰色風格 */
 .success-modal {
   @apply max-w-lg w-full mx-4;
-  background: linear-gradient(135deg, #F5F5F5 0%, #E8E8E8 50%, #F5F5F5 100%);
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.98) 0%, rgba(30, 41, 59, 0.98) 50%, rgba(15, 23, 42, 0.98) 100%);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(16, 185, 129, 0.3);
   border-radius: 16px;
   box-shadow: 
-    0 8px 25px rgba(0, 0, 0, 0.1),
-    0 0 0 1px rgba(247, 147, 26, 0.2);
+    0 25px 50px -12px rgba(0, 0, 0, 0.6),
+    0 0 0 1px rgba(16, 185, 129, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
   position: relative;
   overflow: hidden;
 }
@@ -2667,8 +2893,8 @@ onMounted(() => {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  min-height: 400px;
-  padding-top: 4rem;
+  min-height: 500px;
+  padding-top: 5rem;
 }
 
 .success-icon {
@@ -2703,13 +2929,12 @@ onMounted(() => {
 }
 
 .success-title {
-  @apply text-3xl font-bold mb-3;
-  color: #555;
+  @apply text-3xl font-bold mb-3 text-white;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 .success-subtitle {
-  @apply text-gray-600 mb-6;
+  @apply text-emerald-200 mb-6;
   font-weight: 400;
 }
 
@@ -2719,11 +2944,12 @@ onMounted(() => {
 
 .detail-card {
   @apply rounded-lg p-4 relative;
-  background: rgba(255, 255, 255, 0.8);
-  border: 1px solid rgba(247, 147, 26, 0.2);
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(16, 185, 129, 0.3);
   box-shadow: 
-    0 2px 8px rgba(0, 0, 0, 0.05),
-    inset 0 1px 0 rgba(255, 255, 255, 0.5);
+    0 4px 12px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
 .detail-header {
@@ -2735,7 +2961,7 @@ onMounted(() => {
 }
 
 .detail-label {
-  @apply font-semibold text-gray-700;
+  @apply font-semibold text-white;
 }
 
 .detail-content {
@@ -2747,11 +2973,11 @@ onMounted(() => {
 }
 
 .row-label {
-  @apply text-gray-600 text-sm;
+  @apply text-emerald-200 text-sm;
 }
 
 .row-value {
-  @apply text-gray-800 font-semibold text-sm;
+  @apply text-white font-semibold text-sm;
 }
 
 .fee-row {
@@ -2759,11 +2985,11 @@ onMounted(() => {
 }
 
 .fee-label {
-  @apply text-gray-600 text-sm;
+  @apply text-emerald-200 text-sm;
 }
 
 .fee-value {
-  @apply text-gray-800 font-semibold text-sm;
+  @apply text-white font-semibold text-sm;
 }
 
 .success-actions {
@@ -2773,10 +2999,10 @@ onMounted(() => {
 .explorer-btn,
 .close-btn {
   @apply flex-1 flex items-center justify-center gap-2 px-6 py-4 font-semibold rounded-lg transition-all duration-200;
-  background: #E8E8E8;
-  color: #555;
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  background: rgba(16, 185, 129, 0.2);
+  color: #10b981;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
   min-height: 56px; /* 增加最小高度 */
   width: 100%; /* 確保寬度一致 */
   white-space: nowrap; /* 防止文字換行 */
@@ -2786,8 +3012,9 @@ onMounted(() => {
 .explorer-btn:hover,
 .close-btn:hover {
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  background: #D8D8D8;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  background: rgba(16, 185, 129, 0.3);
+  color: #ffffff;
 }
 
 /* Gas Pass 品牌動畫效果 */
@@ -2882,6 +3109,40 @@ onMounted(() => {
     transform: scale(1);
     opacity: 1;
   }
+}
+
+/* 添加首頁的動畫效果 */
+@keyframes float-slow {
+  0%, 100% { transform: translateY(0px) translateX(0px); }
+  33% { transform: translateY(-15px) translateX(10px); }
+  66% { transform: translateY(-5px) translateX(-5px); }
+}
+
+@keyframes float-reverse {
+  0%, 100% { transform: translateY(0px) translateX(0px); }
+  33% { transform: translateY(15px) translateX(-10px); }
+  66% { transform: translateY(5px) translateX(5px); }
+}
+
+@keyframes pulse-slow {
+  0%, 100% { transform: scale(1); opacity: 0.1; }
+  50% { transform: scale(1.1); opacity: 0.2; }
+}
+
+.animate-float-slow {
+  animation: float-slow 8s ease-in-out infinite;
+}
+
+.animate-float-reverse {
+  animation: float-reverse 6s ease-in-out infinite;
+}
+
+.animate-pulse-slow {
+  animation: pulse-slow 4s ease-in-out infinite;
+}
+
+.refresh-header-btn {
+  @apply flex items-center gap-2 px-4 py-2 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-200 hover:text-white border border-emerald-400/30 rounded-xl transition-all duration-300 font-semibold;
 }
 
 /* 響應式設計 */
