@@ -1,5 +1,6 @@
 import { VincentBridgeClient } from './logic/vincentClient.js';
 import { createWebAuth, bootstrapAuthFlow } from './auth.js';
+import { ethers } from 'ethers';
 
 const $ = (id) => document.getElementById(id);
 const logEl = $('log');
@@ -35,8 +36,9 @@ function getParamsFromForm() {
 
 function buildAbilityParams() {
   const f = getParamsFromForm();
-  const recipientInput = $('recipient')?.value?.trim();
   const delegator = $('delegator')?.value?.trim();
+  const recipientInput = $('recipient')?.value?.trim();
+  // recipient 應該使用 PKP Address，不是用戶錢包地址
   const recipient = recipientInput || delegator || '';
   const params = {
     rpcUrl: String(f.rpcUrl || '').trim(),
@@ -45,7 +47,7 @@ function buildAbilityParams() {
     fromToken: String(f.sourceToken || '').trim(),
     toToken: String(f.destinationToken || '').trim(),
     amount: String(f.amount || '').trim(),
-    recipient,
+    recipient, // 使用 PKP Address 作為 recipient
     slippageBps: f.slippageBps ? Number(f.slippageBps) : undefined,
   };
   // Sponsored flow 已移除；僅使用 Permit2
@@ -245,6 +247,18 @@ $('btn-precheck').addEventListener('click', async () => {
     const { resp, data, text } = await postJson('/api/vincent/precheck', { bridgeParams: params, delegatorPkpEthAddress: delegator, jwt, audience, appId, decodedJWT });
     if (!resp.ok || !data?.ok) throw new Error((data && data.error) || text || `HTTP ${resp.status}`);
     log('precheck 回應: ' + JSON.stringify(data.result));
+    
+    // 顯示 precheck 的關鍵參數
+    if (data?.hints) {
+      log('Precheck 關鍵參數:');
+      log('- signTypedData: ' + (data.hints.hasSignTypedData ? '有' : '無'));
+      log('- quoteId: ' + (data.hints.quoteId || '無'));
+      log('- requestType: ' + (data.hints.requestType || '無'));
+      
+      if (data.hints.signTypedData) {
+        log('- signTypedData 詳細: ' + JSON.stringify(data.hints.signTypedData, null, 2));
+      }
+    }
   } catch (err) {
     console.error(err);
     log('precheck 失敗: ' + (err.message || err), 'error');
@@ -308,6 +322,95 @@ $('btn-exec-combined').addEventListener('click', async () => {
   }
 });
 
+// EIP-712 簽名驗證函數（包含 signer 回推）
+function verifyEIP712Signature(signature, signTypedData, expectedSigner) {
+  try {
+    // 檢查簽名格式
+    if (!signature || !signature.startsWith('0x') || signature.length !== 132) {
+      return { valid: false, error: 'Invalid signature format' };
+    }
+    
+    // 檢查 signTypedData 結構
+    if (!signTypedData || !signTypedData.domain || !signTypedData.types || !signTypedData.values) {
+      return { valid: false, error: 'Invalid signTypedData structure' };
+    }
+    
+    // 檢查 domain 必要欄位
+    const domain = signTypedData.domain;
+    if (!domain.name || !domain.chainId || !domain.verifyingContract) {
+      return { valid: false, error: 'Invalid domain structure' };
+    }
+    
+    // 檢查 types 結構
+    if (!signTypedData.types.PermitWitnessTransferFrom) {
+      return { valid: false, error: 'Missing PermitWitnessTransferFrom type' };
+    }
+    
+    // 檢查 values 結構
+    const values = signTypedData.values;
+    if (!values.permitted || !values.spender || !values.nonce || !values.deadline || !values.witness) {
+      return { valid: false, error: 'Invalid values structure' };
+    }
+    
+    // 檢查 witness 結構
+    const witness = values.witness;
+    if (!witness.basicReq || !witness.swapOutputToken || witness.minSwapOutput === undefined || !witness.metadata) {
+      return { valid: false, error: 'Invalid witness structure' };
+    }
+    
+    // 檢查 basicReq 結構
+    const basicReq = witness.basicReq;
+    if (!basicReq.originChainId || !basicReq.destinationChainId || !basicReq.deadline || 
+        !basicReq.nonce || !basicReq.sender || !basicReq.receiver || !basicReq.delegate || 
+        !basicReq.bungeeGateway || !basicReq.switchboardId || !basicReq.inputToken || 
+        !basicReq.inputAmount || !basicReq.outputToken || !basicReq.minOutputAmount || 
+        basicReq.refuelAmount === undefined) {
+      return { valid: false, error: 'Invalid basicReq structure' };
+    }
+    
+    // 回推 signer（使用 ethers v6 的 recoverAddress）
+    let recoveredSigner = null;
+    try {
+      // 使用 ethers v6 的 TypedDataEncoder 和 recoverAddress
+      if (ethers && ethers.TypedDataEncoder) {
+        const hash = ethers.TypedDataEncoder.hash(domain, signTypedData.types, values);
+        recoveredSigner = ethers.recoverAddress(hash, signature);
+        console.log('EIP-712 Hash:', hash);
+        console.log('Recovered Signer:', recoveredSigner);
+      } else {
+        // 如果沒有 ethers.js，使用 Web3 或其他方法
+        recoveredSigner = 'ethers.js not available';
+        console.log('ethers.js not available, ethers:', ethers);
+        console.log('ethers.TypedDataEncoder:', ethers?.TypedDataEncoder);
+      }
+    } catch (recoverError) {
+      recoveredSigner = 'Recovery failed: ' + recoverError.message;
+      console.error('Recovery error:', recoverError);
+    }
+    
+    // 檢查 signer 是否匹配
+    const signerMatches = expectedSigner && recoveredSigner && 
+                         recoveredSigner.toLowerCase() === expectedSigner.toLowerCase();
+    
+    return { 
+      valid: true, 
+      message: 'EIP-712 signature structure is valid',
+      details: {
+        domain: domain,
+        primaryType: 'PermitWitnessTransferFrom',
+        hasWitness: !!witness,
+        chainId: domain.chainId,
+        verifyingContract: domain.verifyingContract,
+        recoveredSigner: recoveredSigner,
+        expectedSigner: expectedSigner,
+        signerMatches: signerMatches
+      }
+    };
+  } catch (error) {
+    return { valid: false, error: 'Verification error: ' + error.message };
+  }
+}
+
 // 後端自動 Precheck -> Execute(簽名) -> Submit
 $('btn-exec-auto').addEventListener('click', async () => {
   try {
@@ -316,16 +419,78 @@ $('btn-exec-auto').addEventListener('click', async () => {
     const audience = $('audience').value.trim();
     if (!jwt) throw new Error('請先登入以取得 JWT');
     const params = buildAbilityParams();
-    log('後端自動執行 execute 流程 (precheck -> sign -> submit)...');
+    log('後端執行 execute 流程 (precheck -> sign)...');
     const appId = $('appId')?.value?.trim();
     let decodedJWT = null; try { const s = localStorage.getItem('VINCENT_AUTH_JWT_DECODED'); decodedJWT = s ? JSON.parse(s) : null; } catch {}
     const { resp, data, text } = await postJson('/api/vincent/execute', { bridgeParams: params, delegatorPkpEthAddress: delegator, jwt, audience, appId, decodedJWT });
     if (!resp.ok || !data?.ok) throw new Error((data && data.error) || text || `HTTP ${resp.status}`);
-    log('execute(自動) 回應: ' + JSON.stringify({ result: data.result, submit: data.submit }));
+    log('execute(自動) 回應: ' + JSON.stringify({ result: data.result, requestType: data.requestType, quoteId: data.quoteId, userSignature: data.userSignature, witness: data.witness }));
     try { localStorage.setItem('LAST_EXECUTE_PAYLOAD', JSON.stringify(data.result || {})); } catch {}
-    if (data.submit?.requestHash) {
-      log('Bungee 已接收請求: ' + data.submit.requestHash + '，開始輪詢狀態...', 'ok');
-      await pollBungeeStatusUI(data.submit.requestHash);
+
+    // 驗證 EIP-712 簽名
+    if (data?.userSignature && data?.signTypedData) {
+      log('開始驗證 EIP-712 簽名...');
+      const verification = verifyEIP712Signature(data.userSignature, data.signTypedData, delegator);
+      if (verification.valid) {
+        log('✅ EIP-712 簽名驗證通過: ' + verification.message, 'ok');
+        log('簽名詳情: ' + JSON.stringify(verification.details, null, 2));
+        
+        // 顯示 signer 回推結果
+        if (verification.details.recoveredSigner) {
+          log('🔍 回推的 Signer: ' + verification.details.recoveredSigner);
+          log('🎯 期望的 Signer: ' + verification.details.expectedSigner);
+          log('✅ Signer 匹配: ' + (verification.details.signerMatches ? '是' : '否'));
+        }
+      } else {
+        log('❌ EIP-712 簽名驗證失敗: ' + verification.error, 'error');
+        return; // 停止執行，不進行 submit
+      }
+    } else {
+      log('⚠️ 缺少簽名或 signTypedData，無法驗證', 'error');
+    }
+
+    // 前端執行 submit
+    if (data?.userSignature && data?.witness && data?.quoteId && data?.requestType) {
+      log('開始前端 Submit 到 Bungee...');
+      try {
+        const submitBody = {
+          requestType: data.requestType,
+          request: data.witness,
+          userSignature: data.userSignature,
+          quoteId: data.quoteId,
+        };
+        log('前端 Submit 請求: ' + JSON.stringify(submitBody));
+        const submitResp = await fetch('https://public-backend.bungee.exchange/api/v1/bungee/submit', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(submitBody),
+        });
+        const serverReqId1 = submitResp.headers;
+        console.log('serverReqId', serverReqId1);
+        console.log('All Headers:');
+        console.log(submitResp.headers.keys());
+        console.log(submitResp.headers.values());
+
+        // 專取出 server-req-id
+        const serverReqId = submitResp.headers.get('server-req-id');
+        console.log('✅ Server Request ID:', serverReqId);
+
+        const submitData = await submitResp.json();
+        log('前端 Submit 回應: ' + JSON.stringify({ 
+          http: submitResp.status, 
+          serverReqId:  null, 
+          data: submitData 
+        }));
+        
+        if (submitData?.success && submitData?.result?.requestHash) {
+          log('Bungee 已接收請求: ' + submitData.result.requestHash + '，開始輪詢狀態...', 'ok');
+          await pollBungeeStatusUI(submitData.result.requestHash);
+        }
+      } catch (submitErr) {
+        log('前端 Submit 失敗: ' + (submitErr.message || submitErr), 'error');
+      }
+    } else {
+      log('缺少必要參數，無法執行 Submit', 'error');
     }
   } catch (err) {
     console.error(err);
@@ -333,7 +498,7 @@ $('btn-exec-auto').addEventListener('click', async () => {
   }
 });
 
-async function pollBungeeStatusUI(requestHash, intervalMs = 5000, maxAttempts = 60) {
+async function pollBungeeStatusUI(requestHash, intervalMs = 10000, maxAttempts = 60) {
   let attempts = 0;
   while (attempts < maxAttempts) {
     try {
