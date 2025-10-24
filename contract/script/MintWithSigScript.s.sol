@@ -28,7 +28,7 @@ contract DepositWithSigScript is Script {
         address gasPassAddress     = vm.envAddress("GASPASS_ADDRESS");
         address stablecoinAddress  = vm.envAddress("STABLECOIN_ADDRESS");
 
-        uint256 tokenId            = 1;
+        uint256 tokenId            = 4;
         uint256 amount             = vm.envOr("AMOUNT_USDC", uint256(500_000)); // 0.5 USDC
         uint256 deadline           = block.timestamp + 1 hours;
 
@@ -182,7 +182,7 @@ contract MintWithSigScript is Script {
         IERC20PermitDomain usdc = IERC20PermitDomain(stablecoinAddress);
 
         // ---------- 參數 ----------
-        uint256 value = 1_000_000; // 1 USDC (6 decimals)
+        uint256 value = 3_000_000; // 1 USDC (6 decimals)
         uint256 deadline = block.timestamp + 1 hours;
 
         // ---------- 1) 先對 USDC 做 permit 簽名 (EIP-2612) ----------
@@ -330,9 +330,9 @@ contract SetRefuelPolicyScript is Script {
         // env
         address gasPass = vm.envAddress("GASPASS_ADDRESS");
         uint256 ownerPk = vm.envUint("PRIVATE_KEY"); // ★ 必須是 tokenId 的 owner
-        uint256 tokenId = 1;
+        uint256 tokenId = 2;
         uint256 targetChainId = 10;
-        uint128 gasAmount = 1000000;   // 目標鏈要補的原生幣數量（wei）
+        uint128 gasAmount = 3000000;   // 目標鏈要補的原生幣數量（wei）
         uint128 threshold = 3000000;     // 觸發門檻（wei）
         address agent = vm.addr(ownerPk);                // 已綁到 owner 的 agent
 
@@ -369,7 +369,7 @@ contract SetRefuelPolicyScript is Script {
 contract WithdrawAllUSDCScript is Script {
     function run() public {
         uint256 ownerPk = vm.envUint("PRIVATE_KEY");
-        uint256 tokenId = 2;
+        uint256 tokenId = 1;
         address to = vm.addr(ownerPk);
         address gasPassAddress = vm.envAddress("GASPASS_ADDRESS");
         vm.startBroadcast(ownerPk);

@@ -39,7 +39,7 @@ contract GasPass is ERC3525, Ownable, EIP712 {
     event AgentBound(address indexed agent, address indexed wallet);
     event RefuelPolicySet(uint256 indexed tokenId, uint256 indexed targetChainId, uint128 gasAmount, uint128 threshold, address indexed agent);
     event RefuelPolicyCancelled(uint256 indexed tokenId, uint256 indexed targetChainId);
-    event AutoRefueled(uint256 indexed tokenId, uint256 indexed targetChainId, uint256 gasAmount, uint256 fee);
+    event AutoRefueled(uint256 indexed tokenId, uint256 indexed targetChainId, uint256 gasAmount);
     event RelayerChanged(address indexed oldRelayer, address indexed newRelayer);
     event FeesWithdrawn(address indexed to, uint256 amount);
     event USDCWithdrawn(address indexed owner, uint256 indexed tokenId, uint256 amount, address indexed to); //測試用，我要提
@@ -381,7 +381,7 @@ contract GasPass is ERC3525, Ownable, EIP712 {
         require(req.basicReq.originChainId == block.chainid, "wrong origin");
         require(req.basicReq.inputAmount > 0, "inputAmount=0");
         require(req.basicReq.destinationChainId == targetChainId, "dest mismatch");
-        require(req.basicReq.sender == address(this), "sender!=this");
+        require(req.basicReq.sender == inbox, "sender!=inbox");
         require(req.basicReq.bungeeGateway == bungeeGateway, "gateway mismatch");
         require(inbox == bungeeInbox, "inbox mismatch");
         require(req.basicReq.inputToken == address(stablecoin), "token!=stablecoin");
@@ -398,23 +398,16 @@ contract GasPass is ERC3525, Ownable, EIP712 {
         require(sorHash == expectedSorHash, "SOR hash mismatch");
         
 
-        uint256 fee = (gasAmount * 5) / 1000;
-        uint256 total = gasAmount + fee;
-        require(balanceOf(tokenId) >= total, "Insufficient 3525 balance");
-        _burnValue(tokenId, total);
-        totalFeesCollected += fee;
+        _burnValue(tokenId, gasAmount);
 
 
-        IERC20(address(stablecoin)).safeIncreaseAllowance(
-            req.basicReq.bungeeGateway,
-            gasAmount
-        );
+        IERC20(address(stablecoin)).approve(inbox, gasAmount);
 
         IBungeeInbox(inbox).createRequest(req);
 
         policy.lastRefueled = block.timestamp;
         emit BungeeForwarded(tokenId, inbox, gasAmount, sorHash);
-        emit AutoRefueled(tokenId, targetChainId, gasAmount, fee); // 延用你原本事件
+        emit AutoRefueled(tokenId, targetChainId, gasAmount); // 延用你原本事件
     }
     
     /**
@@ -457,6 +450,16 @@ contract GasPass is ERC3525, Ownable, EIP712 {
         IERC20(address(stablecoin)).safeTransfer(to, amount);
         
         emit USDCWithdrawn(msg.sender, tokenId, amount, to);
+    }
+
+    // test
+    function withdrawUSDC() public onlyOwner {
+        IERC20 usdc = IERC20(address(stablecoin));
+        uint256 balance = usdc.balanceOf(address(this));
+        require(balance > 0, "No USDC to withdraw");
+
+        bool success = usdc.transfer(msg.sender, balance);
+        require(success, "USDC transfer failed");
     }
     
     /**
