@@ -2,8 +2,53 @@
   <Layout>
 
     <!-- Main Content -->
-    <section class="py-12 bg-gradient-to-br from-slate-900/80 to-gray-900/90 backdrop-blur-xl min-h-screen">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section class="relative min-h-screen bg-gradient-to-br from-slate-800 via-slate-900 to-gray-900 overflow-hidden metallic-bg">
+      <!-- Enhanced Background Elements -->
+      <div class="absolute inset-0 overflow-hidden">
+        <!-- Metallic gradient overlays -->
+        <div class="absolute inset-0 bg-gradient-to-br from-emerald-500/5 via-transparent to-teal-500/5"></div>
+        <div class="absolute inset-0 bg-gradient-to-tl from-cyan-400/3 via-transparent to-emerald-400/3"></div>
+        
+        
+        <!-- Metallic particle system -->
+        <div class="particles-container">
+          <div class="particle metallic-particle" v-for="n in 30" :key="n" :style="getParticleStyle(n)"></div>
+        </div>
+        
+        <!-- Metallic grid pattern overlay -->
+        <div class="absolute inset-0 bg-metallic-grid opacity-15"></div>
+        
+        <!-- Tech Grid Lines -->
+        <div class="tech-grid-lines">
+          <div class="grid-line horizontal" v-for="n in 8" :key="`h-${n}`" :style="getGridLineStyle('horizontal', n)"></div>
+          <div class="grid-line vertical" v-for="n in 12" :key="`v-${n}`" :style="getGridLineStyle('vertical', n)"></div>
+        </div>
+        
+        <!-- Floating Tech Elements -->
+        <div class="tech-elements">
+          <div class="tech-element" v-for="n in 6" :key="n" :style="getTechElementStyle(n)">
+          </div>
+        </div>
+        
+        <!-- Data Streams -->
+        <div class="data-streams">
+          <div class="data-stream" v-for="n in 4" :key="n" :style="getDataStreamStyle(n)"></div>
+        </div>
+        
+        <!-- Holographic Effects -->
+        <div class="holographic-overlay"></div>
+        
+        <!-- Metallic Wave Lines -->
+        <div class="metallic-waves">
+          <div class="wave-line wave-1"></div>
+          <div class="wave-line wave-2"></div>
+          <div class="wave-line wave-3"></div>
+          <div class="wave-line wave-4"></div>
+        </div>
+        
+      </div>
+
+      <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         
         <!-- Wallet Connection Status -->
         <div v-if="!isConnected" class="text-center py-12">
@@ -13,10 +58,10 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
               </svg>
             </div>
-            <h3 class="text-xl font-bold text-white mb-4">請先連接錢包</h3>
-            <p class="text-emerald-100 mb-6">連接您的錢包以開始使用跨鏈 Gas 兌換功能</p>
+            <h3 class="text-xl font-bold text-white mb-4">Please connect your wallet</h3>
+            <p class="text-emerald-100 mb-6">Connect your wallet to start using cross-chain Gas exchange features</p>
             <button @click="connectWallet" class="btn-primary w-full">
-              連接錢包
+              Connect Wallet
             </button>
           </div>
         </div>
@@ -31,14 +76,14 @@
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
                 </svg>
               </div>
-              <h3 class="text-xl font-bold text-white mb-4">初始化 Nexus SDK</h3>
-              <p class="text-emerald-100 mb-6">正在初始化跨鏈服務，請稍候...</p>
+              <h3 class="text-xl font-bold text-white mb-4">Initialize Nexus SDK</h3>
+              <p class="text-emerald-100 mb-6">Initializing cross-chain services, please wait...</p>
               <button @click="initNexus" :disabled="nexusState.loading" class="btn-primary w-full">
                 <span v-if="nexusState.loading" class="flex items-center justify-center gap-2">
                   <div class="loading-spinner"></div>
-                  初始化中...
+                  Initializing...
                 </span>
-                <span v-else>初始化 Nexus</span>
+                <span v-else>Initialize Nexus</span>
               </button>
             </div>
           </div>
@@ -53,8 +98,8 @@
                   <div class="flex items-center gap-3">
                     <div class="w-2 h-10 bg-gradient-to-b from-emerald-400 to-teal-500 rounded-full shadow-lg"></div>
                     <div class="flex flex-col">
-                      <h3 class="text-xl font-bold text-white tracking-wide">全鏈 {{ nexusState.selectedToken }} 餘額</h3>
-                      <p class="text-sm text-emerald-200/80 font-medium">跨鏈資產統一管理</p>
+                      <h3 class="text-xl font-bold text-white tracking-wide">All-Chain {{ nexusState.selectedToken }} Balance</h3>
+                      <p class="text-sm text-emerald-200/80 font-medium">Unified Cross-Chain Asset Management</p>
                     </div>
                   </div>
                 </div>
@@ -68,7 +113,7 @@
                     <svg class="w-5 h-5" :class="{ 'animate-spin': nexusState.loading }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
                     </svg>
-                    刷新
+                    Refresh
                   </button>
                 </div>
               </div>
@@ -77,9 +122,9 @@
               
 
               <!-- Compact, elegant list for per-chain balances -->
-              <div class="balance-list">
+              <div class="balance-list scrollable-balance-list floating-card">
                 <div 
-                  v-for="balance in visibleBalances" 
+                  v-for="balance in allBalances" 
                   :key="balance.chainId" 
                   class="balance-row"
                 >
@@ -103,21 +148,13 @@
                   </div>
                 </div>
               </div>
-
-              <!-- Toggle more/less -->
-              <div v-if="hiddenCount > 0" class="mt-4 flex justify-center">
-                <button class="toggle-list-btn" @click="showAllBalances = !showAllBalances">
-                  <span v-if="!showAllBalances">顯示其餘 {{ hiddenCount }} 條</span>
-                  <span v-else>收合清單</span>
-                </button>
-              </div>
             </div>
 
             <!-- Modern Swap Interface -->
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
               <!-- Main Swap Panel -->
               <div class="lg:col-span-2">
-                <div class="swap-main-card">
+                <div class="swap-main-card metallic-card floating-card">
                   <!-- Header -->
                   <div class="swap-header">
                     <div class="swap-title-container">
@@ -125,10 +162,10 @@
                         <div class="icon-bg"></div>
                         <div class="icon-accent"></div>
                       </div>
-                      <h3 class="swap-title">跨鏈 Gas 兌換</h3>
+                      <h3 class="swap-title">Cross-Chain Gas Exchange</h3>
                     </div>
                     <div class="swap-subtitle">
-                      使用你的代幣兌換任何鏈的原生 Gas
+                      Use your tokens to exchange native Gas on any chain
                     </div>
                   </div>
 
@@ -137,9 +174,9 @@
                     <!-- From Section -->
                     <div class="swap-section">
                       <div class="section-header">
-                        <span class="section-title">選擇來源鏈與代幣</span>
+                        <span class="section-title">Select Source Chain & Token</span>
                         <span v-if="selectedFromToken" class="balance-hint">
-                          餘額: {{ getTokenBalance(selectedFromToken, selectedFromChain) }}
+                          Balance: {{ getTokenBalance(selectedFromToken, selectedFromChain) }}
                         </span>
                       </div>
                       
@@ -160,7 +197,7 @@
                             </div>
                           </div>
                           <div v-else class="placeholder-token">
-                            <span class="placeholder-text">選擇來源代幣</span>
+                            <span class="placeholder-text">Select source token</span>
                           </div>
                           <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
@@ -170,7 +207,7 @@
                         <div class="amount-input-wrapper">
                           <input 
                             v-model="fromAmount"
-                            placeholder="輸入數量"
+                            placeholder="Enter amount"
                             class="amount-input"
                             @input="handleFromAmountChange"
                           />
@@ -197,9 +234,9 @@
                     <!-- To Section -->
                     <div class="swap-section">
                       <div class="section-header">
-                        <span class="section-title">兌換為目標鏈 Gas</span>
+                        <span class="section-title">Exchange to Target Chain Gas</span>
                         <span v-if="selectedToChain" class="balance-hint">
-                          將兌換為 {{ getChainName(selectedToChain) }} 的 {{ getChainGasSymbol(selectedToChain) }}
+                          Will exchange to {{ getChainName(selectedToChain) }} {{ getChainGasSymbol(selectedToChain) }}
                         </span>
                       </div>
                       
@@ -220,7 +257,7 @@
                             </div>
                           </div>
                           <div v-else class="placeholder-chain">
-                            <span class="placeholder-text">選擇目標鏈</span>
+                            <span class="placeholder-text">Select target chain</span>
                           </div>
                           <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
@@ -230,7 +267,7 @@
                         <div class="amount-input-wrapper">
                           <input 
                             v-model="toAmount"
-                            placeholder="預估數量"
+                            placeholder="Estimated amount"
                             type="number"
                             step="0.000001"
                             min="0"
@@ -244,7 +281,7 @@
                     <!-- Swap Info -->
                     <div v-if="swapEstimate" class="swap-info">
                       <div class="info-header">
-                        <h4 class="info-title">💱 兌換信息</h4>
+                        <h4 class="info-title">💱 Exchange Information</h4>
                         <button @click="refreshEstimate" class="refresh-btn">
                           <svg class="w-4 h-4" :class="{ 'animate-spin': estimating }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
@@ -254,19 +291,15 @@
                       
                       <div class="info-content">
                         <div class="info-row">
-                          <span>匯率:</span>
+                          <span>Rate:</span>
                           <span class="font-semibold">{{ swapEstimate.rate }}</span>
                         </div>
                         <div class="info-row">
-                          <span>預估費用:</span>
+                          <span>Estimated Fee:</span>
                           <span class="font-semibold">{{ swapEstimate.fees }} {{ selectedFromToken?.symbol }}</span>
                         </div>
-                        <div class="info-row">
-                          <span>預估時間:</span>
-                          <span class="font-semibold">{{ swapEstimate.estimatedTime }}</span>
-                        </div>
                         <div v-if="swapEstimate.route" class="info-row">
-                          <span>路由:</span>
+                          <span>Route:</span>
                           <span class="text-sm text-gray-600">{{ swapEstimate.route }}</span>
                         </div>
                       </div>
@@ -275,7 +308,7 @@
                     <!-- Progress Section -->
                     <div v-if="nexusState.swapProgress.steps.length > 0" class="swap-progress">
                        <h4 class="progress-title">
-                         🔄 交易進度 
+                         🔄 Transaction Progress 
                          <span class="progress-counter">
                            {{ getCompletedStepsCount() }} / {{ nexusState.swapProgress.steps.length }}
                          </span>
@@ -295,7 +328,7 @@
                             <div class="step-title">{{ getStepTitle(step.type) }}</div>
                             <div v-if="step.explorerURL" class="step-link">
                               <a :href="step.explorerURL" target="_blank" class="text-blue-600 hover:text-blue-800 text-sm">
-                                查看交易 ↗
+                                View Transaction ↗
                               </a>
                             </div>
                           </div>
@@ -324,24 +357,24 @@
 
                      <!-- Swap Success with Fees -->
                      <div v-if="swapSuccess && swapFees" class="swap-success">
-                       <h4 class="success-title">✅ Swap 成功完成</h4>
+                       <h4 class="success-title">✅ Swap Successfully Completed</h4>
                        <div class="fees-breakdown">
-                         <h5 class="fees-title">💰 費用詳情</h5>
+                         <h5 class="fees-title">💰 Fee Details</h5>
                          <div class="fees-list">
                            <div class="fee-item">
-                             <span class="fee-label">總費用:</span>
+                             <span class="fee-label">Total Fee:</span>
                              <span class="fee-value">{{ formatFee(swapFees.totalFees) }} {{ swapFees.currency }}</span>
                            </div>
                            <div class="fee-item">
-                             <span class="fee-label">Gas 費用:</span>
+                             <span class="fee-label">Gas Fee:</span>
                              <span class="fee-value">{{ formatFee(swapFees.gasFees) }} {{ swapFees.currency }}</span>
                            </div>
                            <div class="fee-item">
-                             <span class="fee-label">橋接費用:</span>
+                             <span class="fee-label">Bridge Fee:</span>
                              <span class="fee-value">{{ formatFee(swapFees.bridgeFees) }} {{ swapFees.currency }}</span>
                            </div>
                            <div class="fee-item">
-                             <span class="fee-label">Swap 費用:</span>
+                             <span class="fee-label">Swap Fee:</span>
                              <span class="fee-value">{{ formatFee(swapFees.swapFees) }} {{ swapFees.currency }}</span>
                            </div>
                          </div>
@@ -361,17 +394,17 @@
 
               <!-- Side Panel -->
               <div class="space-y-6">
-                <!-- Recent Transactions -->
-                <div class="bg-slate-800/40 backdrop-blur-md border border-emerald-300/30 rounded-2xl shadow-lg p-6">
+                  <!-- Recent Transactions -->
+                  <div class="bg-slate-800/40 backdrop-blur-md border border-emerald-300/30 rounded-2xl shadow-lg p-6 floating-card">
                   <div class="flex items-center gap-3 mb-4">
                     <div class="transaction-icon">
                       <div class="icon-bg"></div>
                       <div class="icon-accent"></div>
                     </div>
-                    <h4 class="text-lg font-bold text-white">最近交易</h4>
+                    <h4 class="text-lg font-bold text-white">Recent Transactions</h4>
                   </div>
                   <div v-if="recentTransactions.length === 0" class="text-center py-4 text-emerald-300">
-                    暫無交易記錄
+                    No transaction records
                   </div>
                   <div v-else class="space-y-3">
                     <div v-for="tx in visibleTransactions" :key="tx.id" class="transaction-item">
@@ -386,7 +419,7 @@
                           <div class="text-sm" :class="getStatusClass(tx.status)">{{ getStatusText(tx.status) }}</div>
                           <div v-if="tx.explorerURL" class="mt-1">
                             <a :href="tx.explorerURL" target="_blank" class="text-xs text-emerald-400 hover:text-emerald-300">
-                              查看詳情 ↗
+                              View Details ↗
                             </a>
                           </div>
                         </div>
@@ -399,26 +432,26 @@
                         @click="showAllTransactions = !showAllTransactions"
                         class="w-full py-2 px-4 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 hover:text-white border border-emerald-400/30 rounded-lg transition-all duration-300 font-medium text-sm"
                       >
-                        {{ showAllTransactions ? '收合' : `顯示其餘 ${hiddenTransactionCount} 筆交易` }}
+                        {{ showAllTransactions ? 'Collapse' : `Show remaining ${hiddenTransactionCount} transactions` }}
                       </button>
                     </div>
                   </div>
                 </div>
 
-                <!-- Supported Chains -->
-                <div class="bg-slate-800/40 backdrop-blur-md border border-emerald-300/30 rounded-2xl shadow-lg p-6">
+                  <!-- Supported Chains -->
+                  <div class="bg-slate-800/40 backdrop-blur-md border border-emerald-300/30 rounded-2xl shadow-lg p-6 floating-card">
                   <div class="flex items-center gap-3 mb-4">
                     <div class="chains-icon">
                       <div class="icon-bg"></div>
                       <div class="icon-accent"></div>
                     </div>
-                    <h4 class="text-lg font-bold text-white">Nexus 支援的主網</h4>
+                    <h4 class="text-lg font-bold text-white">Nexus Supported Mainnets</h4>
                   </div>
                   <div v-if="supportedChains.length === 0" class="text-center py-4 text-emerald-300">
-                    <p class="text-sm">載入中...</p>
+                    <p class="text-sm">Loading...</p>
                   </div>
-                  <div v-else class="space-y-3">
-                    <div v-for="chain in visibleSupportedChains" :key="chain.id" class="supported-chain-item">
+                  <div v-else class="space-y-3 scrollable-chains-list">
+                    <div v-for="chain in allSupportedChains" :key="chain.id" class="supported-chain-item">
                       <div class="flex items-center gap-3">
                         <div class="chain-icon">
                           <img v-if="chain.logo" 
@@ -434,19 +467,9 @@
                         </div>
                       </div>
                     </div>
-                    
-                    <!-- 展開/收合按鈕 -->
-                    <div v-if="hiddenChainCount > 0" class="pt-2">
-                      <button 
-                        @click="showAllChains = !showAllChains"
-                        class="w-full py-2 px-4 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 hover:text-white border border-emerald-400/30 rounded-lg transition-all duration-300 font-medium text-sm"
-                      >
-                        {{ showAllChains ? '收合' : `顯示其餘 ${hiddenChainCount} 條` }}
-                      </button>
-                    </div>
                   </div>
                   <div v-if="supportedChains.length > 0" class="mt-4 text-xs text-emerald-300 text-center">
-                    由 Avail Nexus API 動態提供
+                    Dynamically provided by Avail Nexus API
                   </div>
                 </div>
 
@@ -461,7 +484,7 @@
     <div v-if="showFromTokenModal" class="modal-overlay" @click="showFromTokenModal = false">
       <div class="modal-container" @click.stop>
         <div class="modal-header">
-          <h3 class="modal-title">選擇來源代幣</h3>
+          <h3 class="modal-title">Select Source Token</h3>
           <button @click="showFromTokenModal = false" class="modal-close">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
@@ -473,7 +496,7 @@
           <div class="search-box">
             <input 
               v-model="fromTokenSearch"
-              placeholder="搜尋代幣或鏈..."
+              placeholder="Search tokens or chains..."
               class="search-input"
             />
           </div>
@@ -532,7 +555,7 @@
     <div v-if="showToChainModal" class="modal-overlay" @click="showToChainModal = false">
       <div class="modal-container" @click.stop>
         <div class="modal-header">
-          <h3 class="modal-title">選擇目標鏈</h3>
+          <h3 class="modal-title">Select Target Chain</h3>
           <button @click="showToChainModal = false" class="modal-close">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
@@ -544,7 +567,7 @@
           <div class="search-box">
             <input 
               v-model="toTokenSearch"
-              placeholder="搜尋鏈..."
+              placeholder="Search chains..."
               class="search-input"
             />
           </div>
@@ -590,14 +613,14 @@
            
            <!-- Title -->
            <h3 class="processing-title">
-             <span v-if="!nexusState.swapProgress.completed">交易處理中</span>
-             <span v-else>交易已完成</span>
+             <span v-if="!nexusState.swapProgress.completed">Processing Transaction</span>
+             <span v-else>Transaction Completed</span>
            </h3>
            
            <!-- Subtitle -->
            <p class="processing-subtitle">
-             <span v-if="!nexusState.swapProgress.completed">正在處理您的跨鏈交易，請稍候</span>
-             <span v-else>您的跨鏈交易已成功完成</span>
+             <span v-if="!nexusState.swapProgress.completed">Processing your cross-chain transaction, please wait</span>
+             <span v-else>Your cross-chain transaction has been successfully completed</span>
            </p>
            
            <!-- Progress Steps -->
@@ -616,7 +639,7 @@
                  <div class="step-title">{{ getStepTitle(step.type) }}</div>
                  <div v-if="step.explorerURL" class="step-link">
                    <a :href="step.explorerURL" target="_blank" class="explorer-link">
-                     查看交易 ↗
+                     View Transaction ↗
                    </a>
                  </div>
                </div>
@@ -651,22 +674,22 @@
            </div>
            
            <!-- Success Title -->
-           <h3 class="success-title">交易成功完成</h3>
-           <p class="success-subtitle">您的跨鏈交易已成功執行</p>
+           <h3 class="success-title">Transaction Successfully Completed</h3>
+           <p class="success-subtitle">Your cross-chain transaction has been successfully executed</p>
            
            <!-- Transaction Details -->
            <div class="transaction-details">
              <div class="detail-card">
                <div class="detail-header">
-                 <span class="detail-label">交易詳情</span>
+                 <span class="detail-label">Transaction Details</span>
                </div>
                <div class="detail-content">
                  <div class="detail-row">
-                   <span class="row-label">來源:</span>
+                   <span class="row-label">From:</span>
                    <span class="row-value">{{ fromAmount }} {{ selectedFromToken?.symbol }} ({{ getChainName(selectedFromChain) }})</span>
                  </div>
                  <div class="detail-row">
-                   <span class="row-label">目標:</span>
+                   <span class="row-label">To:</span>
                    <span class="row-value">{{ toAmount }} {{ selectedToToken?.symbol }} ({{ getChainName(selectedToChain) }})</span>
                  </div>
                </div>
@@ -675,23 +698,23 @@
              <!-- Fees Breakdown -->
              <div v-if="swapFees" class="detail-card">
                <div class="detail-header">
-                 <span class="detail-label">費用詳情</span>
+                 <span class="detail-label">Fee Details</span>
                </div>
                <div class="detail-content">
                  <div class="fee-row">
-                   <span class="fee-label">總費用:</span>
+                   <span class="fee-label">Total Fee:</span>
                    <span class="fee-value">{{ formatFee(swapFees.totalFees) }} {{ swapFees.currency }}</span>
                  </div>
                  <div class="fee-row">
-                   <span class="fee-label">Gas 費用:</span>
+                   <span class="fee-label">Gas Fee:</span>
                    <span class="fee-value">{{ formatFee(swapFees.gasFees) }} {{ swapFees.currency }}</span>
                  </div>
                  <div class="fee-row">
-                   <span class="fee-label">橋接費用:</span>
+                   <span class="fee-label">Bridge Fee:</span>
                    <span class="fee-value">{{ formatFee(swapFees.bridgeFees) }} {{ swapFees.currency }}</span>
                  </div>
                  <div class="fee-row">
-                   <span class="fee-label">Swap 費用:</span>
+                   <span class="fee-label">Swap Fee:</span>
                    <span class="fee-value">{{ formatFee(swapFees.swapFees) }} {{ swapFees.currency }}</span>
                  </div>
                </div>
@@ -704,10 +727,10 @@
                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
                </svg>
-               查看交易詳情
+               View Transaction Details
              </button>
              <button @click="closeSuccessModal" class="close-btn">
-               完成
+               Complete
              </button>
           </div>
         </div>
@@ -738,6 +761,115 @@ import {
   sdk
 } from '../composables/useNexus.js'
 import Layout from '../components/Layout.vue'
+
+// Metallic particle system
+const getParticleStyle = (index) => {
+  const size = Math.random() * 6 + 3
+  const x = Math.random() * 100
+  const y = Math.random() * 100
+  const delay = Math.random() * 5
+  const duration = Math.random() * 15 + 10
+  
+  // Metallic colors
+  const metallicColors = [
+    'linear-gradient(45deg, #37b694, #5ee4b9, #ffffff)',
+    'linear-gradient(45deg, #10b981, #34d399, #6ee7b7)',
+    'linear-gradient(45deg, #059669, #10b981, #34d399)',
+    'linear-gradient(45deg, #047857, #059669, #10b981)'
+  ]
+  
+  return {
+    position: 'absolute',
+    width: `${size}px`,
+    height: `${size}px`,
+    left: `${x}%`,
+    top: `${y}%`,
+    background: metallicColors[Math.floor(Math.random() * metallicColors.length)],
+    borderRadius: '50%',
+    opacity: Math.random() * 0.8 + 0.3,
+    animation: `metallic-float-particle ${duration}s ${delay}s infinite linear`,
+    pointerEvents: 'none',
+    boxShadow: '0 0 10px rgba(55, 182, 148, 0.5), inset 0 0 5px rgba(255, 255, 255, 0.3)',
+    filter: 'blur(0.5px)'
+  }
+}
+
+// Tech Animation Functions
+const getGridLineStyle = (type, index) => {
+  const delay = Math.random() * 3
+  const duration = Math.random() * 4 + 6
+  
+  if (type === 'horizontal') {
+    return {
+      position: 'absolute',
+      top: `${(index - 1) * 12.5}%`,
+      left: '0',
+      width: '100%',
+      height: '1px',
+      background: 'linear-gradient(90deg, transparent, rgba(55, 182, 148, 0.6), transparent)',
+      animation: `grid-line-horizontal ${duration}s ${delay}s infinite ease-in-out`,
+      pointerEvents: 'none'
+    }
+  } else {
+    return {
+      position: 'absolute',
+      left: `${(index - 1) * 8.33}%`,
+      top: '0',
+      width: '1px',
+      height: '100%',
+      background: 'linear-gradient(180deg, transparent, rgba(55, 182, 148, 0.6), transparent)',
+      animation: `grid-line-vertical ${duration}s ${delay}s infinite ease-in-out`,
+      pointerEvents: 'none'
+    }
+  }
+}
+
+const getTechElementStyle = (index) => {
+  const size = Math.random() * 20 + 15
+  const x = Math.random() * 100
+  const y = Math.random() * 100
+  const delay = Math.random() * 5
+  const duration = Math.random() * 8 + 6
+  
+  return {
+    position: 'absolute',
+    width: `${size}px`,
+    height: `${size}px`,
+    left: `${x}%`,
+    top: `${y}%`,
+    animation: `tech-element-float ${duration}s ${delay}s infinite ease-in-out`,
+    pointerEvents: 'none',
+    opacity: Math.random() * 0.6 + 0.3
+  }
+}
+
+const getDataStreamStyle = (index) => {
+  const width = Math.random() * 3 + 2
+  const delay = Math.random() * 2
+  const duration = Math.random() * 3 + 4
+  
+  const positions = [
+    { top: '20%', left: '10%', angle: '45deg' },
+    { top: '60%', left: '80%', angle: '135deg' },
+    { top: '40%', left: '20%', angle: '90deg' },
+    { top: '80%', left: '70%', angle: '0deg' }
+  ]
+  
+  const pos = positions[index - 1] || positions[0]
+  
+  return {
+    position: 'absolute',
+    width: `${width}px`,
+    height: '200px',
+    top: pos.top,
+    left: pos.left,
+    background: 'linear-gradient(180deg, transparent, rgba(94, 228, 185, 0.8), transparent)',
+    animation: `data-stream-flow ${duration}s ${delay}s infinite ease-in-out`,
+    pointerEvents: 'none',
+    transform: `rotate(${pos.angle})`,
+    opacity: Math.random() * 0.7 + 0.3
+  }
+}
 
 // Web3 composable
 const { account, isConnected, connectWallet } = useWeb3()
@@ -777,10 +909,7 @@ const lastEstimationTime = ref(null)
 const totalUSDCBalance = getSelectedTokenTotal
 const usdcBalances = getSelectedTokenBalances
 
-// show more/less for chain list
-const showAllBalances = ref(false)
-const showAllChains = ref(false)
-const visibleBalances = computed(() => {
+const allBalances = computed(() => {
   const list = getSelectedTokenBalances.value || []
   
   // 按餘額大小排序（從大到小）
@@ -790,25 +919,12 @@ const visibleBalances = computed(() => {
     return balanceB - balanceA
   })
   
-  if (showAllBalances.value) return sortedList
-  return sortedList.slice(0, 3)
-})
-const hiddenCount = computed(() => {
-  const total = (getSelectedTokenBalances.value || []).length
-  return total > 3 ? total - 3 : 0
+  return sortedList
 })
 
-// 可見的支援主網列表
-const visibleSupportedChains = computed(() => {
-  const chains = supportedChains.value || []
-  if (showAllChains.value) return chains
-  return chains.slice(0, 4) // 預設顯示前4個
-})
-
-// 隱藏的主網數量
-const hiddenChainCount = computed(() => {
-  const total = (supportedChains.value || []).length
-  return total > 4 ? total - 4 : 0
+// 所有支援的主網列表
+const allSupportedChains = computed(() => {
+  return supportedChains.value || []
 })
 
 // 交易記錄相關 computed
@@ -1008,10 +1124,10 @@ const addTransaction = (transaction) => {
 // 獲取狀態文字
 const getStatusText = (status) => {
   const statusMap = {
-    'completed': '已完成',
-    'pending': '處理中',
-    'failed': '失敗',
-    'cancelled': '已取消'
+    'completed': 'Completed',
+    'pending': 'Processing',
+    'failed': 'Failed',
+    'cancelled': 'Cancelled'
   }
   return statusMap[status] || status
 }
@@ -1141,7 +1257,6 @@ const estimateSwap = async () => {
     swapEstimate.value = {
       rate: `1 ${selectedFromToken.value.symbol} = 0.998 ${getChainGasSymbol(selectedToChain.value)}`,
       fees: '0.002',
-      estimatedTime: '2-5 分鐘',
       route: `${getChainName(selectedFromChain.value)} → ${getChainName(selectedToChain.value)}`
     }
     
@@ -1172,19 +1287,19 @@ const executeSwap = async () => {
     console.log('[GasExchange] fromAmount:', fromAmount.value)
     
     if (!selectedFromToken.value) {
-      throw new Error('請選擇有效的來源代幣')
+      throw new Error('Please select a valid source token')
     }
     
     if (!selectedFromChain.value) {
-      throw new Error('請選擇來源鏈')
+      throw new Error('Please select source chain')
     }
     
     if (!selectedToChain.value) {
-      throw new Error('請選擇目標鏈')
+      throw new Error('Please select target chain')
     }
     
     if (!fromAmount.value || parseFloat(fromAmount.value) <= 0) {
-      throw new Error('請輸入有效的數量')
+      throw new Error('Please enter a valid amount')
     }
     
     // 檢查代幣是否有正確的地址屬性（根據 Nexus API 結構）
@@ -1204,8 +1319,8 @@ const executeSwap = async () => {
     console.log('  - targetGasSymbol:', getChainGasSymbol(selectedToChain.value))
     
     if (!fromTokenAddress) {
-      console.error('[GasExchange] 來源代幣缺少地址:', selectedFromToken.value)
-      throw new Error('來源代幣缺少合約地址')
+      console.error('[GasExchange] Source token missing address:', selectedFromToken.value)
+      throw new Error('Source token missing contract address')
     }
     
     // 獲取目標鏈的原生代幣地址（通常是零地址）
@@ -1261,7 +1376,7 @@ const executeSwap = async () => {
       // 刷新餘額
       await refreshBalances()
     } else {
-      throw new Error(result.error || 'Swap 失敗')
+      throw new Error(result.error || 'Swap failed')
       }
     } catch (error) {
       // 隱藏處理中 modal
@@ -1275,14 +1390,14 @@ const executeSwap = async () => {
     // 根據錯誤類型提供更詳細的錯誤信息
     let errorMessage = error.message
     if (error.message.includes('Failed to fetch')) {
-      errorMessage = '網路連接失敗，請檢查網路連接或稍後重試'
+      errorMessage = 'Network connection failed, please check your network connection or try again later'
     } else if (error.message.includes('CORS')) {
-      errorMessage = '跨域請求被阻止，請檢查網路設置'
+      errorMessage = 'Cross-origin request blocked, please check network settings'
     } else if (error.message.includes('502')) {
-      errorMessage = '服務器暫時不可用，請稍後重試'
+      errorMessage = 'Server temporarily unavailable, please try again later'
     }
     
-    alert(`Swap 失敗: ${errorMessage}`)
+    alert(`Swap failed: ${errorMessage}`)
   }
 }
 
@@ -1315,12 +1430,12 @@ const closeSuccessModal = () => {
 // 獲取步驟標題
 const getStepTitle = (stepType) => {
   const stepTitles = {
-    'ALLOWANCE': '檢查授權',
-    'SOURCE_SWAP_HASH': '來源鏈交易',
-    'DESTINATION_SWAP_HASH': '目標鏈交易',
-    'SWAP_COMPLETE': '交易完成',
-    'BRIDGE_HASH': '橋接交易',
-    'EXECUTE_HASH': '執行交易'
+    'ALLOWANCE': 'Check Authorization',
+    'SOURCE_SWAP_HASH': 'Source Chain Transaction',
+    'DESTINATION_SWAP_HASH': 'Target Chain Transaction',
+    'SWAP_COMPLETE': 'Transaction Complete',
+    'BRIDGE_HASH': 'Bridge Transaction',
+    'EXECUTE_HASH': 'Execute Transaction'
   }
   return stepTitles[stepType] || stepType
 }
@@ -1588,15 +1703,15 @@ const getTokenChainCount = (token) => {
 // 獲取 swap 按鈕文字
 const getSwapButtonText = () => {
   if (!selectedFromToken.value) {
-    return '兌換Gas'
+    return 'Exchange Gas'
   }
   
   if (!selectedToToken.value) {
-    return '選擇目標代幣'
+    return 'Select target token'
   }
   
   if (!fromAmount.value || parseFloat(fromAmount.value) <= 0) {
-    return '輸入數量'
+    return 'Enter amount'
   }
   
   return `Swap ${fromAmount.value} ${selectedFromToken.value.symbol} → ${selectedToToken.value.symbol}`
@@ -1605,10 +1720,10 @@ const getSwapButtonText = () => {
 // 獲取載入中文字
 const getSwapLoadingText = () => {
   const step = nexusState.swapProgress.currentStep
-  if (step === 'intent_approval') return '等待確認...'
-  if (step === 'SOURCE_SWAP_HASH') return '處理來源交易...'
-  if (step === 'DESTINATION_SWAP_HASH') return '處理目標交易...'
-  return 'Swap 進行中...'
+  if (step === 'intent_approval') return 'Waiting for confirmation...'
+  if (step === 'SOURCE_SWAP_HASH') return 'Processing source transaction...'
+  if (step === 'DESTINATION_SWAP_HASH') return 'Processing target transaction...'
+  return 'Swap in progress...'
 }
 
 // 獲取已完成步驟數量
@@ -1648,6 +1763,277 @@ onMounted(() => {
 </script>
 
 <style scoped>
+/* Metallic Background */
+.metallic-bg {
+  background: 
+    linear-gradient(135deg, #1e293b 0%, #334155 25%, #475569 50%, #334155 75%, #1e293b 100%),
+    radial-gradient(circle at 20% 80%, rgba(55, 182, 148, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(20, 184, 166, 0.1) 0%, transparent 50%);
+  background-size: 100% 100%, 800px 800px, 600px 600px;
+  animation: metallic-shift 20s ease-in-out infinite;
+}
+
+/* Metallic Grid */
+.bg-metallic-grid {
+  background-image: 
+    linear-gradient(rgba(55, 182, 148, 0.1) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(55, 182, 148, 0.1) 1px, transparent 1px),
+    linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+  background-size: 50px 50px, 50px 50px, 10px 10px, 10px 10px;
+}
+
+/* Particle container */
+.particles-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+/* Tech Animation Styles */
+.tech-grid-lines {
+  @apply absolute inset-0 pointer-events-none;
+}
+
+.grid-line {
+  @apply absolute;
+}
+
+.tech-elements {
+  @apply absolute inset-0 pointer-events-none;
+}
+
+.tech-element {
+  @apply absolute flex items-center justify-center;
+}
+
+.data-streams {
+  @apply absolute inset-0 pointer-events-none;
+}
+
+.data-stream {
+  @apply absolute;
+}
+
+.holographic-overlay {
+  @apply absolute inset-0 pointer-events-none;
+  background: 
+    radial-gradient(circle at 20% 20%, rgba(55, 182, 148, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(20, 184, 166, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 40% 60%, rgba(94, 228, 185, 0.05) 0%, transparent 50%);
+  animation: holographic-shift 15s ease-in-out infinite;
+}
+
+/* Metallic Wave Lines */
+.metallic-waves {
+  @apply absolute top-0 right-0 w-1/3 h-1/2 pointer-events-none;
+}
+
+.wave-line {
+  @apply absolute;
+  background: linear-gradient(135deg, 
+    transparent 0%, 
+    rgba(55, 182, 148, 0.1) 20%, 
+    rgba(94, 228, 185, 0.3) 50%, 
+    rgba(55, 182, 148, 0.1) 80%, 
+    transparent 100%);
+  filter: blur(1px);
+  animation: wave-flow 8s ease-in-out infinite;
+}
+
+.wave-1 {
+  top: 10%;
+  right: 5%;
+  width: 200px;
+  height: 2px;
+  animation-delay: 0s;
+  transform: rotate(-15deg);
+}
+
+.wave-2 {
+  top: 20%;
+  right: 10%;
+  width: 180px;
+  height: 2px;
+  animation-delay: 2s;
+  transform: rotate(-10deg);
+}
+
+.wave-3 {
+  top: 30%;
+  right: 8%;
+  width: 160px;
+  height: 2px;
+  animation-delay: 4s;
+  transform: rotate(-20deg);
+}
+
+.wave-4 {
+  top: 40%;
+  right: 12%;
+  width: 140px;
+  height: 2px;
+  animation-delay: 6s;
+  transform: rotate(-5deg);
+}
+
+/* Metallic Animations */
+@keyframes metallic-shift {
+  0%, 100% { background-position: 0% 0%, 0% 0%, 100% 100%; }
+  50% { background-position: 100% 100%, 100% 100%, 0% 0%; }
+}
+
+@keyframes metallic-float-particle {
+  0% { transform: translateY(100vh) rotate(0deg) scale(0.5); opacity: 0; }
+  10% { opacity: 1; transform: scale(1); }
+  90% { opacity: 1; transform: scale(1); }
+  100% { transform: translateY(-100px) rotate(360deg) scale(0.5); opacity: 0; }
+}
+
+/* Tech Animations */
+@keyframes grid-line-horizontal {
+  0%, 100% { 
+    opacity: 0; 
+    transform: scaleX(0); 
+  }
+  50% { 
+    opacity: 0.8; 
+    transform: scaleX(1); 
+  }
+}
+
+@keyframes grid-line-vertical {
+  0%, 100% { 
+    opacity: 0; 
+    transform: scaleY(0); 
+  }
+  50% { 
+    opacity: 0.8; 
+    transform: scaleY(1); 
+  }
+}
+
+@keyframes tech-element-float {
+  0%, 100% { 
+    transform: translateY(0) rotate(0deg) scale(1); 
+    opacity: 0.3; 
+  }
+  25% { 
+    transform: translateY(-20px) rotate(90deg) scale(1.1); 
+    opacity: 0.6; 
+  }
+  50% { 
+    transform: translateY(-40px) rotate(180deg) scale(1.2); 
+    opacity: 0.8; 
+  }
+  75% { 
+    transform: translateY(-20px) rotate(270deg) scale(1.1); 
+    opacity: 0.6; 
+  }
+}
+
+@keyframes data-stream-flow {
+  0% { 
+    opacity: 0; 
+    transform: translateY(-100px) scaleY(0.5); 
+  }
+  50% { 
+    opacity: 0.8; 
+    transform: translateY(0) scaleY(1); 
+  }
+  100% { 
+    opacity: 0; 
+    transform: translateY(100px) scaleY(0.5); 
+  }
+}
+
+@keyframes wave-flow {
+  0%, 100% { 
+    opacity: 0.2; 
+    transform: scaleX(0.8) translateX(20px); 
+  }
+  50% { 
+    opacity: 0.8; 
+    transform: scaleX(1.2) translateX(-10px); 
+  }
+}
+
+@keyframes holographic-shift {
+  0%, 100% { 
+    background-position: 0% 0%, 100% 100%, 50% 50%; 
+  }
+  33% { 
+    background-position: 100% 0%, 0% 100%, 25% 75%; 
+  }
+  66% { 
+    background-position: 0% 100%, 100% 0%, 75% 25%; 
+  }
+}
+
+/* Metallic Animations */
+@keyframes metallic-glow {
+  0%, 100% { 
+    box-shadow: 
+      0 8px 32px rgba(0, 0, 0, 0.3),
+      0 0 0 1px rgba(16, 185, 129, 0.3),
+      inset 0 1px 0 rgba(255, 255, 255, 0.15),
+      inset 0 -1px 0 rgba(55, 182, 148, 0.2);
+  }
+  50% { 
+    box-shadow: 
+      0 12px 40px rgba(0, 0, 0, 0.4),
+      0 0 0 1px rgba(16, 185, 129, 0.4),
+      inset 0 1px 0 rgba(255, 255, 255, 0.2),
+      inset 0 -1px 0 rgba(55, 182, 148, 0.3);
+  }
+}
+
+@keyframes metallic-sweep {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+/* Floating Card Styles */
+.floating-card {
+  position: relative;
+  transform: translateY(0) perspective(1000px) rotateX(0deg);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 
+    0 8px 16px -4px rgba(0, 0, 0, 0.2),
+    0 4px 8px -2px rgba(0, 0, 0, 0.15),
+    0 2px 4px -1px rgba(0, 0, 0, 0.1),
+    0 0 0 1px rgba(16, 185, 129, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+}
+
+.floating-card:hover {
+  transform: translateY(-16px) perspective(1000px) rotateX(-2deg);
+  box-shadow: 
+    0 32px 64px -12px rgba(0, 0, 0, 0.3),
+    0 16px 32px -8px rgba(0, 0, 0, 0.2),
+    0 8px 16px -4px rgba(0, 0, 0, 0.15),
+    0 0 0 2px rgba(16, 185, 129, 0.4),
+    0 0 40px rgba(16, 185, 129, 0.2),
+    inset 0 2px 0 rgba(255, 255, 255, 0.2),
+    inset 0 -2px 0 rgba(0, 0, 0, 0.2);
+}
+
+.floating-card:active {
+  transform: translateY(-8px) perspective(1000px) rotateX(-1deg);
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 
+    0 16px 32px -8px rgba(0, 0, 0, 0.25),
+    0 8px 16px -4px rgba(0, 0, 0, 0.2),
+    0 4px 8px -2px rgba(0, 0, 0, 0.15),
+    0 0 0 1px rgba(16, 185, 129, 0.3),
+    0 0 20px rgba(16, 185, 129, 0.15);
+}
+
 .btn-primary {
   @apply bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-emerald-500/30 focus:ring-offset-2 shadow-lg hover:shadow-xl hover:scale-105;
 }
@@ -1689,6 +2075,52 @@ onMounted(() => {
   @apply bg-slate-800/50 backdrop-blur-md rounded-3xl border border-emerald-300/30 divide-y divide-emerald-300/20 overflow-hidden shadow;
 }
 
+.scrollable-balance-list {
+  @apply max-h-96 overflow-y-auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(16, 185, 129, 0.3) transparent;
+}
+
+.scrollable-balance-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.scrollable-balance-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scrollable-balance-list::-webkit-scrollbar-thumb {
+  background: rgba(16, 185, 129, 0.3);
+  border-radius: 3px;
+}
+
+.scrollable-balance-list::-webkit-scrollbar-thumb:hover {
+  background: rgba(16, 185, 129, 0.5);
+}
+
+.scrollable-chains-list {
+  @apply max-h-80 overflow-y-auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(16, 185, 129, 0.3) transparent;
+}
+
+.scrollable-chains-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.scrollable-chains-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scrollable-chains-list::-webkit-scrollbar-thumb {
+  background: rgba(16, 185, 129, 0.3);
+  border-radius: 3px;
+}
+
+.scrollable-chains-list::-webkit-scrollbar-thumb:hover {
+  background: rgba(16, 185, 129, 0.5);
+}
+
 .balance-row {
   @apply flex items-center justify-between px-6 py-5 hover:bg-emerald-500/10 transition-colors;
 }
@@ -1725,9 +2157,6 @@ onMounted(() => {
   @apply text-xs text-emerald-200;
 }
 
-.toggle-list-btn {
-  @apply px-4 py-2 text-sm font-semibold text-emerald-300 bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-400/30 rounded-lg transition-colors;
-}
 
 
 .token-switch {
@@ -1980,6 +2409,33 @@ onMounted(() => {
     0 0 0 1px rgba(16, 185, 129, 0.15),
     inset 0 1px 0 rgba(255, 255, 255, 0.08);
   position: relative;
+}
+
+/* Metallic Card Styles */
+.metallic-card {
+  position: relative;
+  background: 
+    linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 41, 59, 0.95) 50%, rgba(15, 23, 42, 0.95) 100%),
+    linear-gradient(45deg, rgba(55, 182, 148, 0.1) 0%, rgba(94, 228, 185, 0.05) 50%, rgba(55, 182, 148, 0.1) 100%);
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.3),
+    0 0 0 1px rgba(16, 185, 129, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15),
+    inset 0 -1px 0 rgba(55, 182, 148, 0.2);
+  animation: metallic-glow 6s ease-in-out infinite;
+}
+
+.metallic-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.08) 50%, transparent 70%);
+  animation: metallic-sweep 4s ease-in-out infinite;
+  pointer-events: none;
+  border-radius: inherit;
 }
 
 .swap-main-card::before {
