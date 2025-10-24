@@ -1,6 +1,20 @@
 import { VincentBridgeClient } from './logic/vincentClient.js';
 import { createWebAuth, bootstrapAuthFlow } from './auth.js';
 import { ethers } from 'ethers';
+import { 
+  logToJson, 
+  logError, 
+  logApiCall, 
+  logTransaction, 
+  logTestSummary, 
+  logSignature, 
+  logQuote, 
+  logExecute, 
+  logSubmit, 
+  logStatus,
+  getAllLogs,
+  clearLogs
+} from './logger.js';
 
 const $ = (id) => document.getElementById(id);
 const logEl = $('log');
@@ -341,24 +355,77 @@ function verifyEIP712Signature(signature, signTypedData, expectedSigner) {
       return { valid: false, error: 'Invalid domain structure' };
     }
     
-    // 檢查 types 結構
-    if (!signTypedData.types.PermitWitnessTransferFrom) {
+    // 檢查 types 結構 - 驗證所有必要的 types
+    const types = signTypedData.types;
+    if (!types.PermitWitnessTransferFrom) {
       return { valid: false, error: 'Missing PermitWitnessTransferFrom type' };
     }
+    if (!types.TokenPermissions) {
+      return { valid: false, error: 'Missing TokenPermissions type' };
+    }
+    if (!types.Request) {
+      return { valid: false, error: 'Missing Request type' };
+    }
+    if (!types.BasicRequest) {
+      return { valid: false, error: 'Missing BasicRequest type' };
+    }
     
-    // 檢查 values 結構
+    // 驗證 PermitWitnessTransferFrom 的欄位
+    const permitWitnessFields = types.PermitWitnessTransferFrom.map(f => f.name);
+    const requiredPermitFields = ['permitted', 'spender', 'nonce', 'deadline', 'witness'];
+    for (const field of requiredPermitFields) {
+      if (!permitWitnessFields.includes(field)) {
+        return { valid: false, error: `Missing ${field} field in PermitWitnessTransferFrom` };
+      }
+    }
+    
+    // 驗證 TokenPermissions 的欄位
+    const tokenPermFields = types.TokenPermissions.map(f => f.name);
+    const requiredTokenFields = ['token', 'amount'];
+    for (const field of requiredTokenFields) {
+      if (!tokenPermFields.includes(field)) {
+        return { valid: false, error: `Missing ${field} field in TokenPermissions` };
+      }
+    }
+    
+    // 驗證 Request 的欄位
+    const requestFields = types.Request.map(f => f.name);
+    const requiredRequestFields = ['basicReq', 'swapOutputToken', 'minSwapOutput', 'metadata', 'affiliateFees', 'minDestGas', 'destinationPayload', 'exclusiveTransmitter'];
+    for (const field of requiredRequestFields) {
+      if (!requestFields.includes(field)) {
+        return { valid: false, error: `Missing ${field} field in Request` };
+      }
+    }
+    
+    // 驗證 BasicRequest 的欄位
+    const basicReqFields = types.BasicRequest.map(f => f.name);
+    const requiredBasicFields = ['originChainId', 'destinationChainId', 'deadline', 'nonce', 'sender', 'receiver', 'delegate', 'bungeeGateway', 'switchboardId', 'inputToken', 'inputAmount', 'outputToken', 'minOutputAmount', 'refuelAmount'];
+    for (const field of requiredBasicFields) {
+      if (!basicReqFields.includes(field)) {
+        return { valid: false, error: `Missing ${field} field in BasicRequest` };
+      }
+    }
+    
+    // 檢查 values 結構 - 驗證所有必要的欄位
     const values = signTypedData.values;
     if (!values.permitted || !values.spender || !values.nonce || !values.deadline || !values.witness) {
       return { valid: false, error: 'Invalid values structure' };
     }
     
-    // 檢查 witness 結構
+    // 驗證 permitted 結構
+    if (!values.permitted.token || !values.permitted.amount) {
+      return { valid: false, error: 'Invalid permitted structure' };
+    }
+    
+    // 驗證 witness 結構
     const witness = values.witness;
-    if (!witness.basicReq || !witness.swapOutputToken || witness.minSwapOutput === undefined || !witness.metadata) {
+    if (!witness.basicReq || witness.swapOutputToken === undefined || witness.minSwapOutput === undefined || 
+        !witness.metadata || witness.affiliateFees === undefined || witness.minDestGas === undefined || 
+        witness.destinationPayload === undefined || witness.exclusiveTransmitter === undefined) {
       return { valid: false, error: 'Invalid witness structure' };
     }
     
-    // 檢查 basicReq 結構
+    // 驗證 basicReq 結構
     const basicReq = witness.basicReq;
     if (!basicReq.originChainId || !basicReq.destinationChainId || !basicReq.deadline || 
         !basicReq.nonce || !basicReq.sender || !basicReq.receiver || !basicReq.delegate || 
@@ -452,6 +519,27 @@ $('btn-exec-auto').addEventListener('click', async () => {
     // 前端執行 submit
     if (data?.userSignature && data?.witness && data?.quoteId && data?.requestType) {
       log('開始前端 Submit 到 Bungee...');
+      
+      // 檢查 deadline 是否過期
+      const witness = data.witness;
+      if (witness?.basicReq?.deadline) {
+        const deadline = Number(witness.basicReq.deadline);
+        const currentTime = Math.floor(Date.now() / 1000);
+        const timeLeft = deadline - currentTime;
+        
+        log('⏰ 交易時間檢查:');
+        log('- Deadline: ' + new Date(deadline * 1000).toLocaleString());
+        log('- 當前時間: ' + new Date(currentTime * 1000).toLocaleString());
+        log('- 剩餘時間: ' + timeLeft + ' 秒');
+        
+        if (timeLeft <= 0) {
+          log('❌ 交易已過期，請重新執行流程', 'error');
+          return;
+        } else if (timeLeft < 60) {
+          log('⚠️ 交易即將過期，請盡快提交', 'warning');
+        }
+      }
+      
       try {
         const submitBody = {
           requestType: data.requestType,
@@ -571,7 +659,8 @@ async function checkPermit2Allowance(params) {
       amount: amount.toString(),
       hasAllowance,
       tokenAddress: params.fromToken,
-      spenderAddress: '0x000000000022D473030F116dDEE9F6B43aC78BA3'
+      spenderAddress: '0x000000000022D473030F116dDEE9F6B43aC78BA3',
+      note: '檢查 Permit2 合約的 allowance，這是正確的'
     };
     
     log('✅ Allowance 檢查結果: ' + JSON.stringify(allowance));
@@ -593,8 +682,36 @@ $('btn-quote-exec-submit').addEventListener('click', async () => {
     if (!jwt) throw new Error('請先登入以取得 JWT');
     const params = buildAbilityParams();
     
-    // Step 0: 檢查 Permit2 Allowance
-    log('步驟 0: 檢查 Permit2 Allowance...');
+    // Step 0: 檢查 Permit2 Allowance 和 ETH 餘額
+    log('步驟 0: 檢查 Permit2 Allowance 和 ETH 餘額...');
+    
+    // 檢查 PKP 地址的 ETH 餘額
+    try {
+      const chainId = Number(params.fromChainId);
+      let rpcUrl = params.rpcUrl;
+      
+      if (!rpcUrl || rpcUrl.includes('yellowstone-rpc.litprotocol.com')) {
+        switch (chainId) {
+          case 42161: rpcUrl = 'https://arb1.arbitrum.io/rpc'; break;
+          case 8453: rpcUrl = 'https://mainnet.base.org'; break;
+          case 1: rpcUrl = 'https://eth.llamarpc.com'; break;
+          default: rpcUrl = 'https://arb1.arbitrum.io/rpc';
+        }
+      }
+      
+      const provider = new ethers.JsonRpcProvider(rpcUrl);
+      const ethBalance = await provider.getBalance(delegator);
+      const ethBalanceFormatted = ethers.formatEther(ethBalance);
+      
+      log('💰 PKP ETH 餘額: ' + ethBalanceFormatted + ' ETH');
+      
+      if (Number(ethBalanceFormatted) < 0.001) {
+        log('⚠️ ETH 餘額可能不足，建議至少 0.001 ETH', 'warning');
+      }
+    } catch (err) {
+      log('❌ 無法檢查 ETH 餘額: ' + (err.message || err), 'error');
+    }
+    
     const allowance = await checkPermit2Allowance(params);
     
     if (!allowance) {
@@ -686,6 +803,23 @@ $('btn-quote-exec-submit').addEventListener('click', async () => {
       signTypedData: quoteData.result?.signTypedData ? 'present' : 'missing'
     }));
     
+    // 顯示 Quote 中的 signTypedData 詳細內容
+    if (quoteData.result?.signTypedData) {
+      log('📋 Quote 回應中的 signTypedData 內容:');
+      log(JSON.stringify(quoteData.result.signTypedData, null, 2));
+      
+      // 顯示關鍵欄位
+      if (quoteData.result.signTypedData.domain) {
+        log('🔍 Quote Domain: ' + JSON.stringify(quoteData.result.signTypedData.domain, null, 2));
+      }
+      if (quoteData.result.signTypedData.values) {
+        log('🔍 Quote Values: ' + JSON.stringify(quoteData.result.signTypedData.values, null, 2));
+      }
+      if (quoteData.result.signTypedData.types) {
+        log('🔍 Quote Types: ' + JSON.stringify(quoteData.result.signTypedData.types, null, 2));
+      }
+    }
+    
     // Step 2: 使用 Quote 結果執行 Execute
     log('步驟 2: 執行 Execute (使用 Quote 結果)...');
     const executeParams = {
@@ -694,6 +828,35 @@ $('btn-quote-exec-submit').addEventListener('click', async () => {
       quoteId: quoteData.result?.quoteId,
       requestType: quoteData.result?.requestType
     };
+    
+    log('🔍 Execute 參數詳情:');
+    log('- fromChainId: ' + executeParams.fromChainId);
+    log('- toChainId: ' + executeParams.toChainId);
+    log('- fromToken: ' + executeParams.fromToken);
+    log('- toToken: ' + executeParams.toToken);
+    log('- amount: ' + executeParams.amount);
+    log('- recipient: ' + executeParams.recipient);
+    log('- slippageBps: ' + executeParams.slippageBps);
+    log('- signTypedData: ' + (executeParams.signTypedData ? 'present' : 'missing'));
+    log('- quoteId: ' + executeParams.quoteId);
+    log('- requestType: ' + executeParams.requestType);
+    
+    // 顯示 signTypedData 的詳細內容
+    if (executeParams.signTypedData) {
+      log('📋 Execute 參數中的 signTypedData 內容:');
+      log(JSON.stringify(executeParams.signTypedData, null, 2));
+      
+      // 顯示關鍵欄位
+      if (executeParams.signTypedData.domain) {
+        log('🔍 Domain: ' + JSON.stringify(executeParams.signTypedData.domain, null, 2));
+      }
+      if (executeParams.signTypedData.values) {
+        log('🔍 Values: ' + JSON.stringify(executeParams.signTypedData.values, null, 2));
+      }
+      if (executeParams.signTypedData.types) {
+        log('🔍 Types: ' + JSON.stringify(executeParams.signTypedData.types, null, 2));
+      }
+    }
     
     const { resp: execResp, data: execData, text: execText } = await postJson('/api/vincent/execute', { 
       bridgeParams: executeParams, 
@@ -731,6 +894,27 @@ $('btn-quote-exec-submit').addEventListener('click', async () => {
     // Step 3: 前端執行 Submit
     if (execData?.userSignature && execData?.witness && execData?.quoteId && execData?.requestType) {
       log('步驟 3: 前端 Submit 到 Bungee...');
+      
+      // 檢查 deadline 是否過期
+      const witness = execData.witness;
+      if (witness?.basicReq?.deadline) {
+        const deadline = Number(witness.basicReq.deadline);
+        const currentTime = Math.floor(Date.now() / 1000);
+        const timeLeft = deadline - currentTime;
+        
+        log('⏰ 交易時間檢查:');
+        log('- Deadline: ' + new Date(deadline * 1000).toLocaleString());
+        log('- 當前時間: ' + new Date(currentTime * 1000).toLocaleString());
+        log('- 剩餘時間: ' + timeLeft + ' 秒');
+        
+        if (timeLeft <= 0) {
+          log('❌ 交易已過期，請重新執行 Quote → Execute → Submit 流程', 'error');
+          return;
+        } else if (timeLeft < 60) {
+          log('⚠️ 交易即將過期，請盡快提交', 'warning');
+        }
+      }
+      
       try {
         const submitBody = {
           requestType: execData.requestType,
@@ -769,9 +953,316 @@ $('btn-quote-exec-submit').addEventListener('click', async () => {
     }
     
     log('✅ Quote → Execute → Submit 流程完成！', 'ok');
+    
+    // 記錄測試總結
+    const testSummary = {
+      testType: 'Quote → Execute → Submit',
+      timestamp: new Date().toISOString(),
+      success: true,
+      quoteId: quoteData.result?.quoteId,
+      requestType: execData.requestType,
+      requestHash: submitData?.result?.requestHash,
+      userSignature: execData.userSignature,
+      totalSteps: 3
+    };
+    logTestSummary(testSummary);
+    
   } catch (err) {
     console.error(err);
     log('❌ Quote → Execute → Submit 失敗: ' + (err.message || err), 'error');
+    
+    // 記錄錯誤
+    logError(err, 'quote_execute_submit');
+    
+    // 記錄失敗的測試總結
+    const testSummary = {
+      testType: 'Quote → Execute → Submit',
+      timestamp: new Date().toISOString(),
+      success: false,
+      error: err.message || String(err),
+      totalSteps: 3
+    };
+    logTestSummary(testSummary);
+  }
+});
+
+// Quote → Execute (只生成簽名，不 Submit)
+$('btn-quote-exec-sign').addEventListener('click', async () => {
+  try {
+    const delegator = $('delegator').value.trim();
+    const jwt = $('jwtStr').value.trim();
+    const audience = $('audience').value.trim();
+    if (!jwt) throw new Error('請先登入以取得 JWT');
+    const params = buildAbilityParams();
+    
+    // Step 0: 檢查 Permit2 Allowance 和 ETH 餘額
+    log('步驟 0: 檢查 Permit2 Allowance 和 ETH 餘額...');
+    
+    // 檢查 PKP 地址的 ETH 餘額
+    try {
+      const chainId = Number(params.fromChainId);
+      let rpcUrl = params.rpcUrl;
+      
+      if (!rpcUrl || rpcUrl.includes('yellowstone-rpc.litprotocol.com')) {
+        switch (chainId) {
+          case 42161: rpcUrl = 'https://arb1.arbitrum.io/rpc'; break;
+          case 8453: rpcUrl = 'https://mainnet.base.org'; break;
+          case 1: rpcUrl = 'https://eth.llamarpc.com'; break;
+          default: rpcUrl = 'https://arb1.arbitrum.io/rpc';
+        }
+      }
+      
+      const provider = new ethers.JsonRpcProvider(rpcUrl);
+      const ethBalance = await provider.getBalance(delegator);
+      const ethBalanceFormatted = ethers.formatEther(ethBalance);
+      
+      log('💰 PKP ETH 餘額: ' + ethBalanceFormatted + ' ETH');
+      
+      if (Number(ethBalanceFormatted) < 0.001) {
+        log('⚠️ ETH 餘額可能不足，建議至少 0.001 ETH', 'warning');
+      }
+    } catch (err) {
+      log('❌ 無法檢查 ETH 餘額: ' + (err.message || err), 'error');
+    }
+    
+    const allowance = await checkPermit2Allowance(params);
+    
+    if (!allowance) {
+      log('❌ 無法檢查 Allowance，停止流程', 'error');
+      return;
+    }
+    
+    if (!allowance.hasAllowance) {
+      log('⚠️ Allowance 不足或已過期，需要執行 Permit2 Approval', 'warning');
+      
+      // 自動執行 Permit2 Approval
+      try {
+        log('🔄 自動執行 Permit2 Approval...');
+        const approvalParams = {
+          chainId: Number(params.fromChainId),
+          tokenIn: params.fromToken,
+          amountIn: params.amount,
+          rpcUrl: params.rpcUrl || `https://arb1.arbitrum.io/rpc`,
+          spenderAddress: '0x000000000022D473030F116dDEE9F6B43aC78BA3',
+          alchemyGasSponsor: true,
+          alchemyGasSponsorApiKey: undefined,
+          alchemyGasSponsorPolicyId: undefined,
+        };
+        
+        const appId = $('appId')?.value?.trim();
+        let decodedJWT = null; 
+        try { 
+          const s = localStorage.getItem('VINCENT_AUTH_JWT_DECODED'); 
+          decodedJWT = s ? JSON.parse(s) : null; 
+        } catch {}
+        
+        // 執行 Permit2 Approval
+        const { resp: approveResp, data: approveData, text: approveText } = await postJson('/api/vincent/approve/execute', { 
+          approvalParams, 
+          delegatorPkpEthAddress: delegator, 
+          jwt, 
+          audience, 
+          appId,
+          decodedJWT
+        });
+        
+        if (!approveResp.ok || !approveData?.ok) {
+          throw new Error((approveData && approveData.error) || approveText || `Approval HTTP ${approveResp.status}`);
+        }
+        
+        log('✅ Permit2 Approval 完成: ' + JSON.stringify(approveData.result), 'ok');
+        
+        if (approveData.bundleTxHash) {
+          log('📦 UserOp 已打包: ' + approveData.bundleTxHash, 'ok');
+        }
+        
+        // 等待一下讓 approval 生效
+        log('⏳ 等待 Approval 生效...');
+        await new Promise(resolve => setTimeout(resolve, 3000));
+        
+      } catch (approveErr) {
+        log('❌ Permit2 Approval 失敗: ' + (approveErr.message || approveErr), 'error');
+        return;
+      }
+    } else {
+      log('✅ Allowance 充足，繼續執行流程', 'ok');
+    }
+    
+    // Step 1: 從外部取得 Quote
+    log('步驟 1: 從外部取得 Quote...');
+    const appId = $('appId')?.value?.trim();
+    let decodedJWT = null; 
+    try { 
+      const s = localStorage.getItem('VINCENT_AUTH_JWT_DECODED'); 
+      decodedJWT = s ? JSON.parse(s) : null; 
+    } catch {}
+    
+    const { resp: quoteResp, data: quoteData, text: quoteText } = await postJson('/api/vincent/quote', { 
+      bridgeParams: params, 
+      delegatorPkpEthAddress: delegator, 
+      jwt, 
+      audience, 
+      appId, 
+      decodedJWT 
+    });
+    
+    if (!quoteResp.ok || !quoteData?.ok) {
+      throw new Error((quoteData && quoteData.error) || quoteText || `Quote HTTP ${quoteResp.status}`);
+    }
+    
+    log('Quote 回應: ' + JSON.stringify({ 
+      quoteId: quoteData.result?.quoteId, 
+      requestType: quoteData.result?.requestType,
+      signTypedData: quoteData.result?.signTypedData ? 'present' : 'missing'
+    }));
+    
+    // 顯示 Quote 中的 signTypedData 詳細內容
+    if (quoteData.result?.signTypedData) {
+      log('📋 Quote 回應中的 signTypedData 內容:');
+      log(JSON.stringify(quoteData.result.signTypedData, null, 2));
+      
+      // 顯示關鍵欄位
+      if (quoteData.result.signTypedData.domain) {
+        log('🔍 Quote Domain: ' + JSON.stringify(quoteData.result.signTypedData.domain, null, 2));
+      }
+      if (quoteData.result.signTypedData.values) {
+        log('🔍 Quote Values: ' + JSON.stringify(quoteData.result.signTypedData.values, null, 2));
+      }
+      if (quoteData.result.signTypedData.types) {
+        log('🔍 Quote Types: ' + JSON.stringify(quoteData.result.signTypedData.types, null, 2));
+      }
+    }
+    
+    // Step 2: 使用 Quote 結果執行 Execute
+    log('步驟 2: 執行 Execute (使用 Quote 結果)...');
+    const executeParams = {
+      ...params,
+      signTypedData: quoteData.result?.signTypedData,
+      quoteId: quoteData.result?.quoteId,
+      requestType: quoteData.result?.requestType
+    };
+    
+    log('🔍 Execute 參數詳情:');
+    log('- fromChainId: ' + executeParams.fromChainId);
+    log('- toChainId: ' + executeParams.toChainId);
+    log('- fromToken: ' + executeParams.fromToken);
+    log('- toToken: ' + executeParams.toToken);
+    log('- amount: ' + executeParams.amount);
+    log('- recipient: ' + executeParams.recipient);
+    log('- slippageBps: ' + executeParams.slippageBps);
+    log('- signTypedData: ' + (executeParams.signTypedData ? 'present' : 'missing'));
+    log('- quoteId: ' + executeParams.quoteId);
+    log('- requestType: ' + executeParams.requestType);
+    
+    // 顯示 signTypedData 的詳細內容
+    if (executeParams.signTypedData) {
+      log('📋 Execute 參數中的 signTypedData 內容:');
+      log(JSON.stringify(executeParams.signTypedData, null, 2));
+      
+      // 顯示關鍵欄位
+      if (executeParams.signTypedData.domain) {
+        log('🔍 Domain: ' + JSON.stringify(executeParams.signTypedData.domain, null, 2));
+      }
+      if (executeParams.signTypedData.values) {
+        log('🔍 Values: ' + JSON.stringify(executeParams.signTypedData.values, null, 2));
+      }
+      if (executeParams.signTypedData.types) {
+        log('🔍 Types: ' + JSON.stringify(executeParams.signTypedData.types, null, 2));
+      }
+    }
+    
+    const { resp: execResp, data: execData, text: execText } = await postJson('/api/vincent/execute', { 
+      bridgeParams: executeParams, 
+      delegatorPkpEthAddress: delegator, 
+      jwt, 
+      audience, 
+      appId, 
+      decodedJWT 
+    });
+    
+    if (!execResp.ok || !execData?.ok) {
+      throw new Error((execData && execData.error) || execText || `Execute HTTP ${execResp.status}`);
+    }
+    
+    log('Execute 回應: ' + JSON.stringify({ 
+      result: execData.result, 
+      requestType: execData.requestType, 
+      quoteId: execData.quoteId, 
+      userSignature: execData.userSignature ? 'present' : 'missing',
+      witness: execData.witness ? 'present' : 'missing'
+    }));
+    
+    // 驗證 EIP-712 簽名
+    if (execData?.userSignature && execData?.signTypedData) {
+      log('驗證 EIP-712 簽名...');
+      const verification = verifyEIP712Signature(execData.userSignature, execData.signTypedData, delegator);
+      if (verification.valid) {
+        log('✅ EIP-712 簽名驗證通過: ' + verification.message, 'ok');
+        
+        // 顯示簽名詳情
+        log('🔍 簽名詳情:');
+        log('- 簽名: ' + execData.userSignature);
+        log('- Quote ID: ' + execData.quoteId);
+        log('- Request Type: ' + execData.requestType);
+        log('- 回推的 Signer: ' + verification.details.recoveredSigner);
+        log('- 期望的 Signer: ' + verification.details.expectedSigner);
+        log('- Signer 匹配: ' + (verification.details.signerMatches ? '是' : '否'));
+        
+        // 保存簽名結果到 localStorage，供後續使用
+        try {
+          localStorage.setItem('LAST_SIGNATURE_RESULT', JSON.stringify({
+            userSignature: execData.userSignature,
+            witness: execData.witness,
+            quoteId: execData.quoteId,
+            requestType: execData.requestType,
+            signTypedData: execData.signTypedData,
+            timestamp: Date.now()
+          }));
+          log('💾 簽名結果已保存到 localStorage', 'ok');
+        } catch (err) {
+          log('⚠️ 無法保存簽名結果: ' + err.message, 'warning');
+        }
+        
+      } else {
+        log('❌ EIP-712 簽名驗證失敗: ' + verification.error, 'error');
+        return;
+      }
+    } else {
+      log('❌ 缺少簽名或 signTypedData，無法驗證', 'error');
+      return;
+    }
+    
+    log('✅ Quote → Execute (只生成簽名) 流程完成！', 'ok');
+    log('📝 簽名已生成，可以使用 "Submit (Frontend)" 按鈕提交到 Bungee', 'ok');
+    
+    // 記錄測試總結
+    const testSummary = {
+      testType: 'Quote → Execute (只生成簽名)',
+      timestamp: new Date().toISOString(),
+      success: true,
+      quoteId: quoteData.result?.quoteId,
+      requestType: execData.requestType,
+      userSignature: execData.userSignature,
+      totalSteps: 2
+    };
+    logTestSummary(testSummary);
+    
+  } catch (err) {
+    console.error(err);
+    log('❌ Quote → Execute (只生成簽名) 失敗: ' + (err.message || err), 'error');
+    
+    // 記錄錯誤
+    logError(err, 'quote_execute_sign');
+    
+    // 記錄失敗的測試總結
+    const testSummary = {
+      testType: 'Quote → Execute (只生成簽名)',
+      timestamp: new Date().toISOString(),
+      success: false,
+      error: err.message || String(err),
+      totalSteps: 2
+    };
+    logTestSummary(testSummary);
   }
 });
 
@@ -781,6 +1272,14 @@ async function pollBungeeStatusUI(requestHash, intervalMs = 10000, maxAttempts =
     try {
       const resp = await fetch(`/api/bungee/status?requestHash=${encodeURIComponent(requestHash)}`);
       const data = await resp.json();
+      
+      // 記錄狀態 API 調用
+      logApiCall(
+        { requestHash },
+        data,
+        'status'
+      );
+      
       if (!resp.ok || !data?.ok) throw new Error((data && data.error) || `HTTP ${resp.status}`);
       const status = data.status;
       const safeLog = {
@@ -789,6 +1288,17 @@ async function pollBungeeStatusUI(requestHash, intervalMs = 10000, maxAttempts =
         serverReqId: data?.meta?.serverReqId || null,
       };
       log('Bungee 狀態: ' + JSON.stringify(safeLog));
+      
+      // 記錄狀態數據
+      logStatus({
+        requestHash,
+        attempt: attempts + 1,
+        bungeeStatusCode: status?.bungeeStatusCode,
+        txHash: status?.destinationData?.txHash,
+        serverReqId: data?.meta?.serverReqId,
+        fullResponse: data
+      });
+      
       if (status?.bungeeStatusCode === 3) {
         log('交易完成，目的鏈 txHash: ' + (status.destinationData?.txHash || '未知'), 'ok');
         return;
@@ -796,10 +1306,14 @@ async function pollBungeeStatusUI(requestHash, intervalMs = 10000, maxAttempts =
       if (status?.bungeeStatusCode === 5) {
         const reason = status?.errorMessage || status?.error?.message || '未知失敗';
         log('Bungee 任務失敗: ' + reason, 'error');
+        log('詳細錯誤信息: ' + JSON.stringify(status, null, 2), 'error');
         return;
       }
     } catch (e) {
       log('輪詢狀態失敗: ' + (e.message || e), 'error');
+      
+      // 記錄輪詢錯誤
+      logError(e, 'poll_status');
     }
     attempts++;
     await new Promise(r => setTimeout(r, intervalMs));
@@ -810,16 +1324,61 @@ async function pollBungeeStatusUI(requestHash, intervalMs = 10000, maxAttempts =
 // 直接用前端提交 witness + 簽章到 Bungee 以檢查請求格式
 $('btn-submit-front').addEventListener('click', async () => {
   try {
-    const lastRaw = localStorage.getItem('LAST_EXECUTE_PAYLOAD');
-    let payload = null;
-    try { payload = lastRaw ? JSON.parse(lastRaw) : null; } catch {}
-    if (!payload) throw new Error('尚未有 execute 結果可提交，請先執行 execute');
-    const requestType = payload.requestType || payload?.result?.requestType;
-    const quoteId = payload.quoteId || payload?.result?.quoteId;
-    const userSignature = payload.userSignature || payload?.result?.userSignature;
-    const witness = payload.witness || payload?.result?.witness || payload?.signTypedData?.values?.witness;
+    // 優先使用新的簽名結果
+    const signatureResultRaw = localStorage.getItem('LAST_SIGNATURE_RESULT');
+    let signatureResult = null;
+    try { signatureResult = signatureResultRaw ? JSON.parse(signatureResultRaw) : null; } catch {}
+    
+    let requestType, quoteId, userSignature, witness;
+    
+    if (signatureResult) {
+      // 使用新的簽名結果
+      log('使用保存的簽名結果進行 Submit...');
+      requestType = signatureResult.requestType;
+      quoteId = signatureResult.quoteId;
+      userSignature = signatureResult.userSignature;
+      witness = signatureResult.witness;
+      
+      log('🔍 簽名結果詳情:');
+      log('- Quote ID: ' + quoteId);
+      log('- Request Type: ' + requestType);
+      log('- 簽名: ' + userSignature);
+      log('- 時間戳: ' + new Date(signatureResult.timestamp).toLocaleString());
+    } else {
+      // 回退到舊的 execute payload
+      log('使用舊的 execute payload 進行 Submit...');
+      const lastRaw = localStorage.getItem('LAST_EXECUTE_PAYLOAD');
+      let payload = null;
+      try { payload = lastRaw ? JSON.parse(lastRaw) : null; } catch {}
+      if (!payload) throw new Error('尚未有 execute 結果可提交，請先執行 execute 或 "Quote → Execute (只生成簽名)"');
+      
+      requestType = payload.requestType || payload?.result?.requestType;
+      quoteId = payload.quoteId || payload?.result?.quoteId;
+      userSignature = payload.userSignature || payload?.result?.userSignature;
+      witness = payload.witness || payload?.result?.witness || payload?.signTypedData?.values?.witness;
+    }
+    
     if (!requestType || !quoteId || !userSignature || !witness) {
       throw new Error('缺少 requestType/quoteId/userSignature/witness，無法提交');
+    }
+    
+    // 檢查 deadline 是否過期
+    if (witness?.basicReq?.deadline) {
+      const deadline = Number(witness.basicReq.deadline);
+      const currentTime = Math.floor(Date.now() / 1000);
+      const timeLeft = deadline - currentTime;
+      
+      log('⏰ 交易時間檢查:');
+      log('- Deadline: ' + new Date(deadline * 1000).toLocaleString());
+      log('- 當前時間: ' + new Date(currentTime * 1000).toLocaleString());
+      log('- 剩餘時間: ' + timeLeft + ' 秒');
+      
+      if (timeLeft <= 0) {
+        log('❌ 交易已過期，請重新執行 "Quote → Execute (只生成簽名)"', 'error');
+        return;
+      } else if (timeLeft < 60) {
+        log('⚠️ 交易即將過期，請盡快提交', 'warning');
+      }
     }
     
     const body = { requestType, request: witness, userSignature, quoteId };
@@ -834,11 +1393,79 @@ $('btn-submit-front').addEventListener('click', async () => {
     const data = await resp.json();
     log('前端 Submit 回應: ' + JSON.stringify({ http: resp.status, serverReqId: resp.headers.get('server-req-id') || null, data }));
     if (data?.success && data?.result?.requestHash) {
+      log('✅ Bungee 已接收請求: ' + data.result.requestHash + '，開始輪詢狀態...', 'ok');
       await pollBungeeStatusUI(data.result.requestHash);
+    } else {
+      log('❌ Submit 失敗: ' + JSON.stringify(data), 'error');
     }
   } catch (err) {
     console.error(err);
     log('前端 Submit 失敗: ' + (err.message || err), 'error');
+  }
+});
+
+// 日誌管理功能
+$('btn-view-logs').addEventListener('click', () => {
+  try {
+    const logs = getAllLogs();
+    log('📋 所有日誌條目 (' + logs.length + ' 個):');
+    
+    logs.forEach((logEntry, index) => {
+      log(`[${index + 1}] ${logEntry.key}`);
+      log(`    時間: ${logEntry.timestamp}`);
+      log(`    類型: ${logEntry.key.split('_')[1] || 'unknown'}`);
+    });
+    
+    if (logs.length === 0) {
+      log('📝 沒有找到任何日誌', 'ok');
+    }
+  } catch (err) {
+    log('❌ 查看日誌失敗: ' + (err.message || err), 'error');
+  }
+});
+
+$('btn-clear-logs').addEventListener('click', () => {
+  try {
+    clearLogs();
+    log('🧹 所有日誌已清除', 'ok');
+  } catch (err) {
+    log('❌ 清除日誌失敗: ' + (err.message || err), 'error');
+  }
+});
+
+$('btn-download-logs').addEventListener('click', () => {
+  try {
+    const logs = getAllLogs();
+    if (logs.length === 0) {
+      log('📝 沒有日誌可下載', 'warning');
+      return;
+    }
+    
+    // 創建下載內容
+    const downloadData = {
+      timestamp: new Date().toISOString(),
+      totalLogs: logs.length,
+      logs: logs.map(logEntry => ({
+        key: logEntry.key,
+        timestamp: logEntry.timestamp,
+        data: logEntry.data
+      }))
+    };
+    
+    // 創建下載鏈接
+    const blob = new Blob([JSON.stringify(downloadData, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `testscript_logs_${new Date().toISOString().replace(/[:.]/g, '-')}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    
+    log('📥 日誌已下載: ' + a.download, 'ok');
+  } catch (err) {
+    log('❌ 下載日誌失敗: ' + (err.message || err), 'error');
   }
 });
 
