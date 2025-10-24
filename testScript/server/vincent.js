@@ -118,13 +118,12 @@ export async function getSignedBridgeQuote(bridgeParams, { delegatorPkpEthAddres
   console.log('Bungee API Base URL:', BUNGEE_API_BASE_URL);
   const quoteParams = {
     userAddress: delegatorPkpEthAddress,
-    receiverAddress: delegatorPkpEthAddress,
+    receiverAddress: bridgeParams.recipient,
     originChainId: parseInt(params.fromChainId),
     destinationChainId: parseInt(params.toChainId),
     inputToken: params.fromToken,
     outputToken: params.toToken,
-    inputAmount: params.amount,
-    slippageBps: 1,
+    inputAmount: params.amount
   };
   
   try {
@@ -178,6 +177,10 @@ export async function getSignedBridgeQuote(bridgeParams, { delegatorPkpEthAddres
         hasWitness: !!(signTypedData.values && signTypedData.values.witness)
       });
       
+      // 完整印出 signTypedData 內容
+      console.log('📋 Complete signTypedData content:');
+      console.log(JSON.stringify(signTypedData, null, 2));
+      
       if (signTypedData.values && signTypedData.values.witness) {
         witness = signTypedData.values.witness;
         console.log('✅ Witness extracted successfully:', {
@@ -185,6 +188,10 @@ export async function getSignedBridgeQuote(bridgeParams, { delegatorPkpEthAddres
           witnessType: typeof witness,
           witnessKeys: witness ? Object.keys(witness) : null
         });
+        
+        // 也印出 witness 的完整內容
+        console.log('📋 Complete witness content:');
+        console.log(JSON.stringify(witness, null, 2));
       } else {
         console.log('❌ Failed to extract witness:', {
           hasValues: !!signTypedData.values,
@@ -230,7 +237,14 @@ export async function getSignedBridgeQuote(bridgeParams, { delegatorPkpEthAddres
 
 export async function execute(bridgeParams, { delegatorPkpEthAddress }) {
   await ensureInitialized();
+  console.log('🔍 vincentExecute 接收到的參數:');
+  console.log('bridgeParams:', JSON.stringify(bridgeParams, null, 2));
+  console.log('delegatorPkpEthAddress:', delegatorPkpEthAddress);
+  
   const params = withEnvDefaults(bridgeParams);
+  console.log('🔍 withEnvDefaults 處理後的參數:');
+  console.log('params:', JSON.stringify(params, null, 2));
+  
   return await abilityClient.execute(params, { delegatorPkpEthAddress });
 }
 

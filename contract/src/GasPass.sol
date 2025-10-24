@@ -10,6 +10,10 @@ import {IERC20Permit} from "@openzeppelin/contracts/token/ERC20/extensions/IERC2
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {GasPassTypes} from "./types/GasPassTypes.sol";
+import {IBungeeInbox} from "./bungee/IBungeeInbox.sol";
+import {BungeeInboxRequest} from "./bungee/BasicRequestLib.sol";
+
+
 
 /**
  * @title GasPass
@@ -23,9 +27,9 @@ contract GasPass is ERC3525, Ownable, EIP712 {
     bytes32 public constant SET_REFUEL_POLICY_TYPEHASH = keccak256("SetRefuelPolicy(uint256 tokenId, uint256 targetChainId, uint128 gasAmount, uint128 threshold, address agent, uint256 nonce, uint256 deadline)");
     bytes32 public constant CANCEL_REFUEL_POLICY_TYPEHASH = keccak256("CancelRefuelPolicy(uint256 tokenId, uint256 targetChainId, uint256 nonce, uint256 deadline)");
     bytes32 public constant STABLECOIN_PERMIT_TYPEHASH = keccak256("StablecoinPermitData(address owner,address spender,uint256 value,uint256 deadline,uint8 v,bytes32 r,bytes32 s)");
-    bytes32 public constant MINT_WITH_SIG_TYPEHASH = keccak256("MintWithSig(address to, uint256 value, StablecoinPermitData permitData,address agent,uint256 nonce,uint256 deadline)");
-    bytes32 public constant DEPOSIT_WITH_SIG_TYPEHASH = keccak256("DepositWithSig(uint256 tokenId, uint256 amount, StablecoinPermitData permitData,uint256 nonce,uint256 deadline)");
-    bytes32 public constant MINT_BATCH_WITH_SIG_TYPEHASH = keccak256("MintBatchWithSig(address to, uint256 amount, uint256 singleValue, address agent, StablecoinPermitData permitData,uint256 nonce,uint256 deadline)");
+    bytes32 public constant MINT_WITH_SIG_TYPEHASH = keccak256("MintWithSig(address to,uint256 value,bytes32 permitDataHash,address agent,uint256 nonce,uint256 deadline)");
+    bytes32 public constant DEPOSIT_WITH_SIG_TYPEHASH = keccak256("DepositWithSig(uint256 tokenId,uint256 amount,bytes32 permitDataHash,uint256 nonce,uint256 deadline)");
+    bytes32 public constant MINT_BATCH_WITH_SIG_TYPEHASH = keccak256("MintBatchWithSig(address to,uint256 amount,uint256 singleValue,address agent,bytes32 permitDataHash,uint256 nonce,uint256 deadline)");
     bytes32 public constant SET_AGENT_TO_WALLET_WITH_SIG_TYPEHASH = keccak256("SetAgentToWalletWithSig(address agent,address wallet,uint256 nonce,uint256 deadline)");
 
     // ============ Events ============
@@ -39,6 +43,7 @@ contract GasPass is ERC3525, Ownable, EIP712 {
     event RelayerChanged(address indexed oldRelayer, address indexed newRelayer);
     event FeesWithdrawn(address indexed to, uint256 amount);
     event USDCWithdrawn(address indexed owner, uint256 indexed tokenId, uint256 amount, address indexed to); //測試用，我要提
+    event BungeeForwarded(uint256 indexed tokenId, address indexed inbox, uint256 inputAmount, bytes32 sorHash);
 
     /** @dev 每個 tokenId 的次數器，供策略簽章使用，防重放。 */
     mapping(uint256 => uint256) public nonces;     
@@ -54,6 +59,11 @@ contract GasPass is ERC3525, Ownable, EIP712 {
     address public relayer;
     /** @dev 透過 autoRefuel 累積的手續費總額（單位：穩定幣最小單位）。 */
     uint256 public totalFeesCollected;
+    // Bungee相關
+    address public bungeeGateway;
+    address public bungeeInbox;
+
+
 
     // EIP712 Struct for SetRefuelPolicy
     using GasPassTypes for *;
@@ -74,9 +84,11 @@ contract GasPass is ERC3525, Ownable, EIP712 {
      * @param _stablecoin 支援 EIP-2612 的穩定幣合約地址。
      * @param _relayer 被授權代送策略簽章交易的 relayer 地址。
      */
-    constructor(address _stablecoin,address _relayer) ERC3525("GAS Pass", "GPASS", 6) Ownable(msg.sender) EIP712("GasPass", "1") {
+    constructor(address _stablecoin,address _relayer,address _bungeeGateway,address _bungeeInbox) ERC3525("GAS Pass", "GPASS", 6) Ownable(msg.sender) EIP712("GasPass", "1") {
         stablecoin = IERC20Permit(_stablecoin);
         relayer = _relayer;
+        bungeeGateway = _bungeeGateway;
+        bungeeInbox = _bungeeInbox;
     }
     // Todo: slot可定義Gas Pass種類，目前固定為0(只有一種)
     /**
@@ -110,7 +122,7 @@ contract GasPass is ERC3525, Ownable, EIP712 {
         );
         
 
-        uint256 ownerNonce = ownerNonces[typedData.permitData.owner];
+
         // First time mint with agent, set agent to wallet
         if (agentToWallet[typedData.agent] == address(0)) {
             _setAgentToWallet(typedData.agent, typedData.permitData.owner);
@@ -122,7 +134,7 @@ contract GasPass is ERC3525, Ownable, EIP712 {
                 typedData.value,
                 permitHash,
                 typedData.agent,
-                ownerNonce,
+                typedData.nonce,
                 typedData.deadline
             )
         );
@@ -160,7 +172,6 @@ contract GasPass is ERC3525, Ownable, EIP712 {
             )
         );
 
-        uint256 ownerNonce = ownerNonces[typedData.permitData.owner];
         // First time mint with agent, set agent to wallet
         if (agentToWallet[typedData.agent] == address(0)) {
             _setAgentToWallet(typedData.agent, typedData.permitData.owner);
@@ -363,26 +374,47 @@ contract GasPass is ERC3525, Ownable, EIP712 {
      * @param tokenId 目標 tokenId。
      * @param targetChainId 目標鏈 ID。
      */
-    function autoRefuel(uint256 tokenId, uint256 targetChainId) public onlyAgent(tokenId) {
+    function autoRefuel(uint256 tokenId, address inbox,IBungeeInbox.Request calldata req,bytes32 expectedSorHash, uint256 targetChainId) public onlyAgent(tokenId) {
+
+            // === 0) 基本檢查 ===
+        require(inbox != address(0), "inbox=0");
+        require(req.basicReq.originChainId == block.chainid, "wrong origin");
+        require(req.basicReq.inputAmount > 0, "inputAmount=0");
+        require(req.basicReq.destinationChainId == targetChainId, "dest mismatch");
+        require(req.basicReq.sender == address(this), "sender!=this");
+        require(req.basicReq.bungeeGateway == bungeeGateway, "gateway mismatch");
+        require(inbox == bungeeInbox, "inbox mismatch");
+        require(req.basicReq.inputToken == address(stablecoin), "token!=stablecoin");
+        require(req.basicReq.receiver != address(0), "receiver=0");
+
         GasPassTypes.RefuelPolicy storage policy = chainPolicies[tokenId][targetChainId];
-        require(policy.gasAmount > 0, "No policy");
+        uint256 gasAmount = policy.gasAmount;
+        require(gasAmount > 0, "No policy");
+        require(gasAmount==req.basicReq.inputAmount, "gasAmount mismatch");
         require(policy.agent == msg.sender, "Wrong agent");
         require(block.timestamp - policy.lastRefueled > 60 seconds, "Cooldown period not met");
         
-        // 計算0.5%手續費
-        uint256 gasAmount = policy.gasAmount;
+        bytes32 sorHash = BungeeInboxRequest.createSORHash(req);
+        require(sorHash == expectedSorHash, "SOR hash mismatch");
+        
+
         uint256 fee = (gasAmount * 5) / 1000;
         uint256 total = gasAmount + fee;
-
         require(balanceOf(tokenId) >= total, "Insufficient 3525 balance");
-
-        // 扣除加上手續費的total
-         _burnValue(tokenId, total);
-
-        IERC20(address(stablecoin)).safeTransfer(address(msg.sender), gasAmount);
+        _burnValue(tokenId, total);
         totalFeesCollected += fee;
+
+
+        IERC20(address(stablecoin)).safeIncreaseAllowance(
+            req.basicReq.bungeeGateway,
+            gasAmount
+        );
+
+        IBungeeInbox(inbox).createRequest(req);
+
         policy.lastRefueled = block.timestamp;
-        emit AutoRefueled(tokenId, targetChainId, gasAmount, fee);
+        emit BungeeForwarded(tokenId, inbox, gasAmount, sorHash);
+        emit AutoRefueled(tokenId, targetChainId, gasAmount, fee); // 延用你原本事件
     }
     
     /**

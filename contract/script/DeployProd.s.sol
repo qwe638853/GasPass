@@ -24,7 +24,7 @@ contract DeployProd is Script {
         console.log("Chain ID:", block.chainid);
 
         vm.startBroadcast(deployerPk);
-        GasPass gasPass = new GasPass(stablecoin, relayer);
+        GasPass gasPass = new GasPass(stablecoin, relayer, address(0x1000000000000000000000000000000000000000), address(0xB000000000000000000000000000000000000000));
         vm.stopBroadcast();
 
         console.log("GasPass deployed at:", address(gasPass));

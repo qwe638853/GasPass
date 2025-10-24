@@ -177,6 +177,12 @@ app.post('/api/vincent/precheck', vincentAuth, withVincentAuth(async (req, res) 
     const hints = extractHintsFromPrecheck(result);
     console.log('Precheck hints:', hints);
     
+    // 印出 signTypedData 內容
+    if (hints?.signTypedData) {
+      console.log('📋 Precheck - Complete signTypedData content:');
+      console.log(JSON.stringify(hints.signTypedData, null, 2));
+    }
+    
     return res.json({ 
       ok: true, 
       result,
@@ -217,6 +223,13 @@ app.post('/api/vincent/quote', vincentAuth, withVincentAuth(async (req, res) => 
     if (!quoteResult.success) {
       return res.status(400).json({ ok: false, error: quoteResult.error });
     }
+    
+    // 印出 signTypedData 內容
+    if (quoteResult.result?.signTypedData) {
+      console.log('📋 Quote - Complete signTypedData content:');
+      console.log(JSON.stringify(quoteResult.result.signTypedData, null, 2));
+    }
+    
     return res.json({ ok: true, result: quoteResult.result });
   } catch (err) {
     console.error('quote error:', err);
@@ -268,9 +281,25 @@ app.post('/api/vincent/execute', vincentAuth, withVincentAuth(async (req, res) =
       */
 
     // 已帶三件套：僅簽名
+    console.log('🔍 Execute 接收到的參數:');
+    console.log('bridgeParams:', JSON.stringify(bridgeParams, null, 2));
+    console.log('delegatorPkpEthAddress:', delegator);
+    
     const execRes = await vincentExecute(bridgeParams, { delegatorPkpEthAddress: delegator });
     const payload = execRes.result;
     console.log('payload', payload);
+    
+    // 印出 signTypedData 內容
+    if (payload?.signTypedData) {
+      console.log('📋 Server - Complete signTypedData content:');
+      console.log(JSON.stringify(payload.signTypedData, null, 2));
+    }
+    
+    if (payload?.witness || payload?.signTypedData?.values?.witness) {
+      const witness = payload?.witness || payload?.signTypedData?.values?.witness;
+      console.log('📋 Server - Complete witness content:');
+      console.log(JSON.stringify(witness, null, 2));
+    }
     return res.json({ 
       ok: true, 
       result: payload, 

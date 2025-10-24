@@ -104,7 +104,7 @@ contract DeployAnvil is Script {
         vm.startBroadcast(deployerPk);
 
         MockUSDCPermit stable = new MockUSDCPermit("Mock USDC", "mUSDC");
-        GasPass gasPass = new GasPass(address(stable), deployer);
+        GasPass gasPass = new GasPass(address(stable), deployer, address(0x1000000000000000000000000000000000000000), address(0xB000000000000000000000000000000000000000));
 
         address agent = deployer;
         uint256 deadline = block.timestamp + 1 days;
