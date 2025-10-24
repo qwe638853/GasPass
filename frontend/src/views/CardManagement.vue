@@ -697,16 +697,46 @@ onMounted(async () => {
   // 從 localStorage 嘗試還原 Vincent JWT（避免重整後狀態遺失）
   loadFromStorage()
 
+  // 檢查並清除可能不匹配的 JWT
+  const currentOrigin = window.location.origin
+  console.log('🔍 當前頁面 origin:', currentOrigin)
+  console.log('🔍 當前頁面 href:', window.location.href)
+  
+  // 檢查 localStorage 中的 JWT 是否與當前 origin 匹配
+  const storedJwt = localStorage.getItem('VINCENT_AUTH_JWT')
+  if (storedJwt) {
+    try {
+      // 嘗試解析 JWT 的 payload 來檢查 audience
+      const payload = JSON.parse(atob(storedJwt.split('.')[1]))
+      console.log('🔍 存儲的 JWT payload:', payload)
+      console.log('🔍 JWT audience:', payload.aud)
+      
+      if (payload.aud && payload.aud !== currentOrigin + '/') {
+        console.warn('⚠️ JWT audience 不匹配，清除舊的 JWT')
+        console.warn('⚠️ 期望:', currentOrigin + '/', '實際:', payload.aud)
+        localStorage.removeItem('VINCENT_AUTH_JWT')
+        localStorage.removeItem('VINCENT_AUTH_JWT_DECODED')
+        localStorage.removeItem('VINCENT_PKP_ETH_ADDRESS')
+      }
+    } catch (e) {
+      console.warn('⚠️ 無法解析存儲的 JWT，清除它')
+      localStorage.removeItem('VINCENT_AUTH_JWT')
+      localStorage.removeItem('VINCENT_AUTH_JWT_DECODED')
+      localStorage.removeItem('VINCENT_PKP_ETH_ADDRESS')
+    }
+  }
+
   // 無論是否已連接錢包，都先檢查本地 JWT 是否有效（若過期將自動清除）
   try {
-    await ensureAuth(undefined, { allowRedirect: false })
+    await ensureAuth(currentOrigin, { allowRedirect: false })
   } catch (e) {
     console.error('Vincent JWT 檢查失敗:', e)
   }
 
   if (isConnected.value) {
     try {
-      const result = await ensureAuth(undefined, { allowRedirect: false })
+      const currentOrigin = window.location.origin
+      const result = await ensureAuth(currentOrigin, { allowRedirect: false })
       if (!result.needsRedirect) {
         await loadUserData()
       }
@@ -729,7 +759,8 @@ onMounted(async () => {
 watch(isConnected, async (connected) => {
   if (connected) {
     try {
-      const result = await ensureAuth(undefined, { allowRedirect: false })
+      const currentOrigin = window.location.origin
+      const result = await ensureAuth(currentOrigin, { allowRedirect: false })
       if (!result.needsRedirect) {
         await loadUserData()
       }
@@ -743,7 +774,8 @@ watch(isConnected, async (connected) => {
 // 供 UI 觸發 Vincent 登入（導轉）
 const handleVincentConnect = async () => {
   try {
-    await ensureAuth(undefined, { allowRedirect: true })
+    const currentOrigin = window.location.origin
+    await ensureAuth(currentOrigin, { allowRedirect: true })
   } catch (e) {
     console.error('啟動 Vincent 登入失敗:', e)
   }

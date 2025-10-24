@@ -67,14 +67,21 @@ class ContractService {
     this.provider = provider
     this.signer = signer
     
-    // 使用 signer 的 provider 來讀取合約狀態
-    this.gasPassContract = new ethers.Contract(CONTRACT_CONFIG.address, CONTRACT_CONFIG.abi, signer)
-    this.usdcContract = new ethers.Contract(USDC_CONFIG.address, USDC_CONFIG.abi, signer)
-    
     // 確保 provider 是正確的
     if (signer && signer.provider) {
       this.provider = signer.provider
     }
+    
+    // 使用 provider 來讀取合約狀態，使用 signer 來寫入
+    this.gasPassContract = new ethers.Contract(CONTRACT_CONFIG.address, CONTRACT_CONFIG.abi, this.provider)
+    this.usdcContract = new ethers.Contract(USDC_CONFIG.address, USDC_CONFIG.abi, this.provider)
+    
+    console.log('🔍 ContractService 初始化:', {
+      hasProvider: !!this.provider,
+      hasSigner: !!this.signer,
+      providerType: this.provider?.constructor?.name,
+      signerType: this.signer?.constructor?.name
+    })
   }
 
   // 檢查用戶是否有 GasPass token
@@ -515,7 +522,10 @@ class ContractService {
     try {
       const { tokenId, targetChainId, gasAmount, threshold } = params
       
-      const tx = await this.gasPassContract.setRefuelPolicy(
+      // 創建一個使用 signer 的合約實例來執行寫入操作
+      const gasPassContractWithSigner = new ethers.Contract(CONTRACT_CONFIG.address, CONTRACT_CONFIG.abi, this.signer)
+      
+      const tx = await gasPassContractWithSigner.setRefuelPolicy(
         tokenId,
         targetChainId,
         parseUnits(gasAmount, 6), // gasAmount in USDC
