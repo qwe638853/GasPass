@@ -68,7 +68,7 @@
       </h2>
       <p class="jar-description">
         {{ isFirstTime 
-          ? 'Mint a cute cross-chain Gas jar with USDC and start your worry-free DeFi journey!' 
+          ? '' 
           : 'Refill your cute Gas jar with more USDC to keep your Gas topped up!' 
         }}
       </p>
@@ -242,6 +242,7 @@ const stopWiggle = () => {
     isWiggling.value = false
   }, 500)
 }
+
 
 const startBlinking = () => {
   const blink = () => {
@@ -430,10 +431,12 @@ watch(amount, (newValue) => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  max-width: 500px;
+  max-width: 600px;
   margin: 0 auto;
   padding: 2rem;
+  margin-top: 2rem;
 }
+
 
 .grenade {
   position: relative;
@@ -719,7 +722,7 @@ watch(amount, (newValue) => {
 }
 
 .jar-title {
-  font-size: 1.5rem;
+  font-size: 1.25rem;
   font-weight: 700;
   color: #ffffff;
   margin-bottom: 0.5rem;
@@ -731,6 +734,7 @@ watch(amount, (newValue) => {
   color: #a7f3d0;
   margin-bottom: 1.5rem;
   line-height: 1.5;
+  font-size: 0.9rem;
 }
 
 .amount-input-container {
@@ -744,10 +748,10 @@ watch(amount, (newValue) => {
 
 .amount-input {
   width: 100%;
-  padding: 1rem 4rem 1rem 1rem;
+  padding: 0.75rem 3rem 0.75rem 0.75rem;
   border: 2px solid #10b981;
-  border-radius: 12px;
-  font-size: 1.2rem;
+  border-radius: 10px;
+  font-size: 1rem;
   font-weight: 600;
   text-align: center;
   background: rgba(30, 41, 59, 0.8);
@@ -768,11 +772,12 @@ watch(amount, (newValue) => {
 
 .currency-label {
   position: absolute;
-  right: 1rem;
+  right: 0.75rem;
   top: 50%;
   transform: translateY(-50%);
   font-weight: 600;
   color: #10b981;
+  font-size: 0.9rem;
 }
 
 .quick-amounts {
@@ -782,12 +787,13 @@ watch(amount, (newValue) => {
 }
 
 .quick-amount-btn {
-  padding: 0.5rem;
+  padding: 0.4rem;
   border: 2px solid #10b981;
-  border-radius: 8px;
+  border-radius: 6px;
   background: rgba(30, 41, 59, 0.8);
   color: #a7f3d0;
   font-weight: 600;
+  font-size: 0.9rem;
   cursor: pointer;
   transition: all 0.3s ease;
   backdrop-filter: blur(10px);
@@ -842,12 +848,12 @@ watch(amount, (newValue) => {
 
 .submit-btn {
   width: 100%;
-  padding: 1rem 2rem;
+  padding: 0.75rem 1.5rem;
   background: linear-gradient(145deg, #10b981, #059669);
   color: white;
   border: none;
-  border-radius: 12px;
-  font-size: 1.1rem;
+  border-radius: 10px;
+  font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
