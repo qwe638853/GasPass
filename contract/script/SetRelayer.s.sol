@@ -12,7 +12,7 @@ contract SetRelayer is Script {
         address newRelayer = vm.envAddress("RELAYER");
         
         // 合約地址
-        address gasPassAddress = 0xa957487Eab18ef4Dc03188EcAF6D7D3695B993AB;
+        address gasPassAddress = 0x6F2997d9929C1b4eAF49F7fe4F4Dc12A5588D6d6;
         
         require(ownerPk != 0, "PRIVATE_KEY not set");
         require(newRelayer != address(0), "RELAYER not set");
