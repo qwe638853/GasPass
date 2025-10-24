@@ -93,30 +93,44 @@
           <!-- 上半部分：儲值卡管理 -->
           <div v-if="vincentJwt" class="mb-12">
             <!-- 沒有儲值卡的情況 -->
-            <div v-if="!hasCard" class="text-center py-12">
-              <div class="premium-card-main p-12 max-w-4xl mx-auto relative overflow-hidden">
+            <div v-if="!hasCard" class="py-8 -mt-8">
+              <div class="premium-card-main px-8 py-4 max-w-5xl mx-auto relative overflow-hidden">
                 <!-- 背景裝飾 -->
                 <div class="absolute inset-0 bg-gradient-to-br from-emerald-50/10 to-teal-50/10"></div>
                 <div class="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-emerald-200/20 to-teal-200/20 rounded-full -translate-y-32 translate-x-32"></div>
                 <div class="absolute bottom-0 left-0 w-48 h-48 bg-gradient-to-tr from-emerald-200/20 to-teal-200/20 rounded-full translate-y-24 -translate-x-24"></div>
                 
-                <div class="relative z-10">
-                  <div class="flex items-center justify-center gap-3 mb-6">
-                    <h3 class="text-3xl font-bold text-white">Welcome to GasPass!</h3>
-                  </div>
-                  <p class="text-xl text-emerald-200 mb-12 max-w-2xl mx-auto">
-                    You don't have a card yet, let's create your first cute GasPass jar to start your worry-free DeFi journey!
-                  </p>
-              
-              <!-- Cute Gas Jar Component -->
-              <CuteGasJar 
-                :isFirstTime="true"
-                @success="handleMintSuccess"
-                @error="handleError"
-              />
+                <!-- 錢包地址 -->
+                <div class="card-number-display">
+                  <span class="number-segment">{{ getAddressSegment(0) }}</span>
+                  <span class="number-segment">{{ getAddressSegment(1) }}</span>
+                  <span class="number-segment">{{ getAddressSegment(2) }}</span>
+                  <span class="number-segment">{{ getAddressSegment(3) }}</span>
                 </div>
+                
+                <div class="relative z-10 flex items-center gap-12">
+                  <!-- 左側文字內容 -->
+                  <div class="flex-1 -mt-8">
+                    <div class="flex items-center gap-3 mb-6">
+                      <h3 class="text-4xl font-black text-gray-600">Welcome to GasPass!</h3>
+                    </div>
+                    <p class="text-xl text-emerald-200 mb-8 max-w-2xl">
+                      You don't have a card yet, let's create your first GasPass<br>
+                      to start your worry-free DeFi journey!
+                    </p>
+                  </div>
+                  
+                  <!-- 右側 Cute Gas Jar Component -->
+                  <div class="flex-shrink-0">
+                    <CuteGasJar 
+                      :isFirstTime="true"
+                      @success="handleMintSuccess"
+                      @error="handleError"
+                    />
+                  </div>
+                </div>
+              </div>
             </div>
-          </div>
 
             <!-- 有儲值卡的情況 -->
           <div v-else>
@@ -625,6 +639,24 @@ const calculateActualAmount = (amount) => {
   return (parseFloat(amount) - fee).toFixed(2)
 }
 
+// 新增：分割錢包地址為四段
+const getAddressSegment = (index) => {
+  if (!account.value) return 'Not Connected'
+  
+  const address = account.value
+  if (address.length < 8) return address
+  
+  // 移除 0x 前綴
+  const cleanAddress = address.startsWith('0x') ? address.slice(2) : address
+  
+  // 每段4個字符
+  const segmentLength = Math.ceil(cleanAddress.length / 4)
+  const start = index * segmentLength
+  const end = Math.min(start + segmentLength, cleanAddress.length)
+  
+  return cleanAddress.slice(start, end).toUpperCase()
+}
+
 // 新增：執行手動兌換
 const executeManualRefuel = async () => {
   if (!canExecuteManualRefuel.value) return
@@ -955,22 +987,33 @@ const confirmVincentProceed = () => {
 }
 
 .premium-card-main {
-  background: linear-gradient(135deg, 
-    rgba(15, 23, 42, 0.95) 0%,
-    rgba(30, 41, 59, 0.9) 25%,
-    rgba(51, 65, 85, 0.85) 50%,
-    rgba(30, 41, 59, 0.9) 75%,
-    rgba(15, 23, 42, 0.95) 100%);
+  background: 
+    linear-gradient(135deg, 
+      rgba(192, 192, 192, 0.95) 0%,
+      rgba(169, 169, 169, 0.9) 15%,
+      rgba(128, 128, 128, 0.85) 30%,
+      rgba(105, 105, 105, 0.8) 45%,
+      rgba(128, 128, 128, 0.85) 60%,
+      rgba(169, 169, 169, 0.9) 75%,
+      rgba(192, 192, 192, 0.95) 100%),
+    radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.3) 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(0, 0, 0, 0.2) 0%, transparent 50%);
   backdrop-filter: blur(25px);
-  border: 3px solid transparent;
+  border: 3px solid rgba(255, 255, 255, 0.3);
   border-radius: 32px;
   box-shadow: 
-    0 30px 60px rgba(0, 0, 0, 0.5),
-    0 0 0 2px rgba(16, 185, 129, 0.4),
-    inset 0 3px 0 rgba(255, 255, 255, 0.2);
+    0 50px 100px rgba(0, 0, 0, 0.4),
+    0 25px 50px rgba(0, 0, 0, 0.3),
+    0 0 0 1px rgba(255, 255, 255, 0.4),
+    inset 0 3px 0 rgba(255, 255, 255, 0.4),
+    inset 0 -3px 0 rgba(0, 0, 0, 0.2),
+    0 0 30px rgba(192, 192, 192, 0.3),
+    0 0 60px rgba(192, 192, 192, 0.2);
   position: relative;
   overflow: hidden;
   transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  transform: perspective(1000px) rotateX(5deg) rotateY(-2deg);
+  animation: card-float 6s ease-in-out infinite;
 }
 
 .premium-card-main::after {
@@ -982,10 +1025,23 @@ const confirmVincentProceed = () => {
   height: 200%;
   background: linear-gradient(45deg, 
     transparent 30%, 
-    rgba(16, 185, 129, 0.1) 50%, 
+    rgba(255, 255, 255, 0.2) 50%, 
     transparent 70%);
   animation: card-shine 3s ease-in-out infinite;
   pointer-events: none;
+}
+
+.premium-card-main:hover {
+  transform: perspective(1000px) rotateX(0deg) rotateY(0deg) translateY(-20px) scale(1.02);
+  box-shadow: 
+    0 80px 160px rgba(0, 0, 0, 0.5),
+    0 40px 80px rgba(0, 0, 0, 0.4),
+    0 0 0 1px rgba(255, 255, 255, 0.5),
+    inset 0 3px 0 rgba(255, 255, 255, 0.5),
+    inset 0 -3px 0 rgba(0, 0, 0, 0.3),
+    0 0 50px rgba(192, 192, 192, 0.4),
+    0 0 100px rgba(192, 192, 192, 0.3);
+  animation-play-state: paused;
 }
 
 .premium-card-info {
@@ -1121,6 +1177,21 @@ const confirmVincentProceed = () => {
 @keyframes card-pattern-move {
   0% { transform: translateX(0) translateY(0); }
   100% { transform: translateX(60px) translateY(60px); }
+}
+
+@keyframes card-float {
+  0%, 100% { 
+    transform: perspective(1000px) rotateX(5deg) rotateY(-2deg) translateY(0px);
+  }
+  25% { 
+    transform: perspective(1000px) rotateX(3deg) rotateY(-1deg) translateY(-8px);
+  }
+  50% { 
+    transform: perspective(1000px) rotateX(7deg) rotateY(-3deg) translateY(-12px);
+  }
+  75% { 
+    transform: perspective(1000px) rotateX(4deg) rotateY(-1deg) translateY(-6px);
+  }
 }
 
 @keyframes card-shine {
@@ -1278,6 +1349,37 @@ button:not(:disabled):active {
   .grid-cols-1.lg\\:grid-cols-2 {
     @apply gap-4;
   }
+}
+
+
+
+/* 錢包地址樣式 */
+.card-number-display {
+  position: absolute;
+  bottom: 2rem;
+  left: 2rem;
+  display: flex;
+  gap: 0.5rem;
+  font-family: 'Courier New', monospace;
+  font-size: 0.8rem;
+  font-weight: bold;
+  color: rgba(255, 255, 255, 0.9);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+  z-index: 10;
+  max-width: calc(100% - 4rem);
+}
+
+.number-segment {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 0.25rem 0.4rem;
+  border-radius: 4px;
+  backdrop-filter: blur(5px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  letter-spacing: 0.1em;
+  white-space: nowrap;
+  min-width: 2.5rem;
+  text-align: center;
+  flex-shrink: 0;
 }
 
 /* 新增：深色模式支持（預留） */
