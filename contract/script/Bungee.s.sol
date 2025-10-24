@@ -14,11 +14,11 @@ contract AutoRefuelToOPScript is Script {
         address gasPassAddr   = vm.envAddress("GASPASS_ADDRESS");
         uint256 agentPk       = vm.envUint("PRIVATE_KEY"); // ★ 一定要是 policy.agent 的私鑰
         uint256 tokenId       = 1;      // 要 refuel 的 3525 tokenId
-        address receiverOnOP  = vm.addr(agentPk); // Optimism 鏈上的接收地址（EOA/合約皆可）
+        address receiver  = vm.addr(agentPk); // Optimism 鏈上的接收地址（EOA/合約皆可）
         // 你可以改 GAS_AMOUNT_USDC；預設 1 USDC = 1_000_000（6 decimals）
-        uint256 gasAmountUSDC = vm.envOr("GAS_AMOUNT_USDC", uint256(1_000_000));
+        uint256 gasAmountUSDC = vm.envOr("GAS_AMOUNT_USDC", uint256(2_000_000));
         // 避免過期（可調整）
-        uint256 deadlineDelta = vm.envOr("DEADLINE_SECONDS", uint256(30 minutes));
+        uint256 deadlineDelta = vm.envOr("DEADLINE_SECONDS", uint256(10 minutes));
         // 進階選項（一般用 0）
         uint256 minDestGas    = vm.envOr("MIN_DEST_GAS", uint256(0));
 
@@ -39,7 +39,7 @@ contract AutoRefuelToOPScript is Script {
         console.log("Inbox     :", inbox);
         console.log("Gateway   :", gateway);
         console.log("Stablecoin:", stable);
-        console.log("Receiver  :", receiverOnOP);
+        console.log("Receiver  :", receiver);
         console.log("GasAmount (USDC-6):", gasAmountUSDC);
 
        
@@ -81,26 +81,26 @@ contract AutoRefuelToOPScript is Script {
             originChainId:        originChainId,
             destinationChainId:   targetChainId,
             deadline:             block.timestamp + deadlineDelta,
-            nonce:                nonce, // 若合約非此邏輯，改成你合約對應的 nonce 來源
-            sender:               gasPassAddr,             // ★ 必須是合約本身
-            receiver:             receiverOnOP,
-            delegate:             receiverOnOP,              // 視需求
-            bungeeGateway:        gateway,                 // ★ 必須等於合約內的 gateway
-            switchboardId:        0,                       // 視需求
-            inputToken:           stable,                  // ★ 必須是 stablecoin
-            inputAmount:          gasAmountUSDC,           // ★ 必須等於 policy.gasAmount
-            outputToken:          0x0000000000000000000000000000000000000000,              // 不用特定 output token（由 refuel 處理）
-            minOutputAmount:      333333333333333 ,                       // 視需求（設 0 代表交給路由）
+            nonce:                nonce, 
+            sender:               inbox,            
+            receiver:             receiver,
+            delegate:             receiver,              
+            bungeeGateway:        gateway,                 
+            switchboardId:        1,                       
+            inputToken:           stable,                 
+            inputAmount:          2000000,           
+            outputToken:          0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE,             
+            minOutputAmount:      612500000000000000 ,                       
             refuelAmount:         0        
         });
 
         IBungeeInbox.Request memory req = IBungeeInbox.Request({
             basicReq:             basic,
-            swapOutputToken:      address(0),              // 若需 swap，可填目標 token（一般 refuel 不用）
+            swapOutputToken:      address(0),              
             minSwapOutput:        0,
             metadata:             bytes32(0),
             affiliateFees:        bytes(""),
-            minDestGas:           minDestGas,
+            minDestGas:           0,
             destinationPayload:   bytes(""),
             exclusiveTransmitter: address(0)
         });
