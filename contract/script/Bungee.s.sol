@@ -13,10 +13,10 @@ contract AutoRefuelToOPScript is Script {
         // === 讀取環境變數 ===
         address gasPassAddr   = vm.envAddress("GASPASS_ADDRESS");
         uint256 agentPk       = vm.envUint("PRIVATE_KEY"); // ★ 一定要是 policy.agent 的私鑰
-        uint256 tokenId       = 1;      // 要 refuel 的 3525 tokenId
+        uint256 tokenId       = 2;      // 要 refuel 的 3525 tokenId
         address receiver  = vm.addr(agentPk); // Optimism 鏈上的接收地址（EOA/合約皆可）
         // 你可以改 GAS_AMOUNT_USDC；預設 1 USDC = 1_000_000（6 decimals）
-        uint256 gasAmountUSDC = vm.envOr("GAS_AMOUNT_USDC", uint256(2_000_000));
+        uint256 gasAmountUSDC = vm.envOr("GAS_AMOUNT_USDC", uint256(3_000_000));
         // 避免過期（可調整）
         uint256 deadlineDelta = vm.envOr("DEADLINE_SECONDS", uint256(10 minutes));
         // 進階選項（一般用 0）
@@ -88,9 +88,9 @@ contract AutoRefuelToOPScript is Script {
             bungeeGateway:        gateway,                 
             switchboardId:        1,                       
             inputToken:           stable,                 
-            inputAmount:          2000000,           
+            inputAmount:          3000000,           
             outputToken:          0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE,             
-            minOutputAmount:      612500000000000000 ,                       
+            minOutputAmount:      743949992662506 ,                       
             refuelAmount:         0        
         });
 
