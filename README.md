@@ -39,28 +39,8 @@ Status	Cross-chain prototype deployed on Arbitrum & Base testnets
 
 ## 🧠 Architecture
 
-```mermaid
-flowchart LR
-  A["User deposits USDC into GasPass ERC-3525 Slot"]
-  B["MintWithSig (EIP-712)"]
-  C["Vincent Agent monitors user balances"]
-  D{"Balance < threshold?"}
-  E["Trigger Avail XCS: Bridge & Execute"]
-  F["Bungee API cross-chain transfer"]
-  G["Alchemy / Relayer refuels gas on target chain"]
-  H["Slot balance updated; execution logs stored on Avail"]
-  I["Idle / Wait for next check"]
 
-  A --> B
-  B --> C
-  C --> D
-  D -- Yes --> E
-  E --> F
-  F --> G
-  G --> H
-  D -- No --> I
-
-```
+<img width="779" height="428" alt="截圖 2025-10-26 凌晨1 27 06" src="https://github.com/user-attachments/assets/c7eee6e8-a3a1-4581-8f49-ab3d8762fdd9" />
 
 
 ---
