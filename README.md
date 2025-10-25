@@ -148,11 +148,13 @@ forge script script/DeployGasPass.s.sol:DeployGasPass \
 
 ### How GasPass Integrates with Vincent Agent
 
+
 <img width="7290" height="3667" alt="image" src="https://github.com/user-attachments/assets/c6c72a69-1e6b-4668-9b52-f26318086f8b" />
+
 
 This sequence diagram illustrates how GasPass, Vincent Agent, and Bungee Bridge collaborate to perform secure, automated cross-chain gas refueling.
 
-🧩 Process Overview
+Process Overview
 
 1.Monitoring Loop
 The Monitor Service continuously checks each user’s target-chain gas balance according to their on-chain RefuelPolicy[tokenId][chainId].
