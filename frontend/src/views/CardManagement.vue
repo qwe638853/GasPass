@@ -475,8 +475,17 @@
               :class="['chain-card', { active: manualRefuel.chainId === chainId }]"
             >
               <div class="chain-icon">
-                <span v-if="chain.icon" class="text-2xl">{{ chain.icon }}</span>
-                <span v-else class="w-10 h-10 rounded-full bg-emerald-500/20 flex items-center justify-center text-lg">🌐</span>
+                <img v-if="chain.logo" 
+                     :src="chain.logo" 
+                     :alt="chain.name"
+                     class="w-10 h-10 rounded-full object-cover"
+                     @error="handleImageError"
+                />
+                <span v-if="chain.icon" 
+                      class="text-2xl emoji-fallback" 
+                      :style="{ display: chain.logo ? 'none' : 'block' }"
+                >{{ chain.icon }}</span>
+                <span v-if="!chain.icon" class="w-10 h-10 rounded-full bg-emerald-500/20 flex items-center justify-center text-lg">🌐</span>
               </div>
               <div class="chain-info">
                 <div class="chain-name">{{ chain.name }}</div>
@@ -516,8 +525,17 @@
               :class="['chain-card', { active: agentRefuel.chainId === chainId }]"
             >
               <div class="chain-icon">
-                <span v-if="chain.icon" class="text-2xl">{{ chain.icon }}</span>
-                <span v-else class="w-10 h-10 rounded-full bg-emerald-500/20 flex items-center justify-center text-lg">🌐</span>
+                <img v-if="chain.logo" 
+                     :src="chain.logo" 
+                     :alt="chain.name"
+                     class="w-10 h-10 rounded-full object-cover"
+                     @error="handleImageError"
+                />
+                <span v-if="chain.icon" 
+                      class="text-2xl emoji-fallback" 
+                      :style="{ display: chain.logo ? 'none' : 'block' }"
+                >{{ chain.icon }}</span>
+                <span v-if="!chain.icon" class="w-10 h-10 rounded-full bg-emerald-500/20 flex items-center justify-center text-lg">🌐</span>
               </div>
               <div class="chain-info">
                 <div class="chain-name">{{ chain.name }}</div>
@@ -749,6 +767,19 @@ const selectAgentChain = (chainId) => {
   agentRefuel.value.chainId = chainId
   showAgentChainModal.value = false
   agentChainSearch.value = ''
+}
+
+// 新增：圖片錯誤處理
+const handleImageError = (event) => {
+  console.log('圖片載入失敗:', event.target.src)
+  // 當圖片載入失敗時，隱藏圖片並顯示 fallback
+  event.target.style.display = 'none'
+  // 找到父元素並顯示 emoji 圖標
+  const parent = event.target.parentElement
+  const emojiSpan = parent.querySelector('.emoji-fallback')
+  if (emojiSpan) {
+    emojiSpan.style.display = 'block'
+  }
 }
 
 // 新增：分割錢包地址為四段
@@ -1572,6 +1603,10 @@ button:not(:disabled):active {
 
 .chain-card .chain-icon {
   @apply mb-3;
+}
+
+.chain-card .chain-icon img {
+  @apply shadow-sm border border-white/10;
 }
 
 .chain-card .chain-info {
