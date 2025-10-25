@@ -1,7 +1,7 @@
 export const BUNGEE_CONFIG = {
   baseUrl: 'https://public-backend.bungee.exchange',
   inboxAddress: '0xA3BF43451CdEb6DEC588B8833838fC419CE4F54c',
-  gasPassAddress: '0x98519ccdb35C9ed521bbcd00435fE2ab2D1305f7',
+  gasPassAddress: '0xdB140B58D6E3988F5C453E192295748c1438d8D4',
   gasPassAbi: [
     'function autoRefuel(uint256 tokenId, address inbox, bytes request, bytes32 sorHash, uint256 destinationChainId) external'
   ]
