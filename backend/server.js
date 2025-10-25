@@ -46,6 +46,10 @@ console.log(`🔗 網絡: ${GAS_PASS_CONFIG.network.name} (${GAS_PASS_CONFIG.net
 const relayerService = createRelayerService(wallet);
 console.log(`🔧 Relayer 服務已初始化: ${relayerService.getRelayerInfo().address}`);
 
+// 將 wallet 和 contract 存儲到 app.locals 供路由使用
+app.locals.wallet = wallet;
+app.locals.contract = contract;
+
 // 整合 API 路由
 app.use('/api', apiRouter);
 

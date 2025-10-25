@@ -21,14 +21,14 @@ contract DepositWithSigScript is Script {
     function run() public {
         // ---------- 環境與帳號 ----------
         uint256 userPk     = vm.envUint("PRIVATE_KEY");           // 使用者：簽 USDC permit 與 GasPass EIP-712
-        uint256 relayerPk  = vm.envUint("PRIVATE_KEY");   // 廣播者：送鏈上交易（若合約限制 relayer，需對上）
+        uint256 relayerPk  = vm.envUint("RELAYER_PRIVATE_KEY");   // 廣播者：送鏈上交易（若合約限制 relayer，需對上）
         address user       = vm.addr(userPk);
         address relayer    = vm.addr(relayerPk);
 
         address gasPassAddress     = vm.envAddress("GASPASS_ADDRESS");
         address stablecoinAddress  = vm.envAddress("STABLECOIN_ADDRESS");
 
-        uint256 tokenId            = 4;
+        uint256 tokenId            = 1; // 改成你的卡片 ID
         uint256 amount             = vm.envOr("AMOUNT_USDC", uint256(500_000)); // 0.5 USDC
         uint256 deadline           = block.timestamp + 1 hours;
 
@@ -369,7 +369,7 @@ contract SetRefuelPolicyScript is Script {
 contract WithdrawAllUSDCScript is Script {
     function run() public {
         uint256 ownerPk = vm.envUint("PRIVATE_KEY");
-        uint256 tokenId = 1;
+        uint256 tokenId = 1;  // 根據自己創建的儲值卡ID去做修改
         address to = vm.addr(ownerPk);
         address gasPassAddress = vm.envAddress("GASPASS_ADDRESS");
         vm.startBroadcast(ownerPk);
