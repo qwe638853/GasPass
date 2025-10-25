@@ -94,7 +94,16 @@ export const GAS_PASS_ABI = [
   'function setRelayer(address _relayer) external',
 
   // (測試用、onlyOwner)
-  'function withdrawUSDC() external'
+  'function withdrawUSDC() external',
+
+  // ===== Events =====
+  'event Minted(address indexed to, uint256 indexed tokenId, uint256 value)',
+  'event MintBatch(address indexed to, uint256 amount, uint256 singleValue, address indexed agent)',
+  'event Deposited(uint256 indexed tokenId, uint256 amount)',
+  'event RefuelPolicySet(uint256 indexed tokenId, uint256 indexed chainId, uint128 gasAmount, uint128 threshold, address agent)',
+  'event RefuelPolicyCancelled(uint256 indexed tokenId, uint256 indexed chainId)',
+  'event AgentSet(address indexed agent, address indexed wallet)',
+  'event RelayerSet(address indexed oldRelayer, address indexed newRelayer)'
 ];
 
 export const AUTO_REFUEL_ABI = [

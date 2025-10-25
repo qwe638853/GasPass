@@ -450,6 +450,98 @@
         </div>
       </div>
     </div>
+
+    <!-- 成功彈窗 -->
+    <div v-if="showSuccessModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <!-- 背景模糊遮罩 -->
+      <div 
+        class="fixed inset-0 bg-black/50 backdrop-blur-sm transition-opacity duration-300"
+        @click="showSuccessModal = false"
+      ></div>
+      
+      <!-- 成功彈窗 -->
+      <div class="relative success-modal rounded-2xl shadow-2xl max-w-2xl w-full max-h-[80vh] overflow-hidden z-10 transform transition-all duration-300">
+        <!-- 視窗標題 -->
+        <div class="success-header p-6">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div class="w-12 h-12 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center">
+                <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                </svg>
+              </div>
+              <div>
+                <h3 class="text-2xl font-bold text-white">Minting Successful!</h3>
+                <p class="text-emerald-200">Gift cards have been minted successfully</p>
+              </div>
+            </div>
+            <button 
+              @click="showSuccessModal = false"
+              class="text-white/80 hover:text-white transition-colors duration-200"
+            >
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+              </svg>
+            </button>
+          </div>
+        </div>
+        
+        <!-- 視窗內容 -->
+        <div class="p-6 overflow-y-auto max-h-[calc(80vh-88px)]">
+          <div class="space-y-6">
+            <!-- Basic Information -->
+            <div class="success-info-card">
+              <h4 class="text-lg font-semibold text-white mb-4">Minting Details</h4>
+              <div class="grid grid-cols-2 gap-4">
+                <div class="info-item">
+                  <span class="info-label">Quantity</span>
+                  <span class="info-value">{{ successData?.tokenIds?.length || 0 }} cards</span>
+                </div>
+                <div class="info-item">
+                  <span class="info-label">Recipient</span>
+                  <span class="info-value">{{ successData?.recipientType === 'self' ? 'My Wallet' : formatAddress(successData?.recipientAddress) }}</span>
+                </div>
+                <div class="info-item">
+                  <span class="info-label">Transaction Hash</span>
+                  <span class="info-value font-mono text-sm">{{ successData?.txHash?.slice(0, 10) }}...{{ successData?.txHash?.slice(-8) }}</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Token IDs -->
+            <div class="success-info-card">
+              <h4 class="text-lg font-semibold text-white mb-4">Token IDs</h4>
+              <div class="flex flex-wrap gap-2">
+                <span 
+                  v-for="tokenId in successData?.tokenIds" 
+                  :key="tokenId"
+                  class="token-id-badge"
+                >
+                  #{{ tokenId }}
+                </span>
+              </div>
+            </div>
+
+
+            <!-- Action Buttons -->
+            <div class="flex gap-3 pt-4">
+              <button 
+                @click="showSuccessModal = false"
+                class="btn-secondary flex-1"
+              >
+                Close
+              </button>
+              <button 
+                @click="viewOnExplorer"
+                class="btn-primary flex-1"
+              >
+                View Transaction
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </Layout>
 </template>
 
@@ -458,6 +550,7 @@ import { ref, computed, onMounted, watch } from 'vue'
 import { useWeb3 } from '../composables/useWeb3.js'
 import { gasPassService } from '../services/gasPassService.js'
 import { contractService } from '../services/contractService.js'
+import { giftCardService } from '../services/giftCardService.js'
 import Layout from '../components/Layout.vue'
 
 // Web3 composable
@@ -468,6 +561,8 @@ const usdcBalance = ref('0.00')
 const isLoading = ref(false)
 const showGiftHistory = ref(false)
 const isRefreshingBalance = ref(false)
+const showSuccessModal = ref(false)
+const successData = ref(null)
 
 // Gift form data
 const giftForm = ref({
@@ -612,26 +707,34 @@ const handleGiftSubmit = async () => {
   isLoading.value = true
   
   try {
-    // Initialize contract service
-    await contractService.init(provider.value, signer.value)
+    let result = null
     
     // Handle gift submission based on recipient type and gift mode
     if (giftForm.value.recipientType === 'self') {
-      // Mint cards to self
-      await contractService.mintCardsToSelf(
-        account.value,
-        giftForm.value.quantity,
-        giftForm.value.amountPerCard
-      )
+      // Mint cards to self using giftCardService
+      result = await giftCardService.giftCards({
+        quantity: parseInt(giftForm.value.quantity),
+        amountPerCard: parseFloat(giftForm.value.amountPerCard),
+        recipientType: 'self',
+        recipientAddress: account.value
+      })
+      
+      if (!result.success) {
+        throw new Error(result.error)
+      }
     } else if (giftForm.value.recipientType === 'other') {
       if (giftForm.value.giftMode === 'single') {
-        // Mint cards to single recipient
-        await contractService.mintCardsToRecipient(
-          account.value,
-          giftForm.value.recipientAddress,
-          giftForm.value.quantity,
-          giftForm.value.amountPerCard
-        )
+        // Mint cards to single recipient using giftCardService
+        result = await giftCardService.giftCards({
+          quantity: parseInt(giftForm.value.quantity),
+          amountPerCard: parseFloat(giftForm.value.amountPerCard),
+          recipientType: 'other',
+          recipientAddress: giftForm.value.recipientAddress
+        })
+        
+        if (!result.success) {
+          throw new Error(result.error)
+        }
       } else {
         // Multiple recipient mode
         // Filter out empty rows
@@ -639,14 +742,18 @@ const handleGiftSubmit = async () => {
           recipient.quantity && recipient.amount && recipient.address
         )
         
-        // Mint cards to each recipient
+        // Mint cards to each recipient using giftCardService
         for (const recipient of validRecipients) {
-          await contractService.mintCardsToRecipient(
-            account.value,
-            recipient.address,
-            recipient.quantity,
-            recipient.amount
-          )
+          result = await giftCardService.giftCards({
+            quantity: parseInt(recipient.quantity),
+            amountPerCard: parseFloat(recipient.amount),
+            recipientType: 'other',
+            recipientAddress: recipient.address
+          })
+          
+          if (!result.success) {
+            throw new Error(result.error)
+          }
         }
       }
     }
@@ -697,8 +804,14 @@ const handleGiftSubmit = async () => {
       { quantity: '', amount: '', address: '' }
     ]
     
-    // Show success message
-    alert('Gift cards minted successfully!')
+    // Show success modal
+    successData.value = {
+      txHash: result.txHash,
+      tokenIds: result.tokenIds || [],
+      recipientType: giftForm.value.recipientType,
+      recipientAddress: result.recipient || (giftForm.value.recipientType === 'self' ? account.value : giftForm.value.recipientAddress)
+    }
+    showSuccessModal.value = true
   } catch (error) {
     console.error('Gift submission failed:', error)
     alert('Minting failed: ' + error.message)
@@ -717,8 +830,8 @@ const loadUserData = async () => {
     // Load USDC balance
     usdcBalance.value = await contractService.getUSDCBalance(account.value)
     
-    // Load gift history (would come from backend in real implementation)
-    // giftHistory.value = await gasPassService.getGiftHistory(account.value)
+    // Load gift history from giftCardService
+    giftHistory.value = await giftCardService.getGiftHistory()
   } catch (error) {
     console.error('Failed to load user data:', error)
   }
@@ -739,6 +852,13 @@ const refreshBalance = async () => {
     console.error('Failed to refresh balance:', error)
   } finally {
     isRefreshingBalance.value = false
+  }
+}
+
+const viewOnExplorer = () => {
+  if (successData.value?.txHash) {
+    const explorerUrl = `https://arbiscan.io/tx/${successData.value.txHash}`
+    window.open(explorerUrl, '_blank')
   }
 }
 
@@ -1216,5 +1336,91 @@ tbody:hover .add-recipient-row {
 
 .animate-shimmer {
   animation: shimmer 2s ease-in-out;
+}
+
+/* Success Modal Styles */
+.success-modal {
+  background: linear-gradient(145deg, 
+    rgba(16, 185, 129, 0.08) 0%, 
+    rgba(16, 185, 129, 0.03) 25%, 
+    rgba(16, 185, 129, 0.06) 50%, 
+    rgba(16, 185, 129, 0.03) 75%, 
+    rgba(16, 185, 129, 0.08) 100%);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(16, 185, 129, 0.15);
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+  position: relative;
+}
+
+.success-modal::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(45deg, 
+    transparent 30%, 
+    rgba(16, 185, 129, 0.1) 50%, 
+    transparent 70%);
+  border-radius: inherit;
+  animation: metallic-shine 3s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.success-header {
+  background: linear-gradient(135deg, 
+    rgba(16, 185, 129, 0.4) 0%, 
+    rgba(5, 150, 105, 0.5) 50%, 
+    rgba(4, 120, 87, 0.4) 100%);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(16, 185, 129, 0.2);
+  position: relative;
+}
+
+.success-header::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(45deg, 
+    transparent 30%, 
+    rgba(255, 255, 255, 0.1) 50%, 
+    transparent 70%);
+  animation: metallic-shine 4s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.success-info-card {
+  @apply bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-4;
+}
+
+.info-item {
+  @apply flex flex-col gap-1;
+}
+
+.info-label {
+  @apply text-xs text-emerald-300 font-medium uppercase tracking-wide;
+}
+
+.info-value {
+  @apply text-white font-semibold;
+}
+
+.token-id-badge {
+  @apply px-3 py-1 bg-emerald-500/20 text-emerald-300 rounded-lg font-mono text-sm border border-emerald-400/30;
+}
+
+.btn-secondary {
+  @apply px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg transition-all duration-200 font-medium border border-white/20 hover:border-white/30;
+}
+
+.btn-primary {
+  @apply px-4 py-2 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white rounded-lg transition-all duration-200 font-medium shadow-lg hover:shadow-xl;
 }
 </style>
