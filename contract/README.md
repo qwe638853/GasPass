@@ -1,66 +1,117 @@
-## Foundry
+# 🪙 GasPass — Cross-Chain Programmable Gas Card
 
-**Foundry is a blazing fast, portable and modular toolkit for Ethereum application development written in Rust.**
+### Overview
+**GasPass** is a semi-fungible ERC-3525 token that allows users to pre-deposit stablecoins (e.g., USDC) and automatically refuel native gas on multiple blockchains according to programmable policies.  
+It combines **EIP-712 typed data signatures**, **EIP-2612 stablecoin permits**, and **cross-chain bridging via Bungee**, enabling a smooth, gas-abstracted UX for both manual and automated refueling.
 
-Foundry consists of:
+---
 
--   **Forge**: Ethereum testing framework (like Truffle, Hardhat and DappTools).
--   **Cast**: Swiss army knife for interacting with EVM smart contracts, sending transactions and getting chain data.
--   **Anvil**: Local Ethereum node, akin to Ganache, Hardhat Network.
--   **Chisel**: Fast, utilitarian, and verbose solidity REPL.
+## Core Features
 
-## Documentation
+| Feature | Description |
+|----------|-------------|
+| **ERC-3525 Gas Card** | Each token (`tokenId`) holds a value balance representing pre-deposited USDC. |
+| **Permit-Based Mint & Deposit** | Supports `permit()` from EIP-2612-compatible stablecoins for gas-less minting and deposits. |
+| **EIP-712 Signature Flows** | All operations (mint, deposit, set/cancel policies) are signed off-chain and relayed on-chain for gasless UX. |
+| **Auto-Refuel Policies** | Users can set automatic gas top-up rules (`gasAmount`, `threshold`, `agent`) per chain. |
+| **Agent-to-Wallet Mapping** | Agents (e.g., backend services or Vincent agents) are securely bound to user wallets. |
+| **Bungee Integration** | Uses Bungee Inbox & Gateway for cross-chain bridging of stablecoins to native gas. |
+| **Relayer Execution** | All EIP-712 signed actions (mint/deposit/policy ops) are submitted by a trusted relayer. |
+| **Withdrawable Fees** | Accumulated service fees can be withdrawn by contract owner. |
 
-https://book.getfoundry.sh/
+---
 
-## Usage
+## Contract Architecture
 
-### Build
-
-```shell
-$ forge build
+```mermaid
+graph TD
+A[Frontend / User Wallet] -->|EIP712 Signature| B[Relayer]
+B -->|mintWithSig / depositWithSig| C[GasPass Contract (ERC3525)]
+C -->|transferFrom Permit| D[Stablecoin (USDC)]
+C -->|autoRefuel| E[Bungee Inbox]
+E --> F[Bungee Gateway]
+F --> G[Destination Wallet (Native Gas Top-up)]
 ```
 
-### Test
+---
 
-```shell
-$ forge test
+## Slot Design — Future Expansion
+
+GasPass currently uses a **single slot (slotId = 0)** for all cards, meaning every GasPass represents the same type of prepaid gas card.  
+However, the ERC-3525 design allows **slot-based categorization**, which enables future extensibility.
+
+### Possible Slot Use Cases
+| Slot Example | Description |
+|---------------|-------------|
+| `slot = 1` | **Chain-Specific Card** — A GasPass dedicated to Arbitrum gas refueling. |
+| `slot = 2` | **Subscription Card** — A monthly refueling plan where top-ups are rate-limited. |
+| `slot = 3` | **Corporate Card** — Shared among multiple agents (team wallets). |
+| `slot = 4` | **NFT-Linked Card** — Used as an energy source for NFT game assets or DAO membership. |
+| `slot = 5` | **Dynamic Pricing Card** — Uses oracles to adjust gas purchase cost automatically. |
+
+> *In the current implementation, `slot = 0` is used for all cards to keep compatibility and simplify UX.  
+> Future upgrades can assign unique slot IDs for different GasPass types without changing the core logic.*
+
+---
+
+## Key Functions
+
+| Function | Description |
+|-----------|-------------|
+| `mintWithSig()` | Mint a GasPass card by signature + permit. |
+| `mintBatchWithSig()` | Batch mint multiple cards of equal value. |
+| `depositWithSig()` | Deposit more stablecoins into an existing GasPass token. |
+| `setAgentToWalletWithSig()` | Bind a backend agent to a user wallet. |
+| `setRefuelPolicyWithSig()` | Define automated gas top-up parameters (chain, amount, threshold, agent). |
+| `cancelRefuelPolicyWithSig()` | Cancel a refuel policy by signature. |
+| `autoRefuel()` | Executed by agent when threshold is reached; burns value and forwards USDC to Bungee Inbox. |
+| `withdrawFees()` | Owner withdraws accumulated platform fees. |
+| `withdrawAllUSDC()` | Owner of token withdraws remaining USDC (for testing or refunds). |
+
+---
+
+## Security Logic
+
+- **EIP-712 Typed Signatures:** prevent replay attacks via `nonces` and `ownerNonces`.  
+- **Agent Authorization:** only agents mapped to token owners can trigger `autoRefuel`.  
+- **Relayer Restriction:** only the designated relayer can submit user-signed actions.  
+- **Permit Validation:** integrates stablecoin `permit()` before any transfer.  
+- **Hash Verification:** ensures `BungeeInboxRequest.createSORHash(req)` matches expected data.  
+
+---
+
+## Contract Parameters
+
+| Variable | Purpose |
+|-----------|----------|
+| `stablecoin` | EIP-2612 compatible stablecoin (e.g., USDC). |
+| `relayer` | Authorized relayer for executing signed actions. |
+| `bungeeGateway` | Address of Bungee Gateway contract. |
+| `bungeeInbox` | Address of Bungee Inbox contract. |
+| `agentToWallet` | Mapping between backend agent and wallet owner. |
+| `chainPolicies` | Refuel policies per `tokenId` per chain. |
+
+---
+
+## Deployment Example
+
+```bash
+forge create GasPass   --rpc-url https://arb-sepolia.g.alchemy.com/v2/XXX   --private-key $PRIVATE_KEY   --constructor-args   0xaf88d065e77c8cC2239327C5EDb3A432268e5831 \   # USDC
+  0x1234567890abcdef1234567890abcdef12345678 \   # Relayer
+  0xCdEa28Ee7BD5bf7710B294d9391e1b6A318d809a \   # Bungee Gateway
+  0x0000000000000000000000000000000000000000     # Bungee Inbox
 ```
 
-### Format
+---
 
-```shell
-$ forge fmt
-```
+## Example Use Cases
+- **Hackathon Sponsorship:** Give developers pre-loaded GasPass cards for instant cross-chain deployment.  
+- **Onboarding Campaigns:** Apps airdrop small gas cards to new users for first-time transactions.  
+- **Enterprise Giveaways:** Brands distribute GasPass as redeemable cross-chain fuel prizes.  
+- **Subscription Refueling:** DApps offer tiered refuel memberships via slot-based GasPass types.  
 
-### Gas Snapshots
+---
 
-```shell
-$ forge snapshot
-```
-
-### Anvil
-
-```shell
-$ anvil
-```
-
-### Deploy
-
-```shell
-$ forge script script/Counter.s.sol:CounterScript --rpc-url <your_rpc_url> --private-key <your_private_key>
-```
-
-### Cast
-
-```shell
-$ cast <subcommand>
-```
-
-### Help
-
-```shell
-$ forge --help
-$ anvil --help
-$ cast --help
-```
+## License
+SPDX-License-Identifier: **UNLICENSED**  
+Developed by [@your-team-name](https://github.com/your-handle)
