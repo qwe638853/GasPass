@@ -52,7 +52,7 @@ However, the ERC-3525 design allows **slot-based categorization**, which enables
 | `slot = 3` | **Corporate Card** — Shared among multiple agents (team wallets). |
 | `slot = 4` | **NFT-Linked Card** — Used as an energy source for NFT game assets or DAO membership. |
 | `slot = 5` | **Dynamic Pricing Card** — Uses oracles to adjust gas purchase cost automatically. |
-
+| `slot = 6` | **Multi-Token GasPass** — Supports different stablecoins (e.g.USDT, DAI) as funding sources, enabling users to choose preferred currencies.
 > *In the current implementation, `slot = 0` is used for all cards to keep compatibility and simplify UX.  
 > Future upgrades can assign unique slot IDs for different GasPass types without changing the core logic.*
 
