@@ -207,11 +207,34 @@ router.post('/relay/set-refuel-policy', async (req, res) => {
     console.log(`🎫 Token ID: ${typedData.tokenId}`);
     console.log(`⛓️ 目標鏈: ${typedData.targetChainId}`);
     console.log(`💰 Gas 金額: ${ethers.formatUnits(typedData.gasAmount, 6)} USDC`);
-    console.log(`⚠️ 觸發閾值: ${ethers.formatEther(typedData.threshold)} ETH`);
+    console.log(`⚠️ 觸發閾值: ${ethers.formatUnits(typedData.threshold, 6)} USDC`);
+    console.log(`🤖 Agent: ${typedData.agent}`);
+    
+    // 創建合約實例
+    const gasPassContract = new ethers.Contract(
+      GAS_PASS_CONFIG.contractAddress,
+      GAS_PASS_CONFIG.abi,
+      relayerWallet
+    );
+    
+    // 調用 setRefuelPolicyWithSig
+    const tx = await gasPassContract.setRefuelPolicyWithSig(typedData, signature);
+    console.log(`📝 交易已發送: ${tx.hash}`);
+    
+    // 等待確認
+    const receipt = await tx.wait();
+    console.log(`✅ 交易已確認: ${receipt.transactionHash}`);
     
     res.json({
       success: true,
-      message: 'Set refuel policy relay endpoint - implementation in main server'
+      txHash: tx.hash,
+      receipt: {
+        transactionHash: receipt.transactionHash,
+        blockNumber: receipt.blockNumber,
+        gasUsed: receipt.gasUsed.toString(),
+        status: receipt.status
+      },
+      message: 'Refuel policy 設定成功'
     });
     
   } catch (error) {
