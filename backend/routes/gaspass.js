@@ -17,12 +17,77 @@ router.post('/relay/mint', async (req, res) => {
     console.log(`📤 代送 mintWithSig 交易...`);
     console.log(`👤 用戶: ${typedData.to}`);
     console.log(`💰 金額: ${ethers.formatUnits(typedData.value, 6)} USDC`);
+    console.log(`🔍 簽名: ${signature}`);
     
-    // 這裡需要從主服務器獲取 wallet 和 contract
-    // 暫時返回成功，實際實現在主服務器中
+    // 從主服務器獲取 wallet 和 contract
+    const { wallet, contract } = req.app.locals;
+    
+    if (!wallet || !contract) {
+      throw new Error('Relayer 服務未初始化');
+    }
+    
+    // 準備合約調用的數據
+    const mintData = {
+      to: typedData.to,
+      value: typedData.value,
+      permitData: typedData.permitData,
+      agent: typedData.agent,
+      nonce: typedData.nonce,
+      deadline: typedData.deadline
+    };
+    
+    console.log(`🔍 mintData:`, mintData);
+    
+    // 調用合約的 mintWithSig 函數
+    const tx = await contract.mintWithSig(mintData, signature);
+    console.log(`📝 交易已提交: ${tx.hash}`);
+    
+    // 等待交易確認（等待 1 個確認）
+    const receipt = await tx.wait(1);
+    console.log(`✅ 交易已確認: ${receipt.hash}`);
+    console.log(`📊 確認數: ${receipt.confirmations}`);
+    console.log(`📊 狀態: ${receipt.status === 1 ? '成功' : '失敗'}`);
+    console.log(`⛽ Gas 使用: ${receipt.gasUsed.toString()}`);
+    
+    // 檢查交易狀態
+    if (receipt.status !== 1) {
+      throw new Error(`交易失敗，狀態碼: ${receipt.status}`);
+    }
+    
+    // 從事件中獲取 tokenId
+    const mintEvent = receipt.logs.find(log => {
+      try {
+        const parsed = contract.interface.parseLog(log);
+        return parsed.name === 'Minted';
+      } catch (e) {
+        return false;
+      }
+    });
+    
+    let tokenId = null;
+    if (mintEvent) {
+      const parsed = contract.interface.parseLog(mintEvent);
+      tokenId = parsed.args.value.toString();
+      console.log(`🎫 鑄造的 Token ID: ${tokenId}`);
+    } else {
+      console.warn('⚠️ 未找到 Minted 事件，可能合約 ABI 不匹配');
+    }
+    
     res.json({
       success: true,
-      message: 'Mint relay endpoint - implementation in main server'
+      txHash: receipt.hash,
+      tokenId: tokenId,
+      confirmations: receipt.confirmations,
+      gasUsed: receipt.gasUsed.toString(),
+      status: receipt.status === 1 ? 'success' : 'failed',
+      receipt: {
+        hash: receipt.hash,
+        blockNumber: receipt.blockNumber,
+        blockHash: receipt.blockHash,
+        confirmations: receipt.confirmations,
+        gasUsed: receipt.gasUsed.toString(),
+        status: receipt.status
+      }
     });
     
   } catch (error) {
@@ -64,10 +129,64 @@ router.post('/relay/deposit', async (req, res) => {
     console.log(`📤 代送 depositWithSig 交易...`);
     console.log(`🎫 Token ID: ${typedData.tokenId}`);
     console.log(`💰 金額: ${ethers.formatUnits(typedData.amount, 6)} USDC`);
+    console.log(`🔍 簽名: ${signature}`);
+    
+    // 從主服務器獲取 wallet 和 contract
+    const { wallet, contract } = req.app.locals;
+    
+    if (!wallet || !contract) {
+      throw new Error('Relayer 服務未初始化');
+    }
+    
+    // 準備合約調用的數據（DepositWithSigTypedData 結構）
+    const depositData = {
+      tokenId: BigInt(typedData.tokenId),
+      amount: BigInt(typedData.amount),
+      permitData: {
+        owner: typedData.permitData.owner,
+        spender: typedData.permitData.spender,
+        value: BigInt(typedData.permitData.value),
+        deadline: BigInt(typedData.permitData.deadline),
+        v: parseInt(typedData.permitData.v),
+        r: typedData.permitData.r,
+        s: typedData.permitData.s
+      },
+      nonce: BigInt(typedData.nonce),
+      deadline: BigInt(typedData.deadline)
+    };
+    
+    console.log(`🔍 depositData:`, depositData);
+    
+    // 調用合約的 depositWithSig 函數
+    const tx = await contract.depositWithSig(depositData, signature);
+    console.log(`📝 交易已提交: ${tx.hash}`);
+    
+    // 等待交易確認（等待 1 個確認）
+    const receipt = await tx.wait(1);
+    console.log(`✅ 交易已確認: ${receipt.hash}`);
+    console.log(`📊 確認數: ${receipt.confirmations}`);
+    console.log(`📊 狀態: ${receipt.status === 1 ? '成功' : '失敗'}`);
+    console.log(`⛽ Gas 使用: ${receipt.gasUsed.toString()}`);
+    
+    // 檢查交易狀態
+    if (receipt.status !== 1) {
+      throw new Error(`交易失敗，狀態碼: ${receipt.status}`);
+    }
     
     res.json({
       success: true,
-      message: 'Deposit relay endpoint - implementation in main server'
+      txHash: receipt.hash,
+      confirmations: receipt.confirmations,
+      gasUsed: receipt.gasUsed.toString(),
+      status: receipt.status === 1 ? 'success' : 'failed',
+      receipt: {
+        hash: receipt.hash,
+        blockNumber: receipt.blockNumber,
+        blockHash: receipt.blockHash,
+        confirmations: receipt.confirmations,
+        gasUsed: receipt.gasUsed.toString(),
+        status: receipt.status
+      }
     });
     
   } catch (error) {

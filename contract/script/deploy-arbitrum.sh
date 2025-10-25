@@ -59,10 +59,7 @@ forge script ./DeployArbitrumMainnet.s.sol:DeployArbitrumMainnet \
     --rpc-url $ARBITRUM_RPC_URL \
     --private-key $PRIVATE_KEY \
     --broadcast \
-    --verify \
-    --etherscan-api-key $ARBISCAN_API_KEY \
-    --verifier-url https://api.arbiscan.io/api \
-    --verifier etherscan \
+
     --slow \
     --verbosity 2
 

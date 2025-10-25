@@ -134,14 +134,18 @@
         </span>
       </button>
 
-      <!-- Success Message -->
-      <div v-if="showSuccess" class="success-message">
-        <div class="success-icon">🎉</div>
-        <h3>{{ isFirstTime ? 'Congratulations! Gas jar created successfully!' : 'Refill completed!' }}</h3>
-        <p>{{ successMessage }}</p>
-        <button @click="$emit('success')" class="continue-btn">
-          Continue Exploring GasPass
-        </button>
+      <!-- Success Modal -->
+      <div v-if="showSuccess" class="success-modal-overlay" @click="handleModalClick">
+        <div class="success-modal" @click.stop>
+          <div class="success-modal-content">
+            <div class="success-icon">🎉</div>
+            <h3>{{ isFirstTime ? 'Congratulations! Gas jar created successfully!' : 'Refill completed!' }}</h3>
+            <p>{{ successMessage }}</p>
+            <button @click="handleContinue" class="continue-btn">
+              Continue Exploring GasPass
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -327,6 +331,21 @@ const celebrateSuccess = () => {
   setTimeout(() => {
     showSparkles.value = false
   }, 2000)
+}
+
+// 處理模態框點擊
+const handleModalClick = () => {
+  // 點擊背景關閉模態框
+  handleContinue()
+}
+
+// 處理繼續按鈕
+const handleContinue = () => {
+  showSuccess.value = false
+  // 如果是第一次創建，發送 success 事件讓父組件切換視圖
+  if (props.isFirstTime) {
+    emit('success')
+  }
 }
 
 
@@ -1117,6 +1136,147 @@ watch(amount, (newValue) => {
   50% { 
     opacity: 0.8;
     transform: scaleX(1);
+  }
+}
+
+/* Success Modal Styles */
+.success-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: modalFadeIn 0.3s ease-out;
+}
+
+.success-modal {
+  background: linear-gradient(135deg, 
+    rgba(15, 23, 42, 0.95) 0%,
+    rgba(30, 41, 59, 0.9) 25%,
+    rgba(51, 65, 85, 0.85) 50%,
+    rgba(30, 41, 59, 0.9) 75%,
+    rgba(15, 23, 42, 0.95) 100%);
+  backdrop-filter: blur(25px);
+  border: 2px solid transparent;
+  border-radius: 28px;
+  box-shadow: 
+    0 25px 50px rgba(0, 0, 0, 0.4),
+    0 0 0 1px rgba(16, 185, 129, 0.3),
+    inset 0 2px 0 rgba(255, 255, 255, 0.15);
+  position: relative;
+  overflow: hidden;
+  animation: modalSlideIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  max-width: 500px;
+  width: 90%;
+  margin: 20px;
+}
+
+.success-modal::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, 
+    rgba(16, 185, 129, 0.1) 0%,
+    rgba(20, 184, 166, 0.05) 50%,
+    rgba(6, 182, 212, 0.1) 100%);
+  border-radius: 28px;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+.success-modal:hover::before {
+  opacity: 1;
+}
+
+.success-modal-content {
+  position: relative;
+  z-index: 10;
+  padding: 40px;
+  text-align: center;
+}
+
+.success-icon {
+  font-size: 4rem;
+  margin-bottom: 20px;
+  animation: bounce 0.6s ease-out;
+}
+
+.success-modal h3 {
+  color: #ffffff;
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin-bottom: 16px;
+  line-height: 1.4;
+}
+
+.success-modal p {
+  color: #10b981;
+  font-size: 1rem;
+  margin-bottom: 32px;
+  line-height: 1.5;
+}
+
+.continue-btn {
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: white;
+  border: none;
+  padding: 12px 32px;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+}
+
+.continue-btn:hover {
+  background: linear-gradient(135deg, #059669, #047857);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
+}
+
+.continue-btn:active {
+  transform: translateY(0);
+}
+
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-50px) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes bounce {
+  0%, 20%, 50%, 80%, 100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-20px);
+  }
+  60% {
+    transform: translateY(-10px);
   }
 }
 </style>

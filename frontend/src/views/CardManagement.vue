@@ -132,86 +132,53 @@
               </div>
             </div>
 
-            <!-- 有儲值卡的情況 -->
-          <div v-else>
-              <!-- 儲值卡概覽 -->
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
-                <!-- 儲值卡資訊 -->
-              <div class="lg:col-span-2">
-                  <div class="premium-card-info p-8 relative overflow-hidden group">
-                    <!-- 背景光效 -->
-                    <div class="absolute inset-0 bg-gradient-to-br from-emerald-50/10 to-teal-50/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                    
-                    <div class="relative z-10">
-                      <div class="flex items-center justify-between mb-8">
-                        <div class="flex items-center gap-3">
-                          <div class="w-8 h-8 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-lg flex items-center justify-center">
-                            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
-                            </svg>
-                          </div>
-                          <h3 class="text-2xl font-bold text-white">My Card</h3>
-                        </div>
-                        <button @click="refreshCards" class="btn-secondary-sm group">
-                          <svg class="w-4 h-4 group-hover:rotate-180 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
-                        </svg>
-                        Refresh
-                      </button>
-                  </div>
-                  
-                      <div v-for="card in userCards" :key="card.tokenId" class="premium-card-item">
-                    <div class="flex items-center justify-between">
-                          <div class="flex items-center gap-6">
-                            <div class="w-20 h-20 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-3xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
-                              <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <!-- 有儲值卡的情況 - 統一卡片設計 -->
+            <div v-else class="py-8 -mt-8">
+              <div class="premium-card-main px-8 py-4 max-w-5xl mx-auto relative overflow-hidden">
+                <!-- 背景裝飾 -->
+                <div class="absolute inset-0 bg-gradient-to-br from-emerald-50/10 to-teal-50/10"></div>
+                <div class="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-emerald-200/20 to-teal-200/20 rounded-full -translate-y-32 translate-x-32"></div>
+                <div class="absolute bottom-0 left-0 w-48 h-48 bg-gradient-to-tr from-teal-200/20 to-emerald-200/20 rounded-full translate-y-24 -translate-x-24"></div>
+                
+                <div class="relative z-10">
+                  <!-- 左側：卡片信息 -->
+                  <div class="flex flex-col lg:flex-row items-center lg:items-start gap-8 lg:gap-12">
+                    <!-- 卡片信息區域 -->
+                    <div class="flex-1 text-center lg:text-left">
+                      <h2 class="text-4xl lg:text-5xl font-bold text-slate-800 mb-4">Welcome back!</h2>
+                      <p class="text-lg text-emerald-600 mb-8">Your GasPass card is ready for more deposits!</p>
+                      
+                      <!-- 卡片信息 -->
+                      <div v-for="card in userCards" :key="card.tokenId" class="mb-8">
+                        <div class="inline-flex items-center gap-2 px-4 py-2 bg-emerald-100 rounded-full text-emerald-800 font-semibold mb-4">
+                          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
                           </svg>
+                          GasPass #{{ card.tokenId }}
                         </div>
-                        <div>
-                              <h4 class="text-2xl font-bold text-white mb-2">GasPass #{{ card.tokenId }}</h4>
-                              <p class="text-lg text-emerald-200 mb-1">Balance: {{ card.balance }} USDC</p>
-                          <p class="text-sm text-emerald-300">Last updated: {{ card.lastUpdate }}</p>
-                        </div>
+                        <div class="text-3xl font-bold text-slate-800 mb-2">{{ card.balance }} USDC</div>
+                        <div class="text-emerald-600">Current Balance</div>
+                        <div class="text-sm text-slate-500 mt-2">Last updated: {{ card.lastUpdate }}</div>
                       </div>
-                      <div class="text-right">
-                            <div class="text-3xl font-bold text-white mb-1">{{ card.balance }} USDC</div>
-                        <div class="text-sm text-emerald-300">Available Balance</div>
-                      </div>
+                    </div>
+                    
+                    <!-- 右側：Gas Jar 組件 -->
+                    <div class="flex-shrink-0">
+                      <CuteGasJar 
+                        :isFirstTime="false"
+                        :existingCard="userCards[0]"
+                        @success="handleDepositSuccess"
+                        @error="handleError"
+                      />
                     </div>
                   </div>
-                </div>
-              </div>
-                </div>
-
-                <!-- 快速儲值 -->
-                <div class="premium-card-deposit p-8 relative overflow-hidden group">
-                  <!-- 背景光效 -->
-                  <div class="absolute inset-0 bg-gradient-to-br from-emerald-50/10 to-teal-50/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                  
-                  <div class="relative z-10">
-                    <div class="flex items-center gap-3 mb-6">
-                      <div class="w-8 h-8 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-lg flex items-center justify-center">
-                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
-                        </svg>
-                      </div>
-                      <h4 class="text-xl font-bold text-white">Quick Deposit</h4>
-                    </div>
-                  <CuteGasJar 
-                    :isFirstTime="false"
-                    :existingCard="userCards[0]"
-                    @success="handleDepositSuccess"
-                    @error="handleError"
-                  />
-                </div>
                 </div>
               </div>
             </div>
           </div>
 
           <!-- 下半部分：Gas 兌換管理 -->
-          <div v-if="vincentJwt" class="premium-card-exchange p-8 relative overflow-hidden">
+          <div v-if="hasCard" class="premium-card-exchange p-8 relative overflow-hidden">
             <!-- 背景裝飾 -->
             <div class="absolute inset-0 bg-gradient-to-br from-emerald-50/5 to-teal-50/5"></div>
             <div class="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-emerald-200/20 to-teal-200/20 rounded-full -translate-y-16 translate-x-16"></div>
@@ -566,19 +533,36 @@ const canSetupAgentRefuel = computed(() => {
 
 // Methods
 const loadUserData = async () => {
-  if (!account.value || !provider.value || !signer.value) return
+  console.log('🔍 loadUserData 開始執行')
+  console.log('🔍 檢查條件:', {
+    account: account.value,
+    provider: !!provider.value,
+    signer: !!signer.value,
+    isConnected: isConnected.value
+  })
+  
+  if (!account.value || !provider.value || !signer.value) {
+    console.warn('⚠️ 缺少必要參數，無法載入用戶數據')
+    return
+  }
   
   try {
+    console.log('🔍 開始初始化合約服務...')
     // 初始化合約服務
     await contractService.init(provider.value, signer.value)
     
+    console.log('🔍 檢查是否有 GasPass 卡片...')
     // 檢查是否有 GasPass 卡片
     const hasCard = await contractService.hasGasPassCard(account.value)
+    console.log('🔍 hasCard 結果:', hasCard)
     
     if (hasCard) {
+      console.log('🔍 載入用戶卡片...')
       // 載入用戶卡片
       userCards.value = await contractService.getUserCards(account.value)
+      console.log('🔍 載入的卡片:', userCards.value)
     } else {
+      console.log('🔍 用戶沒有卡片')
       userCards.value = []
     }
     
@@ -590,8 +574,10 @@ const loadUserData = async () => {
     
     // 載入 Agent 狀態
     await loadAgentStatus()
+    
+    console.log('✅ loadUserData 完成')
   } catch (error) {
-    console.error('Failed to load user data:', error)
+    console.error('❌ Failed to load user data:', error)
   }
 }
 
@@ -599,8 +585,10 @@ const refreshCards = async () => {
   await loadUserData()
 }
 
-const handleMintSuccess = () => {
-  loadUserData()
+const handleMintSuccess = async () => {
+  console.log('🎉 Mint 成功，刷新用戶數據...')
+  await loadUserData()
+  console.log('✅ 用戶數據已刷新，現在應該顯示卡片視圖')
 }
 
 const handleDepositSuccess = () => {
@@ -776,6 +764,8 @@ onMounted(async () => {
       console.error('Vincent Auth 初始化失敗:', e)
       await loadUserData()
     }
+  } else {
+    console.log('🔍 錢包未連接，等待連接...')
   }
 
   // 回跳時不主動打開錢包 UI；自動重連交由 wagmi autoConnect/reconnect 完成
@@ -789,6 +779,7 @@ onMounted(async () => {
 
 // 監聽錢包連線後，觸發 Vincent 登入流程
 watch(isConnected, async (connected) => {
+  console.log('🔍 isConnected 變化:', connected)
   if (connected) {
     try {
       const currentOrigin = window.location.origin
@@ -800,6 +791,18 @@ watch(isConnected, async (connected) => {
       console.error('Vincent Auth 啟動失敗:', e)
       await loadUserData()
     }
+  }
+})
+
+// 監聽 account 變化，確保在錢包連接後載入數據
+watch(account, async (newAccount, oldAccount) => {
+  console.log('🔍 account 變化:', { newAccount, oldAccount, isConnected: isConnected.value })
+  if (newAccount && isConnected.value) {
+    console.log('🔍 檢測到新帳戶，嘗試載入用戶數據...')
+    // 延遲一點時間確保 provider 和 signer 都已更新
+    setTimeout(async () => {
+      await loadUserData()
+    }, 1000)
   }
 })
 
