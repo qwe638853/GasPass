@@ -1,6 +1,10 @@
 import { Router } from 'express';
 import { getAuthenticateUserExpressHandler } from '../middleware/vincentAuth.mjs';
+<<<<<<< HEAD
 import { executeCompleteAutoRefuel, executeSponsorAutoRefuel } from '../vincent/bridge.js';
+=======
+
+>>>>>>> 6b31d5f (update monitor backend)
 
 const router = Router();
 
@@ -13,20 +17,8 @@ const vincentAuth = getAuthenticateUserExpressHandler({
   userKey: 'vincentUser'
 });
 
-// Vincent Bridge 相關端點
-router.post('/bridge', vincentAuth, async (req, res) => {
-  try {
-    const { bridgeParams } = req.body;
-    const delegatorPkpEthAddress = req.vincentUser.decodedJWT?.payload?.pkpInfo?.ethAddress ?? 
-                                  req.vincentUser.decodedJWT?.pkp?.ethAddress;
-    
-    if (!delegatorPkpEthAddress) {
-      return res.status(400).json({ 
-        success: false, 
-        error: 'Invalid JWT: no pkp.ethAddress' 
-      });
-    }
 
+<<<<<<< HEAD
     const result = await executeCompleteAutoRefuel(bridgeParams, { 
       delegatorPkpEthAddress,
       rpcUrl: process.env.RPC_URL 
@@ -79,6 +71,9 @@ router.post('/sponsor', vincentAuth, async (req, res) => {
     });
   }
 });
+=======
+
+>>>>>>> 6b31d5f (update monitor backend)
 
 // Vincent 狀態檢查
 router.get('/status', vincentAuth, async (req, res) => {
@@ -102,4 +97,4 @@ router.get('/status', vincentAuth, async (req, res) => {
   }
 });
 
-export default router;
+export default {router, vincentAuth};

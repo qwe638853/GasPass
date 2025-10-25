@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import vincentRouter from './vincent.js';
+import vincentModule from './vincent.js';
 import gaspassRouter from './gaspass.js';
 import relayerRouter from '../relayer/index.js';
 import monitorRouter from './monitor.js';
@@ -21,7 +21,7 @@ router.get('/', (req, res) => {
 });
 
 // 整合所有子路由
-router.use('/vincent', vincentRouter);
+router.use('/vincent', vincentModule.router);
 router.use('/gaspass', gaspassRouter);
 router.use('/relayer', relayerRouter);
 router.use('/monitor', monitorRouter);

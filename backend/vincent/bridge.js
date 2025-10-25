@@ -1,27 +1,75 @@
-import { sponsorAbilityClient, bungeeAbilityClient, alchemyGasSponsorApiKey, alchemyGasSponsorPolicyId } from './vincentEnv.js';
+import { sponsorAbilityClient, alchemyGasSponsorApiKey, alchemyGasSponsorPolicyId ,ensureInitialized} from './vincentEnv.js';
 import { BUNGEE_CONFIG } from '../config/BungeeConfig.js';
+import { GAS_PASS_CONFIG, AUTO_REFUEL_ABI } from '../config/gasPassConfig.js';
 import { ethers } from 'ethers';
+import crypto from 'crypto';
+
+// 正規化請求參數，將數字轉換為字符串
+function normalizeRequest(params) {
+  const normalized = { ...params };
+  
+  // 將數字欄位轉換為字符串
+  if (normalized.tokenId !== undefined) {
+    normalized.tokenId = String(normalized.tokenId);
+  }
+  if (normalized.destinationChainId !== undefined) {
+    normalized.destinationChainId = String(normalized.destinationChainId);
+  }
+  if (normalized.inputAmount !== undefined) {
+    normalized.inputAmount = String(normalized.inputAmount);
+  }
+  if (normalized.blockNumber !== undefined) {
+    normalized.blockNumber = String(normalized.blockNumber);
+  }
+  if (normalized.gasLeft !== undefined) {
+    normalized.gasLeft = String(normalized.gasLeft);
+  }
+  if (normalized.deadlineDelta !== undefined) {
+    normalized.deadlineDelta = String(normalized.deadlineDelta);
+  }
+  
+  // 確保地址欄位是字符串
+  if (normalized.receiver !== undefined) {
+    normalized.receiver = String(normalized.receiver);
+  }
+  if (normalized.inputToken !== undefined) {
+    normalized.inputToken = String(normalized.inputToken);
+  }
+  if (normalized.contractAddress !== undefined) {
+    normalized.contractAddress = String(normalized.contractAddress);
+  }
+  
+  return normalized;
+}
 
 // 傳入贊助參數，執行贊助自動補油
-export async function executeSponsorAutoRefuel(sponsorParams, { delegatorPkpEthAddress, rpcUrl } = {}) {
-    
-    
+async function executeSponsorAutoRefuel(sponsorParams, { delegatorPkpEthAddress } = {}) {
+    console.log('GAS_PASS_CONFIG.contractAddress:', GAS_PASS_CONFIG.contractAddress);
+    console.log('sponsorParams:', sponsorParams);
+    console.log(sponsorParams.args[2].basicReq);
     const params = {
         chainId: 42161,
         sponsorApiKey: alchemyGasSponsorApiKey,
         sponsorPolicyId: alchemyGasSponsorPolicyId,
-        contractAddress: BUNGEE_CONFIG.gasPassAddress,
+        contractAddress: GAS_PASS_CONFIG.contractAddress,
         functionName: sponsorParams.functionName,
         args: sponsorParams.args,
         abi: sponsorParams.abi,
         value: sponsorParams.value,
     };
-    return await sponsorAbilityClient.execute(params, { delegatorPkpEthAddress });
+    console.log('params:', params);
+    return await sponsorAbilityClient.execute(params, { delegatorPkpEthAddress:delegatorPkpEthAddress });
 }
 
 
 // 完整的 autoRefuel 流程函數
-export async function executeCompleteAutoRefuel(params, { delegatorPkpEthAddress, rpcUrl } = {}) {
+export async function executeCompleteAutoRefuel(params, { delegatorPkpEthAddress } = {}) {
+    // 確保 Vincent 已初始化
+    await ensureInitialized();
+    
+    // 正規化請求參數，將數字轉換為字符串
+    const normalizedParams = normalizeRequest(params);
+    
     const {
         tokenId,
         destinationChainId,
@@ -32,8 +80,8 @@ export async function executeCompleteAutoRefuel(params, { delegatorPkpEthAddress
         blockNumber,
         gasLeft = 1000000,
         deadlineDelta = 600
-    } = params;
-
+    } = normalizedParams;
+    console.log('delegatorPkpEthAddress:', delegatorPkpEthAddress);
     try {
         // 1. 獲取報價
         console.log('Getting quote...');
@@ -67,11 +115,11 @@ export async function executeCompleteAutoRefuel(params, { delegatorPkpEthAddress
         const sponsorAutoRefuelParams = {
             functionName: 'autoRefuel',
             args: [tokenId, BUNGEE_CONFIG.inboxAddress, requestData.request, expectedSorHash, destinationChainId],
-            abi: BUNGEE_CONFIG.gasPassAbi,
+            abi: AUTO_REFUEL_ABI,
             value: 0
         };
 
-        const result = await executeSponsorAutoRefuel(sponsorAutoRefuelParams, { delegatorPkpEthAddress, rpcUrl });
+        const result = await executeSponsorAutoRefuel(sponsorAutoRefuelParams, { delegatorPkpEthAddress });
     
         return {
             success: true,
@@ -87,7 +135,10 @@ export async function executeCompleteAutoRefuel(params, { delegatorPkpEthAddress
 }
 
 // 完整的建構範例函數
-export function buildCompleteRequest(params) {
+function buildCompleteRequest(params) {
+    // 正規化參數，確保數字轉換為字符串
+    const normalizedParams = normalizeRequest(params);
+    
     const {
         destinationChainId,
         receiver,
@@ -98,7 +149,7 @@ export function buildCompleteRequest(params) {
         contractAddress,
         blockNumber,
         gasLeft = 1000000 // 預設值
-    } = params;
+    } = normalizedParams;
   
     const currentTimestamp = Math.floor(Date.now() / 1000);
     const deadline = currentTimestamp + deadlineDelta;
@@ -190,7 +241,7 @@ function buildRequest(params) {
 function generateNonce(timestamp, blockNumber, contractAddress, inputAmount, chainId, gasLeft) {
   // 模擬 Solidity 的 keccak256 和 bytes4 操作
   const data = `${timestamp}${blockNumber}${contractAddress}${inputAmount}${chainId}${gasLeft}`;
-  const hash = require('crypto').createHash('sha256').update(data).digest('hex');
+  const hash = crypto.createHash('sha256').update(data).digest('hex');
   // 取前 8 個字符作為 nonce (32位)
   return parseInt(hash.substring(0, 8), 16);
 }

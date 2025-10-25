@@ -1,0 +1,53 @@
+{
+  "transactions": [
+    {
+      "hash": "0xf97d1930fdad6deaae99e90482838aa7693c4e9eb00ab8e4fef47a11d2e0f078",
+      "transactionType": "CALL",
+      "contractName": null,
+      "contractAddress": "0xdb140b58d6e3988f5c453e192295748c1438d8d4",
+      "function": "cancelRefuelPolicy(uint256,uint256)",
+      "arguments": [
+        "2",
+        "10"
+      ],
+      "transaction": {
+        "from": "0xc4660f40ba6fe89b3ba7ded44cf1db73d731c95e",
+        "to": "0xdb140b58d6e3988f5c453e192295748c1438d8d4",
+        "gas": "0xeefa",
+        "value": "0x0",
+        "input": "0x163198bc0000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000a",
+        "nonce": "0x2f",
+        "chainId": "0xa4b1"
+      },
+      "additionalContracts": [],
+      "isFixedGasLimit": false
+    }
+  ],
+  "receipts": [
+    {
+      "status": "0x1",
+      "cumulativeGasUsed": "0xeafe9",
+      "logs": [],
+      "logsBloom": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+      "type": "0x2",
+      "transactionHash": "0xf97d1930fdad6deaae99e90482838aa7693c4e9eb00ab8e4fef47a11d2e0f078",
+      "transactionIndex": "0x5",
+      "blockHash": "0x34c085e0729bdbde7ba5978195acd12ffd47eba17b64460d19ec9236e1be007b",
+      "blockNumber": "0x177032fa",
+      "gasUsed": "0x91de",
+      "effectiveGasPrice": "0x989680",
+      "from": "0xc4660f40ba6fe89b3ba7ded44cf1db73d731c95e",
+      "to": "0xdb140b58d6e3988f5c453e192295748c1438d8d4",
+      "contractAddress": null,
+      "gasUsedForL1": "0x17c",
+      "l1BlockNumber": "0x168eeef",
+      "timeboosted": false
+    }
+  ],
+  "libraries": [],
+  "pending": [],
+  "returns": {},
+  "timestamp": 1761391144,
+  "chain": 42161,
+  "commit": "8a6c67b"
+}
