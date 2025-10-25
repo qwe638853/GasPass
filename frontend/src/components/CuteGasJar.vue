@@ -102,21 +102,6 @@
         </div>
       </div>
 
-      <!-- Cost Estimate -->
-      <div v-if="costEstimate" class="cost-estimate">
-        <div class="estimate-row">
-          <span>{{ isFirstTime ? 'Mint' : 'Refill' }} Amount:</span>
-          <span class="highlight">{{ amount }} USDC</span>
-        </div>
-        <div class="estimate-row">
-          <span>Gas Fee:</span>
-          <span>≈ {{ costEstimate.gas }} ETH</span>
-        </div>
-        <div class="estimate-row total">
-          <span>Total Cost:</span>
-          <span class="highlight">{{ costEstimate.total }} USDC</span>
-        </div>
-      </div>
 
       <!-- Action Button -->
       <button 
@@ -132,6 +117,15 @@
         <span v-else>
           {{ isFirstTime ? 'Create GasPass' : 'Refill Now' }}
         </span>
+      </button>
+
+      <!-- Test Button for Development -->
+      <button 
+        @click="handleTestMode"
+        class="test-btn"
+        v-if="isFirstTime"
+      >
+        🧪 Test: Go to Card View
       </button>
 
       <!-- Success Modal -->
@@ -346,6 +340,16 @@ const handleContinue = () => {
   if (props.isFirstTime) {
     emit('success')
   }
+}
+
+// 測試模式：模擬成功創建 GasPass
+const handleTestMode = () => {
+  console.log('🧪 Test mode: Simulating successful GasPass creation')
+  // 模擬成功消息
+  successMessage.value = 'Test mode: Successfully created GasPass card #123 with 50 USDC!'
+  showSuccess.value = true
+  // 觸發慶祝動畫
+  celebrateSuccess()
 }
 
 
@@ -889,6 +893,27 @@ watch(amount, (newValue) => {
   cursor: not-allowed;
   transform: none;
   box-shadow: none;
+}
+
+.test-btn {
+  width: 100%;
+  padding: 0.75rem 1.5rem;
+  background: linear-gradient(145deg, #f59e0b, #d97706);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);
+  margin-top: 0.5rem;
+}
+
+.test-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(245, 158, 11, 0.4);
+  background: linear-gradient(145deg, #d97706, #b45309);
 }
 
 .loading-content {
