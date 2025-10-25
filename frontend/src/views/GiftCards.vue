@@ -1,29 +1,67 @@
 <template>
   <Layout>
-    <div class="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-8">
+    <div class="min-h-screen card-background py-8 relative overflow-hidden">
       <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <!-- Header -->
-        <div class="text-center mb-12">
-          <h1 class="text-4xl font-bold text-gray-900 mb-4">
+        <div class="flex items-center justify-between mb-12">
+          <div class="flex-1">
+            <h1 class="text-4xl font-bold text-white mb-4">
             <span class="bg-gradient-to-r from-emerald-400 to-teal-500 bg-clip-text text-transparent">
-              贈送儲值卡
+                Gift Cards
             </span>
           </h1>
-          <p class="text-xl text-gray-600 max-w-3xl mx-auto">
-            大量鑄造 GasPass 儲值卡，可以贈送給自己或其他人，享受 ERC-3525 的轉贈功能
-          </p>
+            <p class="text-xl text-emerald-200 max-w-3xl">
+              Mint GasPass gift cards in bulk and send them to yourself or others, enjoying ERC-3525 transfer capabilities
+            </p>
+          </div>
+          <div class="flex-shrink-0 flex items-center gap-4">
+            <!-- Wallet Balance -->
+            <div class="metallic-card-secondary rounded-xl shadow-lg border border-white/20 px-4 py-3">
+              <div class="flex items-center gap-3">
+                <div class="w-8 h-8 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-lg flex items-center justify-center">
+                  <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
+                  </svg>
+                </div>
+                <div class="text-left">
+                  <div class="text-xs text-emerald-300">USDC Balance</div>
+                  <div class="text-lg font-bold text-white">{{ usdcBalance }} USDC</div>
+                </div>
+                <button 
+                  @click="refreshBalance"
+                  class="p-1.5 bg-emerald-500/20 hover:bg-emerald-500/30 rounded-lg transition-colors duration-200"
+                  :disabled="isRefreshingBalance"
+                >
+                  <svg class="w-3 h-3 text-emerald-300" :class="{ 'animate-spin': isRefreshingBalance }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                  </svg>
+                </button>
+              </div>
+            </div>
+            
+            <!-- Gift History Button -->
+            <button 
+              @click="showGiftHistory = true"
+              class="px-6 py-3 bg-yellow-400/20 hover:bg-yellow-400/30 text-yellow-300 hover:text-yellow-200 rounded-xl transition-all duration-300 font-medium flex items-center gap-3 border border-yellow-400/30 hover:border-yellow-400/50 backdrop-blur-sm"
+            >
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+              </svg>
+              Gift History
+            </button>
+          </div>
         </div>
 
         <!-- Not Connected State -->
         <div v-if="!isConnected" class="text-center py-16">
-          <div class="bg-white/80 backdrop-blur-xl rounded-2xl shadow-xl border border-white/20 p-12 max-w-2xl mx-auto">
+          <div class="bg-white/10 backdrop-blur-xl rounded-2xl shadow-xl border border-white/20 p-12 max-w-2xl mx-auto">
             <div class="w-20 h-20 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-full flex items-center justify-center mx-auto mb-6">
               <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
               </svg>
             </div>
-            <h3 class="text-2xl font-bold text-gray-900 mb-4">請先連接錢包</h3>
-            <p class="text-gray-600 mb-8">連接您的錢包後即可開始鑄造和贈送儲值卡</p>
+            <h3 class="text-2xl font-bold text-white mb-4">Please Connect Your Wallet</h3>
+            <p class="text-emerald-200 mb-8">Connect your wallet to start minting and gifting cards</p>
             <button @click="connectWallet" class="btn-primary-hero group relative overflow-hidden">
               <!-- Glow effect -->
               <div class="absolute inset-0 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-xl blur-lg opacity-75 group-hover:opacity-100 transition-opacity duration-300"></div>
@@ -32,7 +70,7 @@
                 <svg class="w-6 h-6 group-hover:rotate-12 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path>
                 </svg>
-                連接錢包
+                Connect Wallet
               </span>
               <!-- Shimmer effect -->
               <div class="absolute inset-0 -top-2 -left-2 bg-gradient-to-r from-transparent via-white/20 to-transparent skew-x-12 group-hover:animate-shimmer"></div>
@@ -42,122 +80,105 @@
 
         <!-- Connected State -->
         <div v-else>
-          <!-- User Info -->
-          <div class="bg-white/80 backdrop-blur-xl rounded-2xl shadow-xl border border-white/20 p-6 mb-8 relative overflow-hidden group">
-            <!-- Glow effect -->
-            <div class="absolute inset-0 bg-gradient-to-br from-emerald-100/30 to-teal-100/30 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-            <!-- Content -->
-            <div class="relative z-10 flex items-center justify-between">
-              <div class="flex items-center gap-4">
-                <div class="w-12 h-12 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-lg">
-                  <svg class="w-6 h-6 text-white group-hover:rotate-12 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
-                  </svg>
-                </div>
-                <div>
-                  <h3 class="text-lg font-bold text-gray-900 group-hover:text-emerald-600 transition-colors duration-300">錢包已連接</h3>
-                  <p class="text-gray-600 group-hover:text-gray-700 transition-colors duration-300">{{ formatAddress(account) }}</p>
-                </div>
-              </div>
-              <div class="text-right">
-                <div class="text-sm text-gray-500 group-hover:text-gray-600 transition-colors duration-300">USDC 餘額</div>
-                <div class="text-lg font-bold text-gray-900 group-hover:text-emerald-600 transition-colors duration-300">{{ usdcBalance }} USDC</div>
-              </div>
-            </div>
-            <!-- Shimmer effect -->
-            <div class="absolute inset-0 -top-2 -left-2 bg-gradient-to-r from-transparent via-white/10 to-transparent skew-x-12 group-hover:animate-shimmer opacity-0 group-hover:opacity-100"></div>
-          </div>
-
           <!-- Main Content -->
           <!-- 鑄造儲值卡區塊 -->
-          <div class="bg-white/80 backdrop-blur-xl rounded-2xl shadow-xl border border-white/20 p-8 mb-8 relative overflow-hidden group">
-            <!-- Glow effect -->
-            <div class="absolute inset-0 bg-gradient-to-br from-emerald-100/20 to-teal-100/20 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+          <div class="gift-card-container rounded-3xl shadow-2xl border border-white/30 p-8 mb-8 relative overflow-hidden group">
+            <!-- Gift Card Background Pattern -->
+            <div class="gift-card-pattern"></div>
+            
+            <!-- Golden Sparkles -->
+            <div class="golden-sparkles">
+              <div class="sparkle sparkle-1"></div>
+              <div class="sparkle sparkle-2"></div>
+              <div class="sparkle sparkle-3"></div>
+              <div class="sparkle sparkle-4"></div>
+              <div class="sparkle sparkle-5"></div>
+              <div class="sparkle sparkle-6"></div>
+              <div class="sparkle sparkle-7"></div>
+              <div class="sparkle sparkle-8"></div>
+              <div class="sparkle sparkle-9"></div>
+              <div class="sparkle sparkle-10"></div>
+                </div>
+            
+            <!-- Gift Ribbon -->
+            <div class="gift-ribbon">
+              <div class="ribbon-horizontal"></div>
+              <div class="ribbon-vertical"></div>
+          </div>
+
             
             <!-- Content -->
             <div class="relative z-10">
-              <div class="flex items-center gap-3 mb-6">
-                <div class="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                  <svg class="w-6 h-6 text-white group-hover:rotate-12 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"></path>
-                  </svg>
+              <!-- Gift Card Title Section -->
+              <div class="gift-card-title-section">
+                <h2 class="gift-card-main-title">GIFT</h2>
+                <h3 class="gift-card-sub-title">CARD</h3>
                 </div>
-                <h2 class="text-2xl font-bold text-gray-900 group-hover:text-emerald-600 transition-colors duration-300">鑄造儲值卡</h2>
-                
-                <!-- 贈送記錄按鈕 -->
+              
+              <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+                <!-- Left Sidebar - Recipient Selection -->
+                <div class="lg:col-span-1">
+                  <div class="metallic-card-secondary rounded-xl shadow-lg border border-white/20 p-6 sticky top-8">
+                    <h3 class="text-lg font-bold text-white mb-4">Recipient</h3>
+                    <div class="space-y-3">
                 <button 
-                  @click="showGiftHistory = true"
-                  class="ml-auto px-4 py-2 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-lg transition-colors duration-200 font-medium flex items-center gap-2"
-                >
-                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
-                  </svg>
-                  贈送記錄
-                </button>
-              </div>
-
-              <form @submit.prevent="handleGiftSubmit" class="space-y-6">
-                <!-- Recipient Type -->
-                <div>
-                  <label class="block text-sm font-semibold text-gray-700 mb-3">贈送對象</label>
-                  <div class="space-y-3">
-                    <label class="recipient-option">
-                      <input
-                        v-model="giftForm.recipientType"
-                        type="radio"
-                        value="self"
-                        class="recipient-radio"
-                      />
-                      <div class="recipient-content">
-                        <div class="recipient-icon bg-gradient-to-br from-emerald-500 to-teal-600">
-                          <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
-                          </svg>
-                        </div>
-                        <div>
-                          <div class="recipient-title">鑄造到我的錢包</div>
-                          <div class="recipient-desc">儲值卡將直接添加到您的錢包中</div>
-                        </div>
+                        @click="giftForm.recipientType = 'self'"
+                        class="w-full recipient-sidebar-option"
+                        :class="{ 'recipient-sidebar-active': giftForm.recipientType === 'self' }"
+                      >
+                        <div class="flex items-center gap-2 p-2 rounded-lg transition-all duration-200">
+                          <div class="w-6 h-6 flex items-center justify-center flex-shrink-0">
+                            <svg class="w-3 h-3 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                            </svg>
+                          </div>
+                          <div class="text-left">
+                            <div class="font-semibold text-sm text-white whitespace-nowrap">Mint to My Wallet</div>
+                            <div class="text-xs text-emerald-200">Direct to your wallet</div>
+                          </div>
                       </div>
-                    </label>
+                      </button>
 
-                    <label class="recipient-option">
-                      <input
-                        v-model="giftForm.recipientType"
-                        type="radio"
-                        value="other"
-                        class="recipient-radio"
-                      />
-                      <div class="recipient-content">
-                        <div class="recipient-icon bg-gradient-to-br from-blue-500 to-cyan-500">
-                          <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"></path>
-                          </svg>
-                        </div>
-                        <div>
-                          <div class="recipient-title">贈送給其他人</div>
-                          <div class="recipient-desc">直接鑄造到指定地址</div>
-                        </div>
+                      <button
+                        @click="giftForm.recipientType = 'other'"
+                        class="w-full recipient-sidebar-option"
+                        :class="{ 'recipient-sidebar-active': giftForm.recipientType === 'other' }"
+                      >
+                        <div class="flex items-center gap-2 p-2 rounded-lg transition-all duration-200">
+                          <div class="w-6 h-6 flex items-center justify-center flex-shrink-0">
+                            <svg class="w-3 h-3 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"></path>
+                            </svg>
+                          </div>
+                          <div class="text-left">
+                            <div class="font-semibold text-sm text-white">Gift to Others</div>
+                            <div class="text-xs text-emerald-200 whitespace-nowrap">Send to specific address</div>
+                          </div>
                       </div>
-                    </label>
+                      </button>
+                    </div>
                   </div>
                 </div>
 
+                <!-- Right Content - Form -->
+                <div class="lg:col-span-3">
+                  <form @submit.prevent="handleGiftSubmit" class="space-y-6">
+
                 <!-- Card Quantity (shown when recipient is self) -->
                 <div v-if="giftForm.recipientType === 'self'">
-                  <label class="block text-sm font-semibold text-gray-700 mb-3">儲值卡數量</label>
+                  <label class="block text-sm font-semibold text-emerald-200 mb-3">Card Quantity</label>
                   <div class="relative">
                     <input
                       v-model="giftForm.quantity"
                       type="number"
                       min="1"
                       max="100"
-                      placeholder="輸入數量 (1-100)"
+                      placeholder="Enter quantity (1-100)"
                       class="quantity-input"
                       @input="calculateTotalCost"
                     />
                     <div class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500">
-                      張
+                      cards
                     </div>
                   </div>
                   <div class="flex gap-2 mt-2">
@@ -170,14 +191,14 @@
 
                 <!-- Amount per Card (shown when recipient is self) -->
                 <div v-if="giftForm.recipientType === 'self'">
-                  <label class="block text-sm font-semibold text-gray-700 mb-3">每張儲值金額</label>
+                  <label class="block text-sm font-semibold text-emerald-200 mb-3">Amount per Card</label>
                   <div class="relative">
                     <input
                       v-model="giftForm.amountPerCard"
                       type="number"
                       step="0.01"
                       min="0.01"
-                      placeholder="輸入金額"
+                      placeholder="Enter amount"
                       class="amount-input"
                       @input="calculateTotalCost"
                     />
@@ -192,62 +213,38 @@
                 </div>
 
                 <!-- Gift Mode Selection (when other is selected) -->
-                <div v-if="giftForm.recipientType === 'other'" class="mt-4 p-4 bg-blue-50 rounded-xl border border-blue-200">
-                  <label class="block text-sm font-semibold text-gray-700 mb-3">贈送方式</label>
-                  <div class="space-y-3">
-                    <label class="gift-mode-option">
-                      <input
-                        v-model="giftForm.giftMode"
-                        type="radio"
-                        value="single"
-                        class="gift-mode-radio"
-                      />
-                      <div class="gift-mode-content">
-                        <div class="gift-mode-icon bg-gradient-to-br from-blue-400 to-cyan-500">
-                          <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
-                          </svg>
-                        </div>
-                        <div>
-                          <div class="gift-mode-title">單人贈送</div>
-                          <div class="gift-mode-desc">贈送給單一接收者</div>
-                        </div>
-                      </div>
-                    </label>
+                <div v-if="giftForm.recipientType === 'other'" class="mt-4 p-4 metallic-card-secondary rounded-xl border border-gray-400/30 backdrop-blur-sm">
+                  <label class="block text-sm font-semibold text-emerald-200 mb-3">Gift Mode</label>
+                  <div class="flex gap-3">
+                    <button
+                      @click="giftForm.giftMode = 'single'"
+                      class="gift-mode-tab-button flex-1"
+                      :class="{ 'gift-mode-tab-active': giftForm.giftMode === 'single' }"
+                    >
+                      Single Recipient
+                    </button>
 
-                    <label class="gift-mode-option">
-                      <input
-                        v-model="giftForm.giftMode"
-                        type="radio"
-                        value="multiple"
-                        class="gift-mode-radio"
-                      />
-                      <div class="gift-mode-content">
-                        <div class="gift-mode-icon bg-gradient-to-br from-purple-500 to-indigo-600">
-                          <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
-                          </svg>
-                        </div>
-                        <div>
-                          <div class="gift-mode-title">多人贈送</div>
-                          <div class="gift-mode-desc">同時贈送給多位接收者</div>
-                        </div>
-                      </div>
-                    </label>
+                    <button
+                      @click="giftForm.giftMode = 'multiple'"
+                      class="gift-mode-tab-button flex-1"
+                      :class="{ 'gift-mode-tab-active': giftForm.giftMode === 'multiple' }"
+                    >
+                      Multiple Recipients
+                    </button>
                   </div>
                   
                   <!-- Card fields shown when recipient is other and gift mode is single -->
                   <div v-if="giftForm.giftMode === 'single'">
                     <!-- Card Quantity -->
                     <div class="mt-4">
-                      <label class="block text-sm font-semibold text-gray-700 mb-3">儲值卡數量</label>
+                      <label class="block text-sm font-semibold text-emerald-200 mb-3">Card Quantity</label>
                       <div class="relative">
                         <input
                           v-model="giftForm.quantity"
                           type="number"
                           min="1"
                           max="100"
-                          placeholder="輸入數量 (1-100)"
+                          placeholder="Enter quantity (1-100)"
                           class="quantity-input"
                           @input="calculateTotalCost"
                         />
@@ -259,14 +256,14 @@
 
                     <!-- Amount per Card -->
                     <div class="mt-4">
-                      <label class="block text-sm font-semibold text-gray-700 mb-3">每張儲值金額</label>
+                      <label class="block text-sm font-semibold text-emerald-200 mb-3">Amount per Card</label>
                       <div class="relative">
                         <input
                           v-model="giftForm.amountPerCard"
                           type="number"
                           step="0.01"
                           min="0.01"
-                          placeholder="輸入金額"
+                          placeholder="Enter amount"
                           class="amount-input"
                           @input="calculateTotalCost"
                         />
@@ -276,78 +273,81 @@
 
                     <!-- Single Recipient Address -->
                     <div class="mt-4">
-                      <label class="block text-sm font-semibold text-gray-700 mb-3">接收地址</label>
+                      <label class="block text-sm font-semibold text-emerald-200 mb-3">Recipient Address</label>
                       <input
                         v-model="giftForm.recipientAddress"
                         type="text"
-                        placeholder="輸入接收者錢包地址"
+                        placeholder="Enter recipient wallet address"
                         class="address-input"
                       />
-                      <p class="text-sm text-gray-500 mt-2">請確保地址正確，鑄造後無法更改</p>
+                      <p class="text-sm text-emerald-300 mt-2">Please ensure the address is correct, cannot be changed after minting</p>
                     </div>
                   </div>
 
                   <!-- Multiple Recipients Table (shown when recipient is other and gift mode is multiple) -->
                   <div v-if="giftForm.giftMode === 'multiple'" class="mt-4">
-                    <label class="block text-sm font-semibold text-gray-700 mb-3">多人贈送列表</label>
-                    <div class="overflow-x-auto">
-                      <table class="min-w-full bg-white border border-gray-200 rounded-lg">
+                    <label class="block text-sm font-semibold text-emerald-200 mb-3">Multiple Recipients List</label>
+                    <div>
+                      <table class="min-w-full metallic-card-secondary border border-white/20 rounded-xl">
                         <thead>
-                          <tr class="bg-gray-50">
-                            <th class="py-3 px-4 text-left text-sm font-semibold text-gray-700 border-b border-gray-200">儲值卡數量</th>
-                            <th class="py-3 px-4 text-left text-sm font-semibold text-gray-700 border-b border-gray-200">儲值金額 (USDC)</th>
-                            <th class="py-3 px-4 text-left text-sm font-semibold text-gray-700 border-b border-gray-200">接收地址</th>
+                          <tr class="bg-gray-500/20">
+                            <th class="py-3 px-4 text-left text-sm font-semibold text-white border-b border-gray-400/30">Card Quantity</th>
+                            <th class="py-3 px-4 text-left text-sm font-semibold text-white border-b border-gray-400/30">Amount (USDC)</th>
+                            <th class="py-3 px-4 text-left text-sm font-semibold text-white border-b border-gray-400/30">Recipient Address</th>
                           </tr>
                         </thead>
                         <tbody>
-                          <tr v-for="(recipient, index) in multipleRecipients" :key="index" class="hover:bg-gray-50">
-                            <td class="py-3 px-4 border-b border-gray-200">
+                          <tr v-for="(recipient, index) in multipleRecipients" :key="index" class="hover:bg-gray-500/10">
+                            <td class="py-3 px-4 border-b border-gray-400/30">
                               <input
                                 v-model="recipient.quantity"
                                 type="number"
                                 min="1"
                                 max="100"
-                                placeholder="數量"
-                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500"
+                                placeholder="Quantity"
+                                class="w-full px-3 py-2 border border-gray-400/30 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 bg-slate-800/50 backdrop-blur-sm text-white placeholder-emerald-300"
                               />
                             </td>
-                            <td class="py-3 px-4 border-b border-gray-200">
+                            <td class="py-3 px-4 border-b border-gray-400/30">
                               <input
                                 v-model="recipient.amount"
                                 type="number"
                                 step="0.01"
                                 min="0.01"
-                                placeholder="金額"
-                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500"
+                                placeholder="Amount"
+                                class="w-full px-3 py-2 border border-gray-400/30 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 bg-slate-800/50 backdrop-blur-sm text-white placeholder-emerald-300"
                               />
                             </td>
-                            <td class="py-3 px-4 border-b border-gray-200">
+                            <td class="py-3 px-4 border-b border-gray-400/30">
                               <input
                                 v-model="recipient.address"
                                 type="text"
-                                placeholder="錢包地址"
-                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500"
+                                placeholder="Wallet Address"
+                                class="w-full px-3 py-2 border border-gray-400/30 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 bg-slate-800/50 backdrop-blur-sm text-white placeholder-emerald-300"
                               />
+                            </td>
+                          </tr>
+                          
+                          <!-- Add Recipient Row (appears on hover) -->
+                          <tr class="add-recipient-row opacity-0 hover:opacity-100 transition-opacity duration-300">
+                            <td colspan="3" class="py-4 px-4 text-center">
+                      <button 
+                        type="button" 
+                        @click="addRecipientRow"
+                                class="flex items-center gap-2 px-4 py-2 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 hover:text-emerald-200 rounded-lg transition-all duration-200 font-medium border border-emerald-400/30 hover:border-emerald-400/50 backdrop-blur-sm mx-auto"
+                      >
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                        </svg>
+                                Add Recipient
+                      </button>
                             </td>
                           </tr>
                         </tbody>
                       </table>
                     </div>
-                    <div class="mt-4 text-sm text-gray-500">
-                      <p>請填寫每位接收者的儲值卡數量、金額和錢包地址</p>
-                    </div>
-                    <!-- Add Row Button -->
-                    <div class="mt-4">
-                      <button 
-                        type="button" 
-                        @click="addRecipientRow"
-                        class="flex items-center gap-2 px-4 py-2 bg-emerald-100 hover:bg-emerald-200 text-emerald-700 rounded-lg transition-colors duration-200 font-medium"
-                      >
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                        </svg>
-                        添加接收者
-                      </button>
+                    <div class="mt-4 text-sm text-emerald-300">
+                      <p>Please fill in the card quantity, amount, and wallet address for each recipient</p>
                     </div>
                   </div>
                 </div>
@@ -355,29 +355,25 @@
 
 
                 <!-- Cost Preview -->
-                <div v-if="costPreview" class="cost-preview">
-                  <h4 class="text-lg font-semibold text-gray-900 mb-4">費用預覽</h4>
+                <div v-if="costPreview" class="metallic-card-secondary rounded-xl p-4 backdrop-blur-sm">
+                  <h4 class="text-lg font-semibold text-white mb-4">Cost Preview</h4>
                   <div class="space-y-3">
                     <div class="flex justify-between">
-                      <span class="text-gray-600">儲值卡數量:</span>
-                      <span class="font-semibold">{{ giftForm.quantity }} 張</span>
+                      <span class="text-emerald-200">Card Quantity:</span>
+                      <span class="font-semibold text-white">{{ giftForm.quantity }} cards</span>
                     </div>
                     <div class="flex justify-between">
-                      <span class="text-gray-600">每張金額:</span>
-                      <span class="font-semibold">{{ giftForm.amountPerCard }} USDC</span>
+                      <span class="text-emerald-200">Amount per Card:</span>
+                      <span class="font-semibold text-white">{{ giftForm.amountPerCard }} USDC</span>
                     </div>
                     <div class="flex justify-between">
-                      <span class="text-gray-600">總儲值金額:</span>
-                      <span class="font-semibold">{{ costPreview.totalAmount }} USDC</span>
-                    </div>
-                    <div class="flex justify-between">
-                      <span class="text-gray-600">鑄造費用:</span>
-                      <span class="font-semibold">{{ costPreview.mintFee }} USDC</span>
+                      <span class="text-emerald-200">Total Amount:</span>
+                      <span class="font-semibold text-white">{{ costPreview.totalAmount }} USDC</span>
                     </div>
                     <div class="border-t pt-3">
                       <div class="flex justify-between text-lg">
-                        <span class="font-bold text-gray-900">總費用:</span>
-                        <span class="font-bold text-emerald-600">{{ costPreview.total }} USDC</span>
+                        <span class="font-bold text-white">Total Cost:</span>
+                        <span class="font-bold text-emerald-400">{{ costPreview.total }} USDC</span>
                         </div>
                     </div>
                   </div>
@@ -387,26 +383,24 @@
                 <button
                   type="submit"
                   :disabled="!canSubmit"
-                  class="btn-primary w-full group relative overflow-hidden"
+                  class="btn-primary-gift w-full group relative"
                   :class="{ 'loading': isLoading }"
                 >
-                  <!-- Glow effect -->
-                  <div class="absolute inset-0 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-xl blur-lg opacity-75 group-hover:opacity-100 transition-opacity duration-300"></div>
                   <!-- Button content -->
                   <span v-if="isLoading" class="relative flex items-center justify-center gap-2 z-10">
                     <div class="loading-spinner"></div>
-                    鑄造中...
+                    Minting...
                   </span>
                   <span v-else class="relative flex items-center justify-center gap-2 z-10">
-                    <svg class="w-5 h-5 group-hover:rotate-12 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"></path>
                     </svg>
-                    {{ giftForm.recipientType === 'self' ? '鑄造儲值卡' : '贈送儲值卡' }}
+                    {{ giftForm.recipientType === 'self' ? 'Mint Gift Cards' : 'Gift Cards' }}
                   </span>
-                  <!-- Shimmer effect -->
-                  <div class="absolute inset-0 -top-2 -left-2 bg-gradient-to-r from-transparent via-white/20 to-transparent skew-x-12 group-hover:animate-shimmer"></div>
                 </button>
               </form>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -422,9 +416,9 @@
       ></div>
       
       <!-- 彈出視窗 -->
-      <div class="relative bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[80vh] overflow-hidden z-10 transform transition-all duration-300">
+      <div class="relative gift-history-modal rounded-2xl shadow-2xl max-w-2xl w-full max-h-[80vh] overflow-hidden z-10 transform transition-all duration-300">
         <!-- 視窗標題 -->
-        <div class="bg-gradient-to-r from-blue-500 to-cyan-500 p-6">
+        <div class="gift-history-header p-6">
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-3">
               <div class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
@@ -432,7 +426,7 @@
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
                 </svg>
               </div>
-              <h3 class="text-xl font-bold text-white">贈送記錄</h3>
+              <h3 class="text-xl font-bold text-white">Gift History</h3>
             </div>
             <button 
               @click="showGiftHistory = false"
@@ -453,7 +447,7 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
               </svg>
             </div>
-            <p class="text-gray-500">還沒有贈送記錄</p>
+            <p class="text-emerald-200">No gift history yet</p>
           </div>
 
           <div v-else class="space-y-4">
@@ -466,13 +460,13 @@
                     </svg>
                   </div>
                   <div>
-                    <div class="font-semibold text-gray-900">{{ gift.quantity }} 張儲值卡</div>
-                    <div class="text-sm text-gray-500">{{ gift.recipientType === 'self' ? '鑄造到我的錢包' : '贈送給 ' + formatAddress(gift.recipientAddress) }}</div>
+                    <div class="font-semibold text-white">{{ gift.quantity }} cards</div>
+                    <div class="text-sm text-emerald-200">{{ gift.recipientType === 'self' ? 'Minted to my wallet' : 'Gifted to ' + formatAddress(gift.recipientAddress) }}</div>
                   </div>
                 </div>
                 <div class="text-right">
-                  <div class="font-semibold text-gray-900">{{ gift.totalAmount }} USDC</div>
-                  <div class="text-sm text-gray-500">{{ gift.date }}</div>
+                  <div class="font-semibold text-white">{{ gift.totalAmount }} USDC</div>
+                  <div class="text-sm text-emerald-200">{{ gift.date }}</div>
                 </div>
               </div>
             </div>
@@ -497,6 +491,7 @@ const { account, isConnected, connectWallet, formatAddress, getUSDCBalance, prov
 const usdcBalance = ref('0.00')
 const isLoading = ref(false)
 const showGiftHistory = ref(false)
+const isRefreshingBalance = ref(false)
 
 // Gift form data
 const giftForm = ref({
@@ -539,13 +534,10 @@ const costPreview = computed(() => {
     const quantity = parseInt(giftForm.value.quantity) || 0
     const amountPerCard = parseFloat(giftForm.value.amountPerCard) || 0
     const totalAmount = quantity * amountPerCard
-    const mintFee = totalAmount * 0.01 // 1% minting fee
-    const total = totalAmount + mintFee
     
     return {
       totalAmount: totalAmount.toFixed(2),
-      mintFee: mintFee.toFixed(2),
-      total: total.toFixed(2)
+      total: totalAmount.toFixed(2)
     }
   } else if (giftForm.value.recipientType === 'other' && giftForm.value.giftMode === 'multiple') {
     // For multiple recipients mode
@@ -560,13 +552,9 @@ const costPreview = computed(() => {
       totalAmount += quantity * amount
     }
     
-    const mintFee = totalAmount * 0.01 // 1% minting fee
-    const total = totalAmount + mintFee
-    
     return {
       totalAmount: totalAmount.toFixed(2),
-      mintFee: mintFee.toFixed(2),
-      total: total.toFixed(2)
+      total: totalAmount.toFixed(2)
     }
   }
   
@@ -734,10 +722,10 @@ const handleGiftSubmit = async () => {
     ]
     
     // Show success message
-    alert('儲值卡鑄造成功！')
+    alert('Gift cards minted successfully!')
   } catch (error) {
     console.error('Gift submission failed:', error)
-    alert('鑄造失敗: ' + error.message)
+    alert('Minting failed: ' + error.message)
   } finally {
     isLoading.value = false
   }
@@ -760,6 +748,24 @@ const loadUserData = async () => {
   }
 }
 
+const refreshBalance = async () => {
+  if (!account.value || !provider.value || !signer.value) return
+  
+  isRefreshingBalance.value = true
+  
+  try {
+    // Initialize contract service
+    await contractService.init(provider.value, signer.value)
+    
+    // Load USDC balance
+    usdcBalance.value = await contractService.getUSDCBalance(account.value)
+  } catch (error) {
+    console.error('Failed to refresh balance:', error)
+  } finally {
+    isRefreshingBalance.value = false
+  }
+}
+
 // Lifecycle
 onMounted(async () => {
   if (isConnected.value) {
@@ -776,91 +782,378 @@ watch(isConnected, async (connected) => {
 </script>
 
 <style scoped>
+/* Tech-metallic background design */
+.card-background {
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 25%, #334155 50%, #1e293b 75%, #0f172a 100%);
+  background-size: 400% 400%;
+  animation: card-gradient-shift 8s ease infinite;
+  position: relative;
+}
+
+.card-background::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    radial-gradient(circle at 20% 20%, rgba(16, 185, 129, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(20, 184, 166, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 40% 60%, rgba(6, 182, 212, 0.05) 0%, transparent 50%);
+  pointer-events: none;
+}
+
+.card-background::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: 
+    linear-gradient(45deg, transparent 40%, rgba(255, 255, 255, 0.02) 50%, transparent 60%),
+    linear-gradient(-45deg, transparent 40%, rgba(255, 255, 255, 0.02) 50%, transparent 60%);
+  background-size: 60px 60px;
+  animation: card-pattern-move 20s linear infinite;
+  pointer-events: none;
+}
+
+/* Background animations */
+@keyframes card-gradient-shift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+@keyframes card-pattern-move {
+  0% { transform: translateX(0) translateY(0); }
+  100% { transform: translateX(60px) translateY(60px); }
+}
+
 /* Hero Buttons */
 .btn-primary-hero {
   @apply bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-bold py-4 px-8 rounded-xl text-lg transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-emerald-500/30 focus:ring-offset-2 shadow-lg hover:shadow-xl hover:scale-105;
 }
 
-/* Primary Button - 增加上下內邊距 */
-.btn-primary {
-  @apply py-5;
+/* Primary Button - Gift Style */
+.btn-primary-gift {
+  @apply bg-gradient-to-r from-yellow-400 to-yellow-600 hover:from-yellow-500 hover:to-yellow-700 text-white font-bold py-5 px-8 rounded-full text-lg transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-yellow-500/30 focus:ring-offset-2 shadow-lg hover:shadow-xl hover:scale-105;
 }
 
 /* Form Inputs */
 .quantity-input, .amount-input, .address-input {
-  @apply w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 transition-all duration-200 bg-white/80 backdrop-blur-sm;
+  @apply w-full px-4 py-3 border border-emerald-400/30 rounded-xl focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 transition-all duration-200 bg-slate-800/50 backdrop-blur-sm text-white placeholder-emerald-300;
 }
 
 .currency-label {
-  @apply absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 font-medium;
+  @apply absolute right-3 top-1/2 transform -translate-y-1/2 text-emerald-300 font-medium;
 }
 
 /* Quick Selection Buttons */
 .quantity-btn, .amount-btn {
-  @apply px-3 py-1 text-sm bg-gray-100 hover:bg-emerald-100 text-gray-700 hover:text-emerald-700 rounded-lg transition-all duration-200 font-medium;
+  @apply px-3 py-1 text-sm bg-slate-700/50 hover:bg-emerald-500/20 text-emerald-200 hover:text-emerald-100 rounded-lg transition-all duration-200 font-medium border border-emerald-400/30;
 }
 
-/* Recipient Options */
-.recipient-option {
-  @apply block cursor-pointer;
+/* Recipient Sidebar Options */
+.recipient-sidebar-option {
+  @apply w-full text-left transition-all duration-200;
 }
 
-.recipient-radio {
-  @apply sr-only;
+.recipient-sidebar-option:hover {
+  @apply transform scale-105;
 }
 
-.recipient-content {
-  @apply flex items-center gap-4 p-4 border-2 border-gray-200 rounded-xl hover:border-emerald-300 transition-all duration-200;
+.recipient-sidebar-active {
+  @apply bg-emerald-500/20 border border-emerald-400/50;
 }
 
-.recipient-option:has(.recipient-radio:checked) .recipient-content {
-  @apply border-emerald-500 bg-emerald-50;
+.recipient-sidebar-active .flex {
+  @apply bg-emerald-500/10;
 }
 
-.recipient-icon {
-  @apply w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0;
+.recipient-sidebar-option:hover .flex {
+  @apply bg-white/5;
 }
 
-.recipient-title {
-  @apply font-semibold text-gray-900;
+/* Gift Mode Tab Buttons */
+.gift-mode-tab-button {
+  @apply relative px-4 py-3 text-sm font-bold text-emerald-300 hover:text-emerald-200 transition-all duration-200 bg-transparent border-none outline-none cursor-pointer;
 }
 
-.recipient-desc {
-  @apply text-sm text-gray-600;
+.gift-mode-tab-button::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: rgba(16, 185, 129, 0.2);
+  transform: scaleX(1);
+  transition: all 0.3s ease;
 }
 
-/* Gift Mode Options */
-.gift-mode-option {
-  @apply block cursor-pointer;
+.gift-mode-tab-button:hover::after {
+  background: rgba(16, 185, 129, 0.5);
+  height: 3px;
 }
 
-.gift-mode-radio {
-  @apply sr-only;
+.gift-mode-tab-active {
+  @apply text-emerald-200;
 }
 
-.gift-mode-content {
-  @apply flex items-center gap-4 p-4 border-2 border-gray-200 rounded-xl hover:border-blue-300 transition-all duration-200;
+.gift-mode-tab-active::after {
+  background: rgba(16, 185, 129, 0.8);
+  height: 3px;
 }
 
-.gift-mode-option:has(.gift-mode-radio:checked) .gift-mode-content {
-  @apply border-blue-500 bg-blue-50;
+/* Gift Card Container */
+.gift-card-container {
+  background: linear-gradient(180deg, 
+    rgba(15, 23, 42, 0.95) 0%, 
+    rgba(2, 6, 23, 0.9) 100%);
+  backdrop-filter: blur(20px);
+  border: 3px solid transparent;
+  background-clip: padding-box;
+  box-shadow: 
+    0 25px 50px rgba(0, 0, 0, 0.4),
+    0 15px 30px rgba(0, 0, 0, 0.3),
+    0 8px 16px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  position: relative;
+  transform: translateY(-8px);
+  transition: all 0.3s ease;
 }
 
-.gift-mode-icon {
-  @apply w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0;
+.gift-card-container:hover {
+  transform: translateY(-12px);
+  box-shadow: 
+    0 35px 70px rgba(0, 0, 0, 0.5),
+    0 20px 40px rgba(0, 0, 0, 0.4),
+    0 12px 24px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
 }
 
-.gift-mode-title {
-  @apply font-semibold text-gray-900;
+.gift-card-container::before {
+  content: '';
+  position: absolute;
+  top: -3px;
+  left: -3px;
+  right: -3px;
+  bottom: -3px;
+  background: linear-gradient(45deg, 
+    #fbbf24, #f59e0b, #d97706, #b45309,
+    #fbbf24, #f59e0b, #d97706, #b45309);
+  background-size: 200% 200%;
+  border-radius: inherit;
+  z-index: -1;
+  animation: golden-border-shine 4s ease-in-out infinite;
 }
 
-.gift-mode-desc {
-  @apply text-sm text-gray-600;
+.gift-card-container::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(180deg, 
+    rgba(15, 23, 42, 0.95) 0%, 
+    rgba(2, 6, 23, 0.9) 100%);
+  border-radius: inherit;
+  z-index: 0;
+}
+
+/* Gift Card Background Pattern */
+.gift-card-pattern {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: 
+    linear-gradient(45deg, rgba(255, 255, 255, 0.02) 25%, transparent 25%),
+    linear-gradient(-45deg, rgba(255, 255, 255, 0.02) 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, rgba(255, 255, 255, 0.02) 75%),
+    linear-gradient(-45deg, transparent 75%, rgba(255, 255, 255, 0.02) 75%);
+  background-size: 20px 20px;
+  background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+  opacity: 0.3;
+  pointer-events: none;
+}
+
+/* Golden Sparkles */
+.golden-sparkles {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  z-index: 5;
+}
+
+.sparkle {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  background: radial-gradient(circle, #fbbf24, #f59e0b);
+  border-radius: 50%;
+  animation: sparkle-twinkle 3s ease-in-out infinite;
+  box-shadow: 0 0 6px rgba(251, 191, 36, 0.6);
+}
+
+.sparkle-1 { top: 15%; left: 10%; animation-delay: 0s; }
+.sparkle-2 { top: 25%; left: 20%; animation-delay: 0.5s; }
+.sparkle-3 { top: 35%; left: 15%; animation-delay: 1s; }
+.sparkle-4 { top: 20%; left: 30%; animation-delay: 1.5s; }
+.sparkle-5 { top: 40%; left: 25%; animation-delay: 2s; }
+.sparkle-6 { top: 60%; right: 15%; animation-delay: 0.3s; }
+.sparkle-7 { top: 70%; right: 25%; animation-delay: 0.8s; }
+.sparkle-8 { top: 80%; right: 20%; animation-delay: 1.3s; }
+.sparkle-9 { top: 65%; right: 35%; animation-delay: 1.8s; }
+.sparkle-10 { top: 75%; right: 30%; animation-delay: 2.3s; }
+
+/* Gift Ribbon */
+.gift-ribbon {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  z-index: 8;
+}
+
+.ribbon-horizontal {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 6px;
+  background: linear-gradient(90deg, 
+    transparent 0%, 
+    rgba(251, 191, 36, 0.8) 20%, 
+    #fbbf24 50%, 
+    rgba(251, 191, 36, 0.8) 80%, 
+    transparent 100%);
+  transform: translateY(-50%);
+  box-shadow: 0 2px 4px rgba(251, 191, 36, 0.4);
+}
+
+.ribbon-vertical {
+  position: absolute;
+  right: 15%;
+  top: 0;
+  bottom: 0;
+  width: 6px;
+  background: linear-gradient(180deg, 
+    transparent 0%, 
+    rgba(251, 191, 36, 0.8) 20%, 
+    #fbbf24 50%, 
+    rgba(251, 191, 36, 0.8) 80%, 
+    transparent 100%);
+  box-shadow: 2px 0 4px rgba(251, 191, 36, 0.4);
+}
+
+/* Gift Card Title Section */
+.gift-card-title-section {
+  text-align: left;
+  margin-bottom: 2rem;
+  z-index: 10;
+  pointer-events: none;
+}
+
+.gift-card-main-title {
+  font-size: 3rem;
+  font-weight: 900;
+  background: linear-gradient(135deg, #fbbf24, #f59e0b, #d97706);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  margin: 0;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.gift-card-sub-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
+  margin: 0;
+  margin-top: 0.2rem;
+  margin-left: 0.1em;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+/* Sparkle Animation */
+@keyframes sparkle-twinkle {
+  0%, 100% { 
+    opacity: 0.3; 
+    transform: scale(1); 
+  }
+  50% { 
+    opacity: 1; 
+    transform: scale(1.2); 
+  }
+}
+
+/* Golden Border Animation */
+@keyframes golden-border-shine {
+  0%, 100% { 
+    background-position: 0% 50%; 
+  }
+  50% { 
+    background-position: 100% 50%; 
+  }
+}
+
+.metallic-card-secondary {
+  background: linear-gradient(145deg, 
+    rgba(255, 255, 255, 0.12) 0%, 
+    rgba(255, 255, 255, 0.04) 25%, 
+    rgba(255, 255, 255, 0.08) 50%, 
+    rgba(255, 255, 255, 0.04) 75%, 
+    rgba(255, 255, 255, 0.12) 100%);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 
+    0 4px 16px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.08);
+  position: relative;
+}
+
+.metallic-card-secondary::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(45deg, 
+    transparent 30%, 
+    rgba(255, 255, 255, 0.08) 50%, 
+    transparent 70%);
+  border-radius: inherit;
+  animation: metallic-shine-secondary 4s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes metallic-shine {
+  0%, 100% { transform: translateX(-100%); }
+  50% { transform: translateX(100%); }
+}
+
+@keyframes metallic-shine-secondary {
+  0%, 100% { transform: translateX(-100%); }
+  50% { transform: translateX(100%); }
 }
 
 /* Cost Preview */
 .cost-preview {
-  @apply bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-200 rounded-xl p-4;
+  @apply bg-gradient-to-br from-emerald-500/10 to-teal-500/10 border border-emerald-400/30 rounded-xl p-4 backdrop-blur-sm;
 }
 
 /* Gift Items */
@@ -873,7 +1166,73 @@ watch(isConnected, async (connected) => {
   @apply opacity-75 cursor-not-allowed;
 }
 
-/* Enhanced animations */
+/* Gift History Modal */
+.gift-history-modal {
+  background: linear-gradient(145deg, 
+    rgba(16, 185, 129, 0.08) 0%, 
+    rgba(16, 185, 129, 0.03) 25%, 
+    rgba(16, 185, 129, 0.06) 50%, 
+    rgba(16, 185, 129, 0.03) 75%, 
+    rgba(16, 185, 129, 0.08) 100%);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(16, 185, 129, 0.15);
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+  position: relative;
+}
+
+.gift-history-modal::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(45deg, 
+    transparent 30%, 
+    rgba(16, 185, 129, 0.1) 50%, 
+    transparent 70%);
+  border-radius: inherit;
+  animation: metallic-shine 3s ease-in-out infinite;
+  pointer-events: none;
+}
+
+/* Gift History Header */
+.gift-history-header {
+  background: linear-gradient(135deg, 
+    rgba(16, 185, 129, 0.4) 0%, 
+    rgba(5, 150, 105, 0.5) 50%, 
+    rgba(4, 120, 87, 0.4) 100%);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(16, 185, 129, 0.2);
+  position: relative;
+}
+
+.gift-history-header::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(45deg, 
+    transparent 30%, 
+    rgba(255, 255, 255, 0.1) 50%, 
+    transparent 70%);
+  animation: metallic-shine 4s ease-in-out infinite;
+  pointer-events: none;
+}
+
+/* Add Recipient Row */
+.add-recipient-row {
+  @apply transition-opacity duration-300;
+}
+
+tbody:hover .add-recipient-row {
+  @apply opacity-100;
+}
 @keyframes shimmer {
   0% { transform: translateX(-100%) skewX(-12deg); }
   100% { transform: translateX(200%) skewX(-12deg); }
