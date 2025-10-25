@@ -144,16 +144,65 @@ forge script script/DeployGasPass.s.sol:DeployGasPass \
 ```
 ---
 
-## 🔗 Integration Examples
+## 🔗 Integration SDK
 
-Lit Protocol
-Automates ExecuteRefuel using delegated policy execution via Vincent Agent.
+### How GasPass Integrates with Vincent Agent
 
-Avail SDK
-Submits cross-chain intents (Bridge & Execute) and maintains proof logs.
+<img width="3388" height="1438" alt="image" src="https://github.com/user-attachments/assets/0235df1d-a29f-4979-9515-82eaabfa2e2c" />
 
-Alchemy Gas Manager
-Sponsors gas on Arbitrum/Base via paymaster integration.
+This sequence diagram illustrates how GasPass, Vincent Agent, and Bungee Bridge collaborate to perform secure, automated cross-chain gas refueling.
+
+🧩 Process Overview
+
+1.Monitoring Loop
+The Monitor Service continuously checks each user’s target-chain gas balance according to their on-chain RefuelPolicy[tokenId][chainId].
+This is an off-chain observation only — it cannot move funds or call contracts.
+
+2.Trigger Condition
+Once the wallet’s gas balance drops below the threshold, the monitor sends a signal to the Vincent Agent indicating that a refuel task is needed.
+
+3.Delegated Execution
+The Vincent Agent (Lit PKP), operating under a user-authorized Ability, directly calls
+autoRefuel(tokenId, inbox, req, expectedSorHash, targetChainId)
+on the GasPass (ERC-3525) contract.
+The Agent cannot act outside this Ability’s scope — it’s cryptographically constrained by user authorization.
+
+4.On-Chain Enforcement
+Inside GasPass, the contract:
+
+Verifies the executor’s PKP address is in the authorized list.
+
+Approves only the required amount of USDC for the Bungee Inbox.
+
+Creates a cross-chain refuel request with strict limits (spend cap, nonce, and expiry).
+
+5.Cross-Chain Execution via Bungee
+
+The Bungee Inbox forwards the request to the Bungee Gateway, which bridges and swaps stablecoins into native gas.
+
+The Destination Wallet receives the gas directly, completing the automated top-up.
+
+
+### Why Vicent
+
+In GasPass, all deposited USDC remains locked inside the ERC-3525 contract rather than in the user’s wallet.
+An external “wake-up” is still needed to execute autoRefuel() when thresholds are breached.
+To maintain security, our backend merely signals that a refuel task is needed, but cannot execute it directly.
+
+All actual fund movement or contract interaction is performed only through a Vincent Agent (Lit PKP) acting within user-authorized Abilities — predefined, cryptographically signed execution permissions that precisely define what functions the agent can call and under what conditions.
+
+The contract recognizes the PKP’s address as an authorized executor only for those whitelisted Abilities.
+Even if the backend or the Vincent service is compromised, any out-of-scope call would fail due to on-chain policy and signature verification.
+
+Key properties:
+
+- User-scoped authorization: Every Ability is derived from explicit user consent and cannot exceed predefined function scopes.
+
+- Delegated execution: The Vincent Agent executes only autoRefuel() or other approved functions within its authorized Ability.
+
+- Backend isolation: The backend can only trigger the Vincent Agent; it cannot move funds or submit on-chain transactions itself.
+
+- Contract enforcement: GasPass validates the executor address
 
 ---
 ## 🧭 Future Roadmap
