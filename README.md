@@ -126,7 +126,7 @@ forge script script/DeployGasPass.s.sol:DeployGasPass \
 
 ##  Integration SDK
 
-### How GasPass Integrates with Vincent Agent
+## How GasPass Integrates with Vincent Agent
 
 
 <img width="7290" height="3667" alt="image" src="https://github.com/user-attachments/assets/c6c72a69-1e6b-4668-9b52-f26318086f8b" />
@@ -136,7 +136,7 @@ This sequence diagram illustrates how GasPass, Vincent Agent, and Bungee Bridge 
 
 ---
 
-####  Process Overview
+###  Process Overview
 
 ##### 1. Monitoring Loop  
 The **Monitor Service** continuously checks each user’s target-chain gas balance according to their on-chain `RefuelPolicy[tokenId][chainId]`.  
@@ -161,9 +161,8 @@ Inside **GasPass**, the contract:
 The **Bungee Inbox** forwards the request to the **Bungee Gateway**, which bridges and swaps stablecoins into native gas.  
 The **Destination Wallet** receives the gas directly, completing the automated top-up.
 
----
 
-####  Why Vincent
+###  Why Vincent
 
 In **GasPass**, all deposited **USDC** remains locked inside the **ERC-3525** contract rather than in the user’s wallet.  
 An external “wake-up” is still needed to execute `autoRefuel()` when thresholds are breached.
@@ -174,7 +173,7 @@ All actual fund movement or contract interaction is performed **only through a V
 The contract recognizes the PKP’s address as an **authorized executor** only for those **whitelisted Abilities**.  
 Even if the backend or the Vincent service is compromised, any out-of-scope call would fail due to **on-chain policy** and **signature verification**.
 
-####  Key Properties
+###  Key Properties
 
 - **User-scoped authorization**  
   Every Ability is derived from explicit user consent and cannot exceed predefined function scopes.
