@@ -27,11 +27,16 @@ It combines **EIP-712 typed data signatures**, **EIP-2612 stablecoin permits**, 
 flowchart TD
     A[Frontend / User Wallet] -->|EIP712 Signature| B[Relayer];
     B -->|mintWithSig / depositWithSig| C[GasPass Contract (ERC-3525)];
-    C -->|permit transferFrom| D[Stablecoin (USDC)];
-    C -->|autoRefuel| E[Bungee Inbox];
-    E --> F[Bungee Gateway];
-    F --> G[Destination Wallet\n(Native Gas Top-up)];
 
+    subgraph Payment Process
+        C -->|permit transferFrom| D[Stablecoin (USDC)];
+    end
+
+    subgraph Refuel Process
+        C -->|autoRefuel| E[Bungee Inbox];
+        E --> F[Bungee Gateway];
+        F --> G[Destination Wallet\n(Native Gas Top-up)];
+    end
 ```
 
 ## Slot Design — Future Expansion
