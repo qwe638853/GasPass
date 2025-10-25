@@ -3,7 +3,7 @@
 ｜GasPass — An ERC-3525-based stored-value “gas card” that automatically or manually refuels gas across multiple EVM chains.
 
 ---
-## 📑 Table of Contents
+##  Table of Contents
 
 Overview
 
@@ -27,7 +27,7 @@ License
 
 ---
 
-## 🚀 Overview
+##  Overview
 Category	Description
 Type	ERC-3525 Semi-Fungible Token (SFT)
 Purpose	A stored-value gas card for multi-chain gas refueling
@@ -37,14 +37,14 @@ Status	Cross-chain prototype deployed on Arbitrum & Base testnets
 
 ---
 
-## 🧠 Architecture
+##  Architecture
 
 
 <img width="779" height="428" alt="截圖 2025-10-26 凌晨1 27 06" src="https://github.com/user-attachments/assets/c7eee6e8-a3a1-4581-8f49-ab3d8762fdd9" />
 
 
 ---
-## ⚙️ Features
+##  Features
 
 | Feature                  | Description                                                                            |
 | ------------------------ | -------------------------------------------------------------------------------------- |
@@ -57,7 +57,7 @@ Status	Cross-chain prototype deployed on Arbitrum & Base testnets
 
 ---
 
-## 🧩 Smart Contract
+##  Smart Contract
 
 Contract: GasPass.sol
 Standards: ERC-3525 + EIP-712 + Permit2
@@ -73,7 +73,7 @@ Key Components
 
 ---
 
-## 🛠️ Tech Stack
+##  Tech Stack
 | Layer                 | Tools & Frameworks                             |
 | --------------------- | ---------------------------------------------- |
 | **Smart Contracts**   | Solidity, Foundry, OpenZeppelin, Solv ERC-3525 |
@@ -83,7 +83,7 @@ Key Components
 | **Backend / Infra**   | Node.js, Express, Alchemy SDK, Avail SDK       |
 
 ---
-## 🔄 How It Works
+##  How It Works
 
 1. User Deposit
 Users deposit USDC into an ERC-3525 slot using MintWithSig.
@@ -105,7 +105,7 @@ Updated balances and execution logs are stored on Avail.
 
 ---
 
-## 🧱 Deployment
+##  Deployment
 ```bash
 # Clone repository
 git clone https://github.com/<your-username>/GasPass.git
@@ -124,7 +124,7 @@ forge script script/DeployGasPass.s.sol:DeployGasPass \
 ```
 ---
 
-## 🔗 Integration SDK
+##  Integration SDK
 
 ## How GasPass Integrates with Vincent Agent
 
@@ -136,7 +136,7 @@ This sequence diagram illustrates how GasPass, Vincent Agent, and Bungee Bridge 
 
 ---
 
-## 🧩 Process Overview
+##  Process Overview
 
 #### 1. Monitoring Loop  
 The **Monitor Service** continuously checks each user’s target-chain gas balance according to their on-chain `RefuelPolicy[tokenId][chainId]`.  
@@ -176,7 +176,7 @@ Even if the backend or the Vincent service is compromised, any out-of-scope call
 
 ---
 
-## 🔐 Key Properties
+##  Key Properties
 
 - **User-scoped authorization**  
   Every Ability is derived from explicit user consent and cannot exceed predefined function scopes.
@@ -192,15 +192,15 @@ Even if the backend or the Vincent service is compromised, any out-of-scope call
 
 
 ---
-## 🧭 Future Roadmap
+##  Future Roadmap
 Phase	Goal
-🔹 Phase 1	ERC-3525 base contract + manual refuel;
-🔹 Phase 2	Automated refuel via Vincent Agent (Lit PKP);
-🔹 Phase 3	Avail XCS integration (Bridge & Execute)
-🔹 Phase 4	Multi-chain dashboard + analytics;
-🔹 Phase 5	Public launch + staking incentives;
+ Phase 1	ERC-3525 base contract + manual refuel;
+ Phase 2	Automated refuel via Vincent Agent (Lit PKP);
+ Phase 3	Avail XCS integration (Bridge & Execute)
+ Phase 4	Multi-chain dashboard + analytics;
+ Phase 5	Public launch + staking incentives;
 
 ---
-## 📜 License
+##  License
 
 MIT License © 2025 GasPass Contributors
