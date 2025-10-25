@@ -182,7 +182,7 @@ contract MintWithSigScript is Script {
         IERC20PermitDomain usdc = IERC20PermitDomain(stablecoinAddress);
 
         // ---------- 參數 ----------
-        uint256 value = 3_000_000; // 1 USDC (6 decimals)
+        uint256 value = 2_000_000; // 1 USDC (6 decimals)
         uint256 deadline = block.timestamp + 1 hours;
 
         // ---------- 1) 先對 USDC 做 permit 簽名 (EIP-2612) ----------
@@ -237,7 +237,7 @@ contract MintWithSigScript is Script {
 
         // ---------- 2) 再對 GasPass 的 mintWithSig 做 EIP-712 簽名 ----------
         uint256 mintNonce = gasPass.ownerNonces(user);
-        address agent = user; // 你目前用自身當 agent OK
+        address agent = 0xC753b713A574bBeFDC496DBD6959c217F49D4bf8; // 你目前用自身當 agent OK
 
         GasPassTypes.MintWithSigTypedData memory mintData = GasPassTypes.MintWithSigTypedData({
             to: user,
@@ -330,11 +330,19 @@ contract SetRefuelPolicyScript is Script {
         // env
         address gasPass = vm.envAddress("GASPASS_ADDRESS");
         uint256 ownerPk = vm.envUint("PRIVATE_KEY"); // ★ 必須是 tokenId 的 owner
+<<<<<<< HEAD
         uint256 tokenId = 1;
         uint256 targetChainId = 10;
         uint128 gasAmount = 500000;   // 目標鏈要補的原生幣數量（wei）
         uint128 threshold = 1000000;     // 觸發門檻（wei）
         address agent = vm.addr(ownerPk);                // 已綁到 owner 的 agent
+=======
+        uint256 tokenId = 4;
+        uint256 targetChainId = 56;
+        uint128 gasAmount = 2000000;   // 目標鏈要補的原生幣數量（wei）
+        uint128 threshold = 2000000;     // 觸發門檻（wei）
+        address agent = 0xC753b713A574bBeFDC496DBD6959c217F49D4bf8;  // 測試用agent
+>>>>>>> 6b31d5f (update monitor backend)
 
         console.log("Setting policy...");
         console.log("contract:", gasPass);
@@ -391,6 +399,32 @@ contract WithdrawAllUSDCScript is Script {
         GasPass(gasPassAddress).withdrawAllUSDC(tokenId, to);
         console.log("Withdraw success. tokenId:", tokenId);
         console.log("Balance (value):", GasPass(gasPassAddress).balanceOf(tokenId));
+        vm.stopBroadcast();
+    }
+}
+
+contract WithdrawUSDCScript is Script {
+    function run() public {
+        uint256 ownerPk = vm.envUint("PRIVATE_KEY");
+        address gasPassAddress = vm.envAddress("GASPASS_ADDRESS");
+        vm.startBroadcast(ownerPk);
+        GasPass(gasPassAddress).withdrawUSDC();
+        console.log("Withdraw success.");
+        console.log("Balance (value):", GasPass(gasPassAddress).balanceOf(address(gasPassAddress)));
+        vm.stopBroadcast();
+    }
+}
+
+contract CancelRefuelPolicyScript is Script {
+    function run() public {
+        uint256 ownerPk = vm.envUint("PRIVATE_KEY");
+        address gasPassAddress = vm.envAddress("GASPASS_ADDRESS");
+        uint256 tokenId = 2;
+        uint256 targetChainId = 10;
+        vm.startBroadcast(ownerPk);
+        GasPass(gasPassAddress).cancelRefuelPolicy(tokenId, targetChainId);
+        console.log("Cancel refuel policy success. tokenId:", tokenId);
+        console.log("ChainId:", targetChainId);
         vm.stopBroadcast();
     }
 }

@@ -132,15 +132,12 @@ async function triggerMonitorScan() {
       })
     };
     
-    // 導入 monitor router 並執行掃描
-    const { default: monitorRouter } = await import('./routes/monitor.js');
-    const scanHandler = monitorRouter.stack.find(layer => 
-      layer.route && layer.route.path === '/scan' && layer.route.methods.post
-    );
+    // 直接調用 checkAllPolicies 函數
+    const { checkAllPolicies } = await import('./routes/monitor.js');
     
-    if (scanHandler) {
-      await scanHandler.route.stack[0].handle(mockReq, mockRes);
-    }
+    const defaultRpcUrl = process.env.RPC_URL || GAS_PASS_CONFIG.network.rpc;
+    const result = await checkAllPolicies(contract, defaultRpcUrl, wallet);
+    console.log('✅ 監控掃描完成:', result);
   } catch (error) {
     console.error('❌ 觸發監控掃描失敗:', error.message);
   }
