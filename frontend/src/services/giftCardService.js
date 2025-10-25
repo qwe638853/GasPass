@@ -322,7 +322,7 @@ export const giftCardService = {
       
       // 如果是給自己，使用模擬邏輯
       console.log('🎁 使用模擬邏輯鑄造儲值卡給自己...')
-    try {
+      
       // 模擬 API 延遲
       await new Promise(resolve => setTimeout(resolve, 2000))
       

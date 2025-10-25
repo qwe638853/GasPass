@@ -54,11 +54,52 @@ export class RelayerService {
       const receipt = await tx.wait();
       console.log(`✅ 交易確認: ${receipt.hash}`);
       
+      // 從事件中獲取 tokenIds
+      const mintBatchEvents = receipt.logs.filter(log => {
+        try {
+          const parsed = this.contract.interface.parseLog(log);
+          return parsed.name === 'MintBatch';
+        } catch (e) {
+          return false;
+        }
+      });
+      
+      let tokenIds = [];
+      if (mintBatchEvents.length > 0) {
+        const parsed = this.contract.interface.parseLog(mintBatchEvents[0]);
+        const amount = Number(parsed.args.amount);
+        const singleValue = parsed.args.singleValue;
+        
+        console.log(`🎫 批量鑄造事件: 數量=${amount}, 單價=${ethers.formatUnits(singleValue, 6)} USDC`);
+        
+        // 獲取最新的 tokenId 範圍
+        const totalSupply = await this.contract.totalSupply();
+        const startTokenId = Number(totalSupply) - amount + 1;
+        
+        for (let i = 0; i < amount; i++) {
+          tokenIds.push((startTokenId + i).toString());
+        }
+        
+        console.log(`🎫 鑄造的 Token IDs: ${tokenIds.join(', ')}`);
+      } else {
+        console.warn('⚠️ 未找到 MintBatch 事件，可能合約 ABI 不匹配');
+      }
+      
       return {
         success: true,
         txHash: receipt.hash,
+        tokenIds: tokenIds,
+        recipient: typedData.to,
         blockNumber: receipt.blockNumber,
-        gasUsed: receipt.gasUsed.toString()
+        gasUsed: receipt.gasUsed.toString(),
+        receipt: {
+          hash: receipt.hash,
+          blockNumber: receipt.blockNumber,
+          blockHash: receipt.blockHash,
+          confirmations: receipt.confirmations,
+          gasUsed: receipt.gasUsed.toString(),
+          status: receipt.status
+        }
       };
     } catch (error) {
       console.error('❌ mintBatchWithSig 失敗:', error.message);
