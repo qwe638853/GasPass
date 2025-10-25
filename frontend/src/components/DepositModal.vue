@@ -179,12 +179,37 @@
         </div>
       </div>
     </div>
+
+    <!-- Success Modal -->
+    <div v-if="showSuccess" class="success-modal-overlay" @click="handleSuccessModalClick">
+      <div class="success-modal" @click.stop>
+        <div class="success-modal-content">
+          <div class="success-icon">🎉</div>
+          <h3 class="success-title">儲值成功！</h3>
+          <p class="success-message">{{ successMessage }}</p>
+          <div v-if="successData" class="success-details">
+            <div class="detail-item">
+              <span class="detail-label">交易哈希:</span>
+              <span class="detail-value">{{ successData.txHash }}</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">儲值金額:</span>
+              <span class="detail-value">{{ successData.amount }} USDC</span>
+            </div>
+          </div>
+          <button @click="handleSuccessContinue" class="continue-btn">
+            繼續使用 GasPass
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { gasPassService } from '../services/gasPassService.js'
+import { contractService } from '../services/contractService.js'
 import { useWeb3 } from '../composables/useWeb3.js'
 
 const props = defineProps({
@@ -204,6 +229,9 @@ const depositAmount = ref('')
 const isLoading = ref(false)
 const currentStep = ref(0)
 const userUSDCBalance = ref('0.00')
+const showSuccess = ref(false)
+const successMessage = ref('')
+const successData = ref(null)
 
 const quickAmounts = ['10', '25', '50', '100', '250']
 const gasFee = ref('0.5')
@@ -248,6 +276,17 @@ const selectCard = (card) => {
   depositAmount.value = ''
 }
 
+const handleSuccessContinue = () => {
+  showSuccess.value = false
+  emit('close')
+}
+
+const handleSuccessModalClick = (event) => {
+  if (event.target === event.currentTarget) {
+    handleSuccessContinue()
+  }
+}
+
 const formatDate = (dateString) => {
   return new Date(dateString).toLocaleDateString('zh-TW')
 }
@@ -283,25 +322,25 @@ const handleDeposit = async () => {
     await new Promise(resolve => setTimeout(resolve, 1200))
     currentStep.value = 4
     
-    // Step 4: Complete
-    const result = await gasPassService.depositToCard({
+    // Step 4: Complete - 調用真實的合約服務
+    const result = await contractService.depositToCard({
       tokenId: selectedCard.value.tokenId,
-      amount: depositAmount.value,
-      permitData: {
-        deadline: Math.floor(Date.now() / 1000) + 3600,
-        v: 27,
-        r: '0x' + '0'.repeat(64),
-        s: '0x' + '0'.repeat(64)
-      }
+      amount: depositAmount.value
     })
     
     if (result.success) {
-      emit('success', {
+      // 顯示成功彈窗
+      successData.value = {
         txHash: result.txHash,
         card: selectedCard.value,
         amount: depositAmount.value,
         transaction: result.transaction
-      })
+      }
+      successMessage.value = `成功為 GasPass 卡片 #${selectedCard.value.tokenId} 儲值 ${depositAmount.value} USDC！`
+      showSuccess.value = true
+      
+      // 同時發送事件給父組件
+      emit('success', successData.value)
     } else {
       throw new Error(result.error)
     }
@@ -551,5 +590,50 @@ onMounted(() => {
 
 .step-description {
   @apply text-sm text-gaspass-gray-600;
+}
+
+/* Success Modal Styles */
+.success-modal-overlay {
+  @apply fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4;
+}
+
+.success-modal {
+  @apply bg-white rounded-xl shadow-xl max-w-md w-full;
+}
+
+.success-modal-content {
+  @apply p-6 text-center;
+}
+
+.success-icon {
+  @apply text-4xl mb-4;
+}
+
+.success-title {
+  @apply text-2xl font-bold text-green-800 mb-2;
+}
+
+.success-message {
+  @apply text-green-700 mb-4;
+}
+
+.success-details {
+  @apply space-y-2 mb-6 p-4 bg-green-50 rounded-lg;
+}
+
+.detail-item {
+  @apply flex justify-between text-sm;
+}
+
+.detail-label {
+  @apply text-green-700 font-medium;
+}
+
+.detail-value {
+  @apply text-green-800 font-mono text-xs;
+}
+
+.continue-btn {
+  @apply w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-300;
 }
 </style>

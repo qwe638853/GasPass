@@ -5,13 +5,18 @@
 
 export const GAS_PASS_CONFIG = {
   // 合約地址
-  contractAddress: '0xdB140B58D6E3988F5C453E192295748c1438d8D4',
+  contractAddress: '0x846c13CE9bF27bF05AaA95c8f3e184456C4D895c',
   
   // 網絡配置
   network: {
     name: 'Arbitrum One',
     chainId: 42161,
     rpcUrl: 'https://arb1.arbitrum.io/rpc',
+    backupRpcUrls: [
+      'https://arbitrum-mainnet.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161',
+      'https://arbitrum-mainnet.g.alchemy.com/v2/demo',
+      'https://rpc.ankr.com/arbitrum'
+    ],
     explorerUrl: 'https://arbiscan.io'
   },
   
@@ -50,3 +55,99 @@ export const GAS_PASS_ABI = [
   'function withdrawFees(address to) external',
   'function setRelayer(address _relayer) external'
 ];
+
+// 支援的鏈配置
+export const SUPPORTED_CHAINS = {
+  1: {
+    name: 'Ethereum',
+    nativeSymbol: 'ETH',
+    nativeName: 'Ether'
+  },
+  42161: {
+    name: 'Arbitrum One',
+    nativeSymbol: 'ETH',
+    nativeName: 'Ether'
+  },
+  8453: {
+    name: 'Base Mainnet',
+    nativeSymbol: 'ETH',
+    nativeName: 'Ether'
+  },
+  43114: {
+    name: 'Avalanche C-Chain',
+    nativeSymbol: 'AVAX',
+    nativeName: 'Avalanche'
+  },
+  56: {
+    name: 'Binance Smart Chain',
+    nativeSymbol: 'BNB',
+    nativeName: 'Binance Coin'
+  },
+  100: {
+    name: 'Gnosis Chain',
+    nativeSymbol: 'xDAI',
+    nativeName: 'Gnosis'
+  },
+  5000: {
+    name: 'Mantle Network',
+    nativeSymbol: 'MNT',
+    nativeName: 'Mantle'
+  },
+  34443: {
+    name: 'Mode Mainnet',
+    nativeSymbol: 'ETH',
+    nativeName: 'Ether'
+  },
+  130: {
+    name: 'Unichain Mainnet',
+    nativeSymbol: 'UNIETH',
+    nativeName: 'Uni Ether'
+  },
+  1868: {
+    name: 'Soneium Mainnet',
+    nativeSymbol: 'Soneium',
+    nativeName: 'Soneium'
+  },
+  57073: {
+    name: 'Ink Mainnet',
+    nativeSymbol: 'INK',
+    nativeName: 'Ink'
+  },
+  81457: {
+    name: 'Blast Mainnet',
+    nativeSymbol: 'BLAST',
+    nativeName: 'Blast'
+  },
+  59144: {
+    name: 'Linea',
+    nativeSymbol: 'ETH',
+    nativeName: 'Ether'
+  },
+  137: {
+    name: 'Polygon',
+    nativeSymbol: 'MATIC',
+    nativeName: 'Polygon'
+  },
+  534352: {
+    name: 'Scroll',
+    nativeSymbol: 'ETH',
+    nativeName: 'Ether'
+  },
+  146: {
+    name: 'Sonic',
+    nativeSymbol: 'S',
+    nativeName: 'Sonic'
+  },
+  10: {
+    name: 'Optimism',
+    nativeSymbol: 'ETH',
+    nativeName: 'Ether'
+  },
+  80094: {
+    name: 'Berachain',
+    nativeSymbol: 'BERA',
+    nativeName: 'Berachain'
+  }
+};
+
+export default GAS_PASS_CONFIG;
