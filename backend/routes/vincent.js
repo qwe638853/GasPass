@@ -1,10 +1,8 @@
 import { Router } from 'express';
 import { getAuthenticateUserExpressHandler } from '../middleware/vincentAuth.mjs';
-<<<<<<< HEAD
-import { executeCompleteAutoRefuel, executeSponsorAutoRefuel } from '../vincent/bridge.js';
-=======
-
->>>>>>> 6b31d5f (update monitor backend)
+import { executeCompleteAutoRefuel } from '../vincent/bridge.js';
+import { ethers } from 'ethers';
+import { GAS_PASS_CONFIG } from '../config/gasPassConfig.js';
 
 const router = Router();
 
@@ -18,62 +16,6 @@ const vincentAuth = getAuthenticateUserExpressHandler({
 });
 
 
-<<<<<<< HEAD
-    const result = await executeCompleteAutoRefuel(bridgeParams, { 
-      delegatorPkpEthAddress,
-      rpcUrl: process.env.RPC_URL 
-    });
-
-    res.json({
-      success: true,
-      result: {
-        execute: result.result,
-        submit: result.result
-      }
-    });
-  } catch (error) {
-    console.error('Vincent Bridge 失敗:', error);
-    res.status(400).json({
-      success: false,
-      error: error.message || String(error)
-    });
-  }
-});
-
-// Vincent Sponsor 相關端點
-router.post('/sponsor', vincentAuth, async (req, res) => {
-  try {
-    const { sponsorParams } = req.body;
-    const delegatorPkpEthAddress = req.vincentUser.decodedJWT?.payload?.pkpInfo?.ethAddress ?? 
-                                  req.vincentUser.decodedJWT?.pkp?.ethAddress;
-    
-    if (!delegatorPkpEthAddress) {
-      return res.status(400).json({ 
-        success: false, 
-        error: 'Invalid JWT: no pkp.ethAddress' 
-      });
-    }
-
-    const result = await executeSponsorAutoRefuel(sponsorParams, { 
-      delegatorPkpEthAddress,
-      rpcUrl: process.env.RPC_URL 
-    });
-
-    res.json({
-      success: true,
-      result
-    });
-  } catch (error) {
-    console.error('Vincent Sponsor 失敗:', error);
-    res.status(400).json({
-      success: false,
-      error: error.message || String(error)
-    });
-  }
-});
-=======
-
->>>>>>> 6b31d5f (update monitor backend)
 
 // Vincent 狀態檢查
 router.get('/status', vincentAuth, async (req, res) => {
@@ -91,6 +33,90 @@ router.get('/status', vincentAuth, async (req, res) => {
   } catch (error) {
     console.error('Vincent Status 失敗:', error);
     res.status(400).json({
+      success: false,
+      error: error.message || String(error)
+    });
+  }
+});
+
+// 觸發自動補油 API
+router.post('/triggerAutoRefuel', vincentAuth, async (req, res) => {
+  try {
+    const { tokenId, chainId, gasAmount } = req.body;
+    
+    // 驗證必要參數
+    if (!tokenId || !chainId || !gasAmount) {
+      return res.status(400).json({
+        success: false,
+        error: '缺少必要參數: tokenId, chainId, gasAmount'
+      });
+    }
+
+    console.log('🚀 前端觸發自動補油:', { tokenId, chainId, gasAmount });
+
+    // 獲取 PKP 地址
+    const delegatorPkpEthAddress = req.vincentUser.decodedJWT?.payload?.pkpInfo?.ethAddress ?? 
+                                  req.vincentUser.decodedJWT?.pkp?.ethAddress;
+
+    if (!delegatorPkpEthAddress) {
+      return res.status(400).json({
+        success: false,
+        error: '無法獲取 PKP 地址'
+      });
+    }
+
+    // 創建合約實例
+    const provider = new ethers.JsonRpcProvider(GAS_PASS_CONFIG.rpcUrl);
+    const contract = new ethers.Contract(
+      GAS_PASS_CONFIG.contractAddress,
+      GAS_PASS_CONFIG.abi,
+      provider
+    );
+
+    // 獲取 token 擁有者
+    const owner = await contract.ownerOf(tokenId);
+    console.log('👤 Token 擁有者:', owner);
+
+    // 獲取 USDC 合約地址
+    const usdcAddress = await contract.stablecoin();
+    console.log('💰 USDC 合約地址:', usdcAddress);
+
+    // 獲取當前區塊信息
+    const blockNumber = await contract.runner.provider.getBlockNumber();
+    console.log('📦 當前區塊號:', blockNumber);
+
+    // 調用 executeCompleteAutoRefuel
+    const result = await executeCompleteAutoRefuel({
+      tokenId: parseInt(tokenId),
+      destinationChainId: parseInt(chainId),
+      receiver: owner,
+      inputToken: usdcAddress,
+      inputAmount: gasAmount,
+      contractAddress: contract.target,
+      blockNumber,
+      gasLeft: 1000000,
+      deadlineDelta: 600
+    }, { delegatorPkpEthAddress });
+
+    console.log('✅ 自動補油成功:', result);
+
+    res.json({
+      success: true,
+      result: {
+        tokenId: parseInt(tokenId),
+        chainId: parseInt(chainId),
+        gasAmount,
+        owner,
+        txHash: result.result?.txHash,
+        requestData: result.requestData,
+        minOutputAmount: result.minOutputAmount,
+        timestamp: new Date().toISOString()
+      }
+    });
+
+  } catch (error) {
+    console.error('❌ 觸發自動補油失敗:', error);
+    res.status(500).json({
       success: false,
       error: error.message || String(error)
     });

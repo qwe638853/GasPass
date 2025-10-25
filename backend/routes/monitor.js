@@ -119,7 +119,7 @@ async function checkBalance(walletAddress, chainId, defaultRpcUrl, retries = 3) 
 }
 
 // 觸發自動補氣
-async function triggerAutoRefuel(tokenId, chainId, contract, wallet) {
+async function triggerAutoRefuel(tokenId, chainId, contract) {
   try {
     console.log(`🚀 觸發 autoRefuel: tokenId=${tokenId}, chainId=${chainId}`);
     
