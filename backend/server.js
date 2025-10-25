@@ -2,7 +2,8 @@ import 'dotenv/config';
 import { ethers } from 'ethers';
 import express from 'express';
 import cors from 'cors';
-import { GAS_PASS_CONFIG, GAS_PASS_ABI, SUPPORTED_CHAINS } from './config/gasPassConfig.js';
+import { GAS_PASS_CONFIG, GAS_PASS_ABI } from './config/gasPassConfig.js';
+import { SUPPORTED_CHAINS } from './config/BungeeConfig.js';
 import apiRouter from './routes/index.js';
 import { createRelayerService } from './relayer/index.js';
 

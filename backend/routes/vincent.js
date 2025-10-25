@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { getAuthenticateUserExpressHandler } from '../middleware/vincentAuth.mjs';
-import { executeBungeeBridge, executeSponsorAutoRefuel } from '../vincent/bridge.js';
+import { executeCompleteAutoRefuel, executeSponsorAutoRefuel } from '../vincent/bridge.js';
 
 const router = Router();
 
@@ -27,7 +27,7 @@ router.post('/bridge', vincentAuth, async (req, res) => {
       });
     }
 
-    const result = await executeBungeeBridge(bridgeParams, { 
+    const result = await executeCompleteAutoRefuel(bridgeParams, { 
       delegatorPkpEthAddress,
       rpcUrl: process.env.RPC_URL 
     });
@@ -35,8 +35,8 @@ router.post('/bridge', vincentAuth, async (req, res) => {
     res.json({
       success: true,
       result: {
-        execute: result.execute,
-        submit: result.submit
+        execute: result.result,
+        submit: result.result
       }
     });
   } catch (error) {

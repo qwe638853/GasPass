@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { ethers } from 'ethers';
-import { GAS_PASS_CONFIG, GAS_PASS_ABI, SUPPORTED_CHAINS } from '../config/gasPassConfig.js';
+import { GAS_PASS_CONFIG, GAS_PASS_ABI } from '../config/gasPassConfig.js';
+import { SUPPORTED_CHAINS } from '../config/BungeeConfig.js';
 
 const router = Router();
 
