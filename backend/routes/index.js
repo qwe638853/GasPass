@@ -2,6 +2,7 @@ import { Router } from 'express';
 import vincentRouter from './vincent.js';
 import gaspassRouter from './gaspass.js';
 import relayerRouter from '../relayer/index.js';
+import monitorRouter from './monitor.js';
 
 const router = Router();
 
@@ -13,7 +14,8 @@ router.get('/', (req, res) => {
     endpoints: {
       vincent: '/api/vincent',
       gaspass: '/api/gaspass',
-      relayer: '/api/relayer'
+      relayer: '/api/relayer',
+      monitor: '/api/monitor'
     }
   });
 });
@@ -22,6 +24,7 @@ router.get('/', (req, res) => {
 router.use('/vincent', vincentRouter);
 router.use('/gaspass', gaspassRouter);
 router.use('/relayer', relayerRouter);
+router.use('/monitor', monitorRouter);
 
 export default router;
 
