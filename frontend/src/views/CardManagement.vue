@@ -878,14 +878,68 @@ const setupAgentRefuel = async () => {
       agent: pkpAddress
     })
     
-    // 使用 contractService 設定策略
-    const result = await contractService.setRefuelPolicy(
-      currentTokenId.value, // 當前 Token ID
-      agentRefuel.value.chainId, // 目標鏈 ID
-      amountInWei.toString(), // 補氣金額 (USDC 最小單位)
-      thresholdInWei.toString(), // 觸發閾值 (USDC 最小單位)
-      pkpAddress // PKP 地址作為 agent
-    )
+     // 檢查 agent 映射是否正確
+     console.log('🔧 檢查 Agent 映射...')
+     const { gaspassRead } = contractService.getContracts()
+     
+     // 添加重試機制
+     let agentToWallet = null
+     let retryCount = 0
+     const maxRetries = 3
+     
+     while (retryCount < maxRetries && agentToWallet === null) {
+       try {
+         agentToWallet = await gaspassRead.agentToWallet(pkpAddress)
+         console.log('🔍 Agent 映射狀態:', { 
+           pkpAddress, 
+           currentWallet: account.value, 
+           mappedWallet: agentToWallet 
+         })
+         break
+       } catch (error) {
+         retryCount++
+         console.warn(`⚠️ 獲取 Agent 映射失敗 (嘗試 ${retryCount}/${maxRetries}):`, error.message)
+         
+         if (retryCount < maxRetries) {
+           console.log('⏳ 等待 1 秒後重試...')
+           await new Promise(resolve => setTimeout(resolve, 1000))
+         } else {
+           console.error('❌ 獲取 Agent 映射失敗，跳過檢查')
+           // 如果無法獲取映射，跳過檢查直接繼續
+           agentToWallet = account.value // 假設映射正確
+         }
+       }
+     }
+     
+     if (agentToWallet && agentToWallet.toLowerCase() !== account.value.toLowerCase()) {
+       throw new Error(`PKP Agent 地址 ${pkpAddress} 已經綁定到其他錢包 ${agentToWallet}。請使用相同的錢包或重新登入 Vincent。`)
+     }
+     
+     console.log('✅ Agent 映射檢查通過')
+     
+     // 如果 Agent 沒有綁定，先進行綁定
+     if (!agentToWallet || agentToWallet === '0x0000000000000000000000000000000000000000') {
+       console.log('🔧 Agent 未綁定，先進行綁定...')
+       const bindResult = await contractService.setAgentToWallet(pkpAddress, account.value)
+       if (!bindResult.success) {
+         throw new Error(`Agent 綁定失敗: ${bindResult.error}`)
+       }
+       console.log('✅ Agent 綁定成功')
+     }
+     
+     // 設置 refuel policy
+     console.log('🔧 設置 Refuel Policy...')
+     console.log('🔍 簽名者地址 (用戶錢包):', account.value)
+     console.log('🔍 Agent 地址 (PKP):', pkpAddress)
+     console.log('🔍 Token 擁有者檢查: 簽名者必須是 Token 擁有者')
+     
+     const result = await contractService.setRefuelPolicy(
+       currentTokenId.value, // 當前 Token ID
+       agentRefuel.value.chainId, // 目標鏈 ID
+       amountInWei.toString(), // 補氣金額 (USDC 最小單位)
+       thresholdInWei.toString(), // 觸發閾值 (USDC 最小單位)
+       pkpAddress // PKP 地址作為 agent
+     )
     
     console.log('Agent 策略設定結果:', result)
     

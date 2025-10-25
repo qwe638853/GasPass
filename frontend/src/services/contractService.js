@@ -33,6 +33,7 @@ const CONTRACT_CONFIG = {
     'function chainPolicies(uint256, uint256) view returns (uint128 gasAmount, uint128 threshold, address agent, uint256 lastRefueled)',
     'function setRefuelPolicy(uint256 tokenId, uint256 targetChainId, uint128 gasAmount, uint128 threshold, address agent) external',
     'function autoRefuel(uint256 tokenId, uint256 targetChainId) external',
+    'function agentToWallet(address) view returns (address)',
     
     // 事件
     'event Minted(address indexed to, uint256 value, address indexed agent)',
@@ -410,7 +411,7 @@ class ContractService {
         name: "GasPass",
         version: "1",
         chainId: 42161,
-        verifyingContract: CONTRACT_CONFIG.address,
+        verifyingContract: CONTRACT_CONFIG.address // 使用 checksum 格式，不要轉小寫,
       }
       const types = {
         MintWithSig: [
@@ -509,7 +510,7 @@ class ContractService {
         name: 'GasPass',
         version: '1',
         chainId: 42161, // Arbitrum Mainnet
-        verifyingContract: CONTRACT_CONFIG.address
+        verifyingContract: CONTRACT_CONFIG.address // 使用 checksum 格式，不要轉小寫
       }
 
       // 計算 permitHash（與合約邏輯一致）
@@ -604,6 +605,24 @@ class ContractService {
         agent
       })
 
+      // 驗證輸入參數
+      const uint128Max = BigInt('0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF'); // 2^128 - 1
+      const gasAmountBigInt = BigInt(gasAmount);
+      const thresholdBigInt = BigInt(threshold);
+      
+      if (gasAmountBigInt > uint128Max) {
+        throw new Error(`Gas amount ${gasAmount} 超出 uint128 範圍 (最大: ${uint128Max})`);
+      }
+      if (thresholdBigInt > uint128Max) {
+        throw new Error(`Threshold ${threshold} 超出 uint128 範圍 (最大: ${uint128Max})`);
+      }
+      if (gasAmountBigInt <= 0) {
+        throw new Error('Gas amount 必須大於 0');
+      }
+      if (thresholdBigInt <= 0) {
+        throw new Error('Threshold 必須大於 0');
+      }
+
       // 獲取合約實例
       const { gaspassRead } = this.getContracts()
       
@@ -614,14 +633,8 @@ class ContractService {
         console.log('📊 總供應量:', totalSupply.toString())
         
         // 檢查 Token 是否存在
-        const owner = await gaspassRead.ownerOf(tokenId)
+        const owner = await gaspassRead.ownerOf(BigInt(tokenId))
         console.log('👤 Token 擁有者:', owner)
-        
-      // 獲取 nonce - 使用正確的方法
-      console.log('🔍 獲取 Token nonce...')
-      console.log('🔍 TokenId 類型:', typeof tokenId, '值:', tokenId)
-      const nonce = await gaspassRead.nonces(BigInt(tokenId))
-      console.log('📝 Token nonce:', nonce.toString())
         
       } catch (error) {
         console.error('❌ 合約調用失敗:', error)
@@ -633,47 +646,142 @@ class ContractService {
         throw new Error(`合約調用失敗: ${error.message}`)
       }
 
+      // 獲取 nonce - 添加重試機制和備用方案
+      console.log('🔍 獲取 Token nonce...')
+      let nonce
+      let retryCount = 0
+      const maxRetries = 3
+      
+      while (retryCount < maxRetries) {
+        try {
+          nonce = await gaspassRead.nonces(BigInt(tokenId))
+          console.log('📝 Token nonce:', nonce.toString())
+          break
+        } catch (error) {
+          retryCount++
+          console.warn(`⚠️ 獲取 nonce 失敗 (嘗試 ${retryCount}/${maxRetries}):`, error.message)
+          
+          if (retryCount >= maxRetries) {
+            console.warn('⚠️ 無法獲取 nonce，使用默認值 0')
+            nonce = 0 // 使用默認值
+            break
+          }
+          
+          // 等待 1 秒後重試
+          await new Promise(resolve => setTimeout(resolve, 1000))
+        }
+      }
+
       // 設定 deadline (1 小時後)
       const deadline = Math.floor(Date.now() / 1000) + 3600
 
-      // 創建 typedData
-      const typedData = {
+      // 創建 typedData (用於簽名) - 確保 uint128 範圍
+      const gasAmountUint128 = BigInt(gasAmount) & BigInt('0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF') // 確保在 uint128 範圍內
+      const thresholdUint128 = BigInt(threshold) & BigInt('0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF') // 確保在 uint128 範圍內
+      
+      const typedDataForSigning = {
         tokenId: BigInt(tokenId),
         targetChainId: BigInt(targetChainId),
-        gasAmount: BigInt(gasAmount),
-        threshold: BigInt(threshold),
+        gasAmount: gasAmountUint128,
+        threshold: thresholdUint128,
         agent: agent,
         nonce: BigInt(nonce.toString()),
         deadline: BigInt(deadline)
       }
 
-      console.log('📋 TypedData:', typedData)
+      console.log('📋 TypedData for signing:', typedDataForSigning)
 
       // EIP-712 簽名
       const domain = {
         name: 'GasPass',
         version: '1',
         chainId: 42161, // Arbitrum Mainnet
-        verifyingContract: CONTRACT_CONFIG.address
+        verifyingContract: CONTRACT_CONFIG.address // 使用 checksum 格式，不要轉小寫
       }
 
       const types = {
         SetRefuelPolicy: [
           { name: 'tokenId', type: 'uint256' },
           { name: 'targetChainId', type: 'uint256' },
-          { name: 'gasAmount', type: 'uint128' },
-          { name: 'threshold', type: 'uint128' },
+          { name: 'gasAmount', type: 'uint128' },  // 合約期望 uint128
+          { name: 'threshold', type: 'uint128' },  // 合約期望 uint128
           { name: 'agent', type: 'address' },
           { name: 'nonce', type: 'uint256' },
           { name: 'deadline', type: 'uint256' }
         ]
       }
 
-      const sig = await this.signer.signTypedData(domain, types, typedData)
+      const sig = await this.signer.signTypedData(domain, types, typedDataForSigning)
       console.log('✍️ 簽名完成:', sig)
+      
+      // 調試：檢查簽名者地址
+      const signerAddress = await this.signer.getAddress()
+      const owner = await gaspassRead.ownerOf(BigInt(tokenId))
+      console.log('🔍 簽名者地址:', signerAddress)
+      console.log('🔍 Token 擁有者:', owner)
+      console.log('🔍 簽名者是否為 Token 擁有者:', signerAddress.toLowerCase() === owner.toLowerCase())
+      
+      // 檢查 Agent 綁定狀態
+      try {
+        const agentToWallet = await gaspassRead.agentToWallet(agent)
+        console.log('🔍 Agent 綁定狀態:', { agent, agentToWallet, expectedWallet: signerAddress })
+        console.log('🔍 Agent 綁定是否正確:', agentToWallet.toLowerCase() === signerAddress.toLowerCase())
+      } catch (error) {
+        console.warn('⚠️ 無法檢查 Agent 綁定狀態:', error.message)
+      }
+      
+      // 調試：檢查 domain 和 types
+      console.log('🔍 EIP712 Domain:', domain)
+      console.log('🔍 EIP712 Types:', types)
+      console.log('🔍 合約地址:', CONTRACT_CONFIG.address)
+      
+      // 調試：檢查簽名格式
+      console.log('🔍 簽名長度:', sig.length)
+      console.log('🔍 簽名前綴:', sig.slice(0, 2))
+      console.log('🔍 簽名是否以 0x 開頭:', sig.startsWith('0x'))
+      
+      // 調試：手動驗證簽名
+      try {
+        const recoveredAddress = ethers.verifyTypedData(domain, types, typedDataForSigning, sig)
+        console.log('🔍 手動驗證簽名者地址:', recoveredAddress)
+        console.log('🔍 手動驗證是否正確:', recoveredAddress.toLowerCase() === signerAddress.toLowerCase())
+      
+      // 四雜湊比對法 - 用於調試
+      try {
+        // 使用 ethers 的 TypedDataEncoder
+        const typeHash = ethers.TypedDataEncoder.hashType('SetRefuelPolicy', types)
+        const structHash = ethers.TypedDataEncoder.from(types).hash(typedDataForSigning)
+        const domainSeparator = ethers.TypedDataEncoder.hashDomain(domain)
+        const digest = ethers.TypedDataEncoder.hash(domain, types, typedDataForSigning)
+        
+        console.log('🔍 四雜湊比對法:')
+        console.log('  typeHash:', typeHash)
+        console.log('  structHash:', structHash)
+        console.log('  domainSeparator:', domainSeparator)
+        console.log('  digest:', digest)
+      } catch (error) {
+        console.error('❌ 四雜湊計算失敗:', error)
+      }
+      } catch (error) {
+        console.error('❌ 手動驗證簽名失敗:', error)
+      }
+
+      // 創建可序列化的 typedData (用於發送給 relayer)
+      // 使用字符串傳輸，避免 JSON BigInt 問題，並確保 uint128 範圍
+      const typedDataForRelayer = {
+        tokenId: BigInt(tokenId).toString(),
+        targetChainId: BigInt(targetChainId).toString(),
+        gasAmount: gasAmountUint128.toString(),
+        threshold: thresholdUint128.toString(),
+        agent: agent,
+        nonce: BigInt(nonce.toString()).toString(),
+        deadline: BigInt(deadline).toString()
+      }
+
+      console.log('📋 TypedData for relayer:', typedDataForRelayer)
 
       // 通過 relayer 發送
-      const result = await relayerService.relaySetRefuelPolicy(typedData, sig)
+      const result = await relayerService.relaySetRefuelPolicy(typedDataForRelayer, sig)
       console.log('🚀 Relayer 結果:', result)
 
       return {
@@ -682,6 +790,67 @@ class ContractService {
       }
     } catch (error) {
       console.error('❌ Set refuel policy failed:', error)
+      return {
+        success: false,
+        error: error.message
+      }
+    }
+  }
+
+  // 設置 Agent 到錢包的綁定
+  async setAgentToWallet(agent, wallet) {
+    try {
+      console.log('🔧 設置 Agent 綁定:', { agent, wallet })
+      
+      // 確保合約服務已初始化
+      await this.ensureInitialized()
+      
+      // 獲取用戶的 nonce
+      const userAddress = await this.signer.getAddress()
+      const nonce = await this.getUserNonce(userAddress)
+      console.log('用戶 nonce:', nonce.toString())
+      
+      // 設定 deadline (1 小時後)
+      const deadline = Math.floor(Date.now() / 1000) + 3600
+
+      // EIP-712 簽名
+      const domain = {
+        name: 'GasPass',
+        version: '1',
+        chainId: 42161, // Arbitrum Mainnet
+        verifyingContract: CONTRACT_CONFIG.address // 使用 checksum 格式，不要轉小寫
+      }
+
+      const types = {
+        SetAgentToWalletWithSig: [
+          { name: 'agent', type: 'address' },
+          { name: 'wallet', type: 'address' },
+          { name: 'nonce', type: 'uint256' },
+          { name: 'deadline', type: 'uint256' }
+        ]
+      }
+
+      const typedData = {
+        agent: agent,
+        wallet: wallet,
+        nonce: nonce.toString(),
+        deadline: deadline.toString()
+      }
+
+      console.log('✍️ 簽署 Agent 綁定數據...')
+      const signature = await this.signer.signTypedData(domain, types, typedData)
+      console.log('🔍 Agent 綁定簽名:', signature)
+      
+      // 通過 relayer 發送
+      const result = await relayerService.relaySetAgent(typedData, signature)
+      console.log('✅ Agent 綁定成功!', result)
+      
+      return {
+        success: true,
+        result: result
+      }
+    } catch (error) {
+      console.error('❌ Agent 綁定失敗:', error)
       return {
         success: false,
         error: error.message

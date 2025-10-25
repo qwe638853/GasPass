@@ -210,15 +210,85 @@ router.post('/relay/set-refuel-policy', async (req, res) => {
     console.log(`⚠️ 觸發閾值: ${ethers.formatUnits(typedData.threshold, 6)} USDC`);
     console.log(`🤖 Agent: ${typedData.agent}`);
     
+    // 從主服務器獲取 wallet 和 contract
+    const { wallet, contract } = req.app.locals;
+    
+    if (!wallet || !contract) {
+      throw new Error('Relayer 服務未初始化');
+    }
+    
     // 創建合約實例
     const gasPassContract = new ethers.Contract(
       GAS_PASS_CONFIG.contractAddress,
       GAS_PASS_CONFIG.abi,
-      relayerWallet
+      wallet
     );
     
+    // 創建 tuple 格式的 policy 數據，符合合約 ABI 要求
+    // 確保 uint128 範圍：0 到 2^128 - 1
+    const uint128Max = BigInt('0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF');
+    const gasAmountUint128 = ethers.toBigInt(typedData.gasAmount) & uint128Max;
+    const thresholdUint128 = ethers.toBigInt(typedData.threshold) & uint128Max;
+    
+    // 按照 ABI 定義的順序創建 tuple
+    const policyData = [
+      ethers.toBigInt(typedData.tokenId),        // tokenId: uint256
+      ethers.toBigInt(typedData.targetChainId),  // targetChainId: uint256
+      gasAmountUint128,                          // gasAmount: uint128
+      thresholdUint128,                          // threshold: uint128
+      typedData.agent,                           // agent: address
+      ethers.toBigInt(typedData.nonce),          // nonce: uint256
+      ethers.toBigInt(typedData.deadline)        // deadline: uint256
+    ];
+    
+    console.log(`🔍 Policy Tuple:`, policyData);
+    
+    // 四雜湊比對法 - 用於調試
+    try {
+      const { TypedDataEncoder } = await import('ethers');
+      const domain = {
+        name: "GasPass",
+        version: "1",
+        chainId: 42161,
+        verifyingContract: GAS_PASS_CONFIG.contractAddress, // 使用 checksum 格式，不要轉小寫
+      };
+        const types = {
+          SetRefuelPolicy: [
+            { name: "tokenId", type: "uint256" },
+            { name: "targetChainId", type: "uint256" },
+            { name: "gasAmount", type: "uint128" },  // 合約期望 uint128
+            { name: "threshold", type: "uint128" },  // 合約期望 uint128
+            { name: "agent", type: "address" },
+            { name: "nonce", type: "uint256" },
+            { name: "deadline", type: "uint256" },
+          ],
+        };
+      const message = {
+        tokenId: ethers.toBigInt(typedData.tokenId),
+        targetChainId: ethers.toBigInt(typedData.targetChainId),
+        gasAmount: ethers.toBigInt(typedData.gasAmount),
+        threshold: ethers.toBigInt(typedData.threshold),
+        agent: typedData.agent,
+        nonce: ethers.toBigInt(typedData.nonce),
+        deadline: ethers.toBigInt(typedData.deadline),
+      };
+      
+      const typeHash = TypedDataEncoder.hashType('SetRefuelPolicy', types);
+      const structHash = TypedDataEncoder.from(types).hash(message);
+      const domainSeparator = TypedDataEncoder.hashDomain(domain);
+      const digest = TypedDataEncoder.hash(domain, types, message);
+      
+      console.log('🔍 後端四雜湊比對法:');
+      console.log('  typeHash:', typeHash);
+      console.log('  structHash:', structHash);
+      console.log('  domainSeparator:', domainSeparator);
+      console.log('  digest:', digest);
+    } catch (error) {
+      console.error('❌ 後端四雜湊計算失敗:', error);
+    }
+    
     // 調用 setRefuelPolicyWithSig
-    const tx = await gasPassContract.setRefuelPolicyWithSig(typedData, signature);
+    const tx = await gasPassContract.setRefuelPolicyWithSig(policyData, signature);
     console.log(`📝 交易已發送: ${tx.hash}`);
     
     // 等待確認

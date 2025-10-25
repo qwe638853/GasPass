@@ -5,7 +5,7 @@
 
 export const GAS_PASS_CONFIG = {
   // 合約地址
-  contractAddress: '0xdB140B58D6E3988F5C453E192295748c1438d8D4',
+  contractAddress: '0x846c13CE9bF27bF05AaA95c8f3e184456C4D895c',
   
   // 網絡配置
   network: {
@@ -48,8 +48,6 @@ export const GAS_PASS_ABI = [
   'function agentToWallet(address agent) view returns (address)',
   'function stablecoin() view returns (address)',
   'function relayer() view returns (address)',
-  'function totalFeesCollected() view returns (uint256)',
-  'function getWithdrawableFees() view returns (uint256)',
   'function bungeeGateway() view returns (address)',
   'function bungeeInbox() view returns (address)',
 
@@ -87,92 +85,19 @@ export const GAS_PASS_ABI = [
   'function cancelRefuelPolicy(uint256 tokenId, uint256 targetChainId) external',
   'function cancelRefuelPolicyWithSig((uint256 tokenId,uint256 targetChainId,uint256 nonce,uint256 deadline) typedData, bytes signature) external',
 
-  
+  // Auto Refuel（新版 5 參數；req 為巢狀 tuple，依 IBungeeInbox.Request 推導）
+  // 注意：若 IBungeeInbox.Request 實際欄位不同，請提供介面以便我精準同步
+  'function autoRefuel(uint256 tokenId, address inbox, ( (uint256 originChainId,uint256 destinationChainId,uint256 deadline,uint256 nonce,address sender,address receiver,address delegate,address bungeeGateway,uint256 switchboardId,address inputToken,uint256 inputAmount,address outputToken,uint256 minOutputAmount,uint256 refuelAmount) basicReq, address swapOutputToken, uint256 minSwapOutput, bytes extraData ) req, bytes32 expectedSorHash, uint256 targetChainId) external',
+
   // Withdraw / Admin
   'function withdrawAllUSDC(uint256 tokenId, address to) external',
   'function withdrawFees(address to) external',
   'function setRelayer(address _relayer) external',
 
   // (測試用、onlyOwner)
-  'function withdrawUSDC() external',
-
-  // ===== Events =====
-  'event Minted(address indexed to, uint256 indexed tokenId, uint256 value)',
-  'event MintBatch(address indexed to, uint256 amount, uint256 singleValue, address indexed agent)',
-  'event Deposited(uint256 indexed tokenId, uint256 amount)',
-  'event RefuelPolicySet(uint256 indexed tokenId, uint256 indexed chainId, uint128 gasAmount, uint128 threshold, address agent)',
-  'event RefuelPolicyCancelled(uint256 indexed tokenId, uint256 indexed chainId)',
-  'event AgentSet(address indexed agent, address indexed wallet)',
-  'event RelayerSet(address indexed oldRelayer, address indexed newRelayer)'
+  'function withdrawUSDC() external'
 ];
 
-export const AUTO_REFUEL_ABI = [
-  {
-    "type": "function",
-    "name": "autoRefuel",
-    "stateMutability": "nonpayable",
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "tokenId",
-        "type": "uint256"
-      },
-      {
-        "internalType": "address",
-        "name": "inbox",
-        "type": "address"
-      },
-      {
-        "internalType": "struct IBungeeInbox.Request",
-        "name": "req",
-        "type": "tuple",
-        "components": [
-          {
-            "internalType": "struct IBungeeInbox.BasicRequest",
-            "name": "basicReq",
-            "type": "tuple",
-            "components": [
-              { "internalType": "uint256", "name": "originChainId", "type": "uint256" },
-              { "internalType": "uint256", "name": "destinationChainId", "type": "uint256" },
-              { "internalType": "uint256", "name": "deadline", "type": "uint256" },
-              { "internalType": "uint256", "name": "nonce", "type": "uint256" },
-              { "internalType": "address", "name": "sender", "type": "address" },
-              { "internalType": "address", "name": "receiver", "type": "address" },
-              { "internalType": "address", "name": "delegate", "type": "address" },
-              { "internalType": "address", "name": "bungeeGateway", "type": "address" },
-              { "internalType": "uint32", "name": "switchboardId", "type": "uint32" },
-              { "internalType": "address", "name": "inputToken", "type": "address" },
-              { "internalType": "uint256", "name": "inputAmount", "type": "uint256" },
-              { "internalType": "address", "name": "outputToken", "type": "address" },
-              { "internalType": "uint256", "name": "minOutputAmount", "type": "uint256" },
-              { "internalType": "uint256", "name": "refuelAmount", "type": "uint256" }
-            ]
-          },
-          { "internalType": "address", "name": "swapOutputToken", "type": "address" },
-          { "internalType": "uint256", "name": "minSwapOutput", "type": "uint256" },
-          { "internalType": "bytes32", "name": "metadata", "type": "bytes32" },
-          { "internalType": "bytes", "name": "affiliateFees", "type": "bytes" },
-          { "internalType": "uint256", "name": "minDestGas", "type": "uint256" },
-          { "internalType": "bytes", "name": "destinationPayload", "type": "bytes" },
-          { "internalType": "address", "name": "exclusiveTransmitter", "type": "address" }
-        ]
-      },
-      {
-        "internalType": "bytes32",
-        "name": "expectedSorHash",
-        "type": "bytes32"
-      },
-      {
-        "internalType": "uint256",
-        "name": "targetChainId",
-        "type": "uint256"
-      }
-    ],
-    "outputs": []
-  }
-]
 
 
-
-
-
+export default GAS_PASS_CONFIG;
