@@ -6,10 +6,10 @@
         <div class="flex items-center justify-between mb-12">
           <div class="flex-1">
             <h1 class="text-4xl font-bold text-white mb-4">
-            <span class="bg-gradient-to-r from-emerald-400 to-teal-500 bg-clip-text text-transparent">
+              <span class="bg-gradient-to-r from-emerald-400 to-teal-500 bg-clip-text text-transparent">
                 Gift Cards
-            </span>
-          </h1>
+              </span>
+            </h1>
             <p class="text-xl text-emerald-200 max-w-3xl">
               Mint GasPass gift cards in bulk and send them to yourself or others, enjoying ERC-3525 transfer capabilities
             </p>
@@ -89,7 +89,7 @@
               <div class="gift-card-title-section">
                 <h2 class="gift-card-main-title">GIFT</h2>
                 <h3 class="gift-card-sub-title">CARD</h3>
-                </div>
+              </div>
               
               <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
                 <!-- Left Sidebar - Recipient Selection -->
@@ -97,7 +97,7 @@
                   <div class="metallic-card-secondary rounded-xl shadow-lg border border-white/20 p-6 sticky top-8">
                     <h3 class="text-lg font-bold text-white mb-4">Recipient</h3>
                     <div class="space-y-3">
-                <button 
+                      <button 
                         @click="giftForm.recipientType = 'self'"
                         class="w-full recipient-sidebar-option"
                         :class="{ 'recipient-sidebar-active': giftForm.recipientType === 'self' }"
@@ -112,7 +112,7 @@
                             <div class="font-semibold text-sm text-white whitespace-nowrap">Mint to My Wallet</div>
                             <div class="text-xs text-emerald-200">Direct to your wallet</div>
                           </div>
-                      </div>
+                        </div>
                       </button>
 
                       <button
@@ -130,7 +130,7 @@
                             <div class="font-semibold text-sm text-white">Gift to Others</div>
                             <div class="text-xs text-emerald-200 whitespace-nowrap">Send to specific address</div>
                           </div>
-                      </div>
+                        </div>
                       </button>
                     </div>
                   </div>
@@ -140,79 +140,8 @@
                 <div class="lg:col-span-3">
                   <form @submit.prevent="handleGiftSubmit" class="space-y-6">
 
-                <!-- Card Quantity (shown when recipient is self) -->
-                <div v-if="giftForm.recipientType === 'self'">
-                  <label class="block text-sm font-semibold text-emerald-200 mb-3">Card Quantity</label>
-                  <div class="relative">
-                    <input
-                      v-model="giftForm.quantity"
-                      type="number"
-                      min="1"
-                      max="100"
-                      placeholder="Enter quantity (1-100)"
-                      class="quantity-input"
-                      @input="calculateTotalCost"
-                    />
-                    <div class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500">
-                      cards
-                    </div>
-                  </div>
-                  <div class="flex gap-2 mt-2">
-                    <button type="button" @click="setQuantity(5)" class="quantity-btn">5</button>
-                    <button type="button" @click="setQuantity(10)" class="quantity-btn">10</button>
-                    <button type="button" @click="setQuantity(20)" class="quantity-btn">20</button>
-                    <button type="button" @click="setQuantity(50)" class="quantity-btn">50</button>
-                  </div>
-                </div>
-
-                <!-- Amount per Card (shown when recipient is self) -->
-                <div v-if="giftForm.recipientType === 'self'">
-                  <label class="block text-sm font-semibold text-emerald-200 mb-3">Amount per Card</label>
-                  <div class="relative">
-                    <input
-                      v-model="giftForm.amountPerCard"
-                      type="number"
-                      step="0.01"
-                      min="0.01"
-                      placeholder="Enter amount"
-                      class="amount-input"
-                      @input="calculateTotalCost"
-                    />
-                    <span class="currency-label">USDC</span>
-                  </div>
-                  <div class="flex gap-2 mt-2">
-                    <button type="button" @click="setAmountPerCard(10)" class="amount-btn">$10</button>
-                    <button type="button" @click="setAmountPerCard(50)" class="amount-btn">$50</button>
-                    <button type="button" @click="setAmountPerCard(100)" class="amount-btn">$100</button>
-                    <button type="button" @click="setAmountPerCard(500)" class="amount-btn">$500</button>
-                  </div>
-                </div>
-
-                <!-- Gift Mode Selection (when other is selected) -->
-                <div v-if="giftForm.recipientType === 'other'" class="mt-4 p-4 metallic-card-secondary rounded-xl border border-gray-400/30 backdrop-blur-sm">
-                  <label class="block text-sm font-semibold text-emerald-200 mb-3">Gift Mode</label>
-                  <div class="flex gap-3">
-                    <button
-                      @click="giftForm.giftMode = 'single'"
-                      class="gift-mode-tab-button flex-1"
-                      :class="{ 'gift-mode-tab-active': giftForm.giftMode === 'single' }"
-                    >
-                      Single Recipient
-                    </button>
-
-                    <button
-                      @click="giftForm.giftMode = 'multiple'"
-                      class="gift-mode-tab-button flex-1"
-                      :class="{ 'gift-mode-tab-active': giftForm.giftMode === 'multiple' }"
-                    >
-                      Multiple Recipients
-                    </button>
-                  </div>
-                  
-                  <!-- Card fields shown when recipient is other and gift mode is single -->
-                  <div v-if="giftForm.giftMode === 'single'">
-                    <!-- Card Quantity -->
-                    <div class="mt-4">
+                    <!-- Card Quantity (shown when recipient is self) -->
+                    <div v-if="giftForm.recipientType === 'self'">
                       <label class="block text-sm font-semibold text-emerald-200 mb-3">Card Quantity</label>
                       <div class="relative">
                         <input
@@ -225,13 +154,19 @@
                           @input="calculateTotalCost"
                         />
                         <div class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500">
-        History
+                          cards
                         </div>
+                      </div>
+                      <div class="flex gap-2 mt-2">
+                        <button type="button" @click="setQuantity(5)" class="quantity-btn">5</button>
+                        <button type="button" @click="setQuantity(10)" class="quantity-btn">10</button>
+                        <button type="button" @click="setQuantity(20)" class="quantity-btn">20</button>
+                        <button type="button" @click="setQuantity(50)" class="quantity-btn">50</button>
                       </div>
                     </div>
 
-                    <!-- Amount per Card -->
-                    <div class="mt-4">
+                    <!-- Amount per Card (shown when recipient is self) -->
+                    <div v-if="giftForm.recipientType === 'self'">
                       <label class="block text-sm font-semibold text-emerald-200 mb-3">Amount per Card</label>
                       <div class="relative">
                         <input
@@ -245,136 +180,199 @@
                         />
                         <span class="currency-label">USDC</span>
                       </div>
+                      <div class="flex gap-2 mt-2">
+                        <button type="button" @click="setAmountPerCard(10)" class="amount-btn">$10</button>
+                        <button type="button" @click="setAmountPerCard(50)" class="amount-btn">$50</button>
+                        <button type="button" @click="setAmountPerCard(100)" class="amount-btn">$100</button>
+                        <button type="button" @click="setAmountPerCard(500)" class="amount-btn">$500</button>
+                      </div>
                     </div>
 
-                    <!-- Single Recipient Address -->
-                    <div class="mt-4">
-                      <label class="block text-sm font-semibold text-emerald-200 mb-3">Recipient Address</label>
-                      <input
-                        v-model="giftForm.recipientAddress"
-                        type="text"
-                        placeholder="Enter recipient wallet address"
-                        class="address-input"
-                      />
-                      <p class="text-sm text-emerald-300 mt-2">Please ensure the address is correct, cannot be changed after minting</p>
-                    </div>
-                  </div>
+                    <!-- Gift Mode Selection (when other is selected) -->
+                    <div v-if="giftForm.recipientType === 'other'" class="mt-4 p-4 metallic-card-secondary rounded-xl border border-gray-400/30 backdrop-blur-sm">
+                      <label class="block text-sm font-semibold text-emerald-200 mb-3">Gift Mode</label>
+                      <div class="flex gap-3">
+                        <button
+                          @click="giftForm.giftMode = 'single'"
+                          class="gift-mode-tab-button flex-1"
+                          :class="{ 'gift-mode-tab-active': giftForm.giftMode === 'single' }"
+                        >
+                          Single Recipient
+                        </button>
 
-                  <!-- Multiple Recipients Table (shown when recipient is other and gift mode is multiple) -->
-                  <div v-if="giftForm.giftMode === 'multiple'" class="mt-4">
-                    <label class="block text-sm font-semibold text-emerald-200 mb-3">Multiple Recipients List</label>
-                    <div>
-                      <table class="min-w-full metallic-card-secondary border border-white/20 rounded-xl">
-                        <thead>
-                          <tr class="bg-gray-500/20">
-                            <th class="py-3 px-4 text-left text-sm font-semibold text-white border-b border-gray-400/30">Card Quantity</th>
-                            <th class="py-3 px-4 text-left text-sm font-semibold text-white border-b border-gray-400/30">Amount (USDC)</th>
-                            <th class="py-3 px-4 text-left text-sm font-semibold text-white border-b border-gray-400/30">Recipient Address</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          <tr v-for="(recipient, index) in multipleRecipients" :key="index" class="hover:bg-gray-500/10">
-                            <td class="py-3 px-4 border-b border-gray-400/30">
-                              <input
-                                v-model="recipient.quantity"
-                                type="number"
-                                min="1"
-                                max="100"
-                                placeholder="Quantity"
-                                class="w-full px-3 py-2 border border-gray-400/30 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 bg-slate-800/50 backdrop-blur-sm text-white placeholder-emerald-300"
-                              />
-                            </td>
-                            <td class="py-3 px-4 border-b border-gray-400/30">
-                              <input
-                                v-model="recipient.amount"
-                                type="number"
-                                step="0.01"
-                                min="0.01"
-                                placeholder="Amount"
-                                class="w-full px-3 py-2 border border-gray-400/30 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 bg-slate-800/50 backdrop-blur-sm text-white placeholder-emerald-300"
-                              />
-                            </td>
-                            <td class="py-3 px-4 border-b border-gray-400/30">
-                              <input
-                                v-model="recipient.address"
-                                type="text"
-                                placeholder="Wallet Address"
-                                class="w-full px-3 py-2 border border-gray-400/30 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 bg-slate-800/50 backdrop-blur-sm text-white placeholder-emerald-300"
-                              />
-                            </td>
-                          </tr>
-                          
-                          <!-- Add Recipient Row (appears on hover) -->
-                          <tr class="add-recipient-row opacity-0 hover:opacity-100 transition-opacity duration-300">
-                            <td colspan="3" class="py-4 px-4 text-center">
-                      <button 
-                        type="button" 
-                        @click="addRecipientRow"
-                                class="flex items-center gap-2 px-4 py-2 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 hover:text-emerald-200 rounded-lg transition-all duration-200 font-medium border border-emerald-400/30 hover:border-emerald-400/50 backdrop-blur-sm mx-auto"
-                      >
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                        </svg>
-                                Add Recipient
-                      </button>
-                            </td>
-                          </tr>
-                        </tbody>
-                      </table>
-                    </div>
-                    <div class="mt-4 text-sm text-emerald-300">
-                      <p>Please fill in the card quantity, amount, and wallet address for each recipient</p>
-                    </div>
-                  </div>
-                </div>
-
-
-
-                <!-- Cost Preview -->
-                <div v-if="costPreview" class="metallic-card-secondary rounded-xl p-4 backdrop-blur-sm">
-                  <h4 class="text-lg font-semibold text-white mb-4">Cost Preview</h4>
-                  <div class="space-y-3">
-                    <div class="flex justify-between">
-                      <span class="text-emerald-200">Card Quantity:</span>
-                      <span class="font-semibold text-white">{{ giftForm.quantity }} cards</span>
-                    </div>
-                    <div class="flex justify-between">
-                      <span class="text-emerald-200">Amount per Card:</span>
-                      <span class="font-semibold text-white">{{ giftForm.amountPerCard }} USDC</span>
-                    </div>
-                    <div class="flex justify-between">
-                      <span class="text-emerald-200">Total Amount:</span>
-                      <span class="font-semibold text-white">{{ costPreview.totalAmount }} USDC</span>
-                    </div>
-                    <div class="border-t pt-3">
-                      <div class="flex justify-between text-lg">
-                        <span class="font-bold text-white">Total Cost:</span>
-                        <span class="font-bold text-emerald-400">{{ costPreview.total }} USDC</span>
+                        <button
+                          @click="giftForm.giftMode = 'multiple'"
+                          class="gift-mode-tab-button flex-1"
+                          :class="{ 'gift-mode-tab-active': giftForm.giftMode === 'multiple' }"
+                        >
+                          Multiple Recipients
+                        </button>
+                      </div>
+                      
+                      <!-- Card fields shown when recipient is other and gift mode is single -->
+                      <div v-if="giftForm.giftMode === 'single'">
+                        <!-- Card Quantity -->
+                        <div class="mt-4">
+                          <label class="block text-sm font-semibold text-emerald-200 mb-3">Card Quantity</label>
+                          <div class="relative">
+                            <input
+                              v-model="giftForm.quantity"
+                              type="number"
+                              min="1"
+                              max="100"
+                              placeholder="Enter quantity (1-100)"
+                              class="quantity-input"
+                              @input="calculateTotalCost"
+                            />
+                            <div class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500">
+                              cards
+                            </div>
+                          </div>
                         </div>
-                    </div>
-                  </div>
-                </div>
 
-                <!-- Submit Button -->
-                <button
-                  type="submit"
-                  :disabled="!canSubmit"
-                  class="btn-primary-gift w-full group relative"
-                  :class="{ 'loading': isLoading }"
-                >
-                  <!-- Button content -->
-                  <span v-if="isLoading" class="relative flex items-center justify-center gap-2 z-10">
-                    <div class="loading-spinner"></div>
-                    Minting...
-                  </span>
-                  <span v-else class="relative flex items-center justify-center gap-2 z-10">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"></path>
-                    </svg>
-                    {{ giftForm.recipientType === 'self' ? 'Mint Gift Cards' : 'Gift Cards' }}
-                  </span>
-                </button>
-              </form>
+                        <!-- Amount per Card -->
+                        <div class="mt-4">
+                          <label class="block text-sm font-semibold text-emerald-200 mb-3">Amount per Card</label>
+                          <div class="relative">
+                            <input
+                              v-model="giftForm.amountPerCard"
+                              type="number"
+                              step="0.01"
+                              min="0.01"
+                              placeholder="Enter amount"
+                              class="amount-input"
+                              @input="calculateTotalCost"
+                            />
+                            <span class="currency-label">USDC</span>
+                          </div>
+                        </div>
+
+                        <!-- Single Recipient Address -->
+                        <div class="mt-4">
+                          <label class="block text-sm font-semibold text-emerald-200 mb-3">Recipient Address</label>
+                          <input
+                            v-model="giftForm.recipientAddress"
+                            type="text"
+                            placeholder="Enter recipient wallet address"
+                            class="address-input"
+                          />
+                          <p class="text-sm text-emerald-300 mt-2">Please ensure the address is correct, cannot be changed after minting</p>
+                        </div>
+                      </div>
+
+                      <!-- Multiple Recipients Table (shown when recipient is other and gift mode is multiple) -->
+                      <div v-if="giftForm.giftMode === 'multiple'" class="mt-4">
+                        <label class="block text-sm font-semibold text-emerald-200 mb-3">Multiple Recipients List</label>
+                        <div>
+                          <table class="min-w-full metallic-card-secondary border border-white/20 rounded-xl">
+                            <thead>
+                              <tr class="bg-gray-500/20">
+                                <th class="py-3 px-4 text-left text-sm font-semibold text-white border-b border-gray-400/30">Card Quantity</th>
+                                <th class="py-3 px-4 text-left text-sm font-semibold text-white border-b border-gray-400/30">Amount (USDC)</th>
+                                <th class="py-3 px-4 text-left text-sm font-semibold text-white border-b border-gray-400/30">Recipient Address</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              <tr v-for="(recipient, index) in multipleRecipients" :key="index" class="hover:bg-gray-500/10">
+                                <td class="py-3 px-4 border-b border-gray-400/30">
+                                  <input
+                                    v-model="recipient.quantity"
+                                    type="number"
+                                    min="1"
+                                    max="100"
+                                    placeholder="Quantity"
+                                    class="w-full px-3 py-2 border border-gray-400/30 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 bg-slate-800/50 backdrop-blur-sm text-white placeholder-emerald-300"
+                                  />
+                                </td>
+                                <td class="py-3 px-4 border-b border-gray-400/30">
+                                  <input
+                                    v-model="recipient.amount"
+                                    type="number"
+                                    step="0.01"
+                                    min="0.01"
+                                    placeholder="Amount"
+                                    class="w-full px-3 py-2 border border-gray-400/30 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 bg-slate-800/50 backdrop-blur-sm text-white placeholder-emerald-300"
+                                  />
+                                </td>
+                                <td class="py-3 px-4 border-b border-gray-400/30">
+                                  <input
+                                    v-model="recipient.address"
+                                    type="text"
+                                    placeholder="Wallet Address"
+                                    class="w-full px-3 py-2 border border-gray-400/30 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 bg-slate-800/50 backdrop-blur-sm text-white placeholder-emerald-300"
+                                  />
+                                </td>
+                              </tr>
+                              
+                              <!-- Add Recipient Row (appears on hover) -->
+                              <tr class="add-recipient-row opacity-0 hover:opacity-100 transition-opacity duration-300">
+                                <td colspan="3" class="py-4 px-4 text-center">
+                                  <button 
+                                    type="button" 
+                                    @click="addRecipientRow"
+                                    class="flex items-center gap-2 px-4 py-2 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 hover:text-emerald-200 rounded-lg transition-all duration-200 font-medium border border-emerald-400/30 hover:border-emerald-400/50 backdrop-blur-sm mx-auto"
+                                  >
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                    </svg>
+                                    Add Recipient
+                                  </button>
+                                </td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </div>
+                        <div class="mt-4 text-sm text-emerald-300">
+                          <p>Please fill in the card quantity, amount, and wallet address for each recipient</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Cost Preview -->
+                    <div v-if="costPreview" class="metallic-card-secondary rounded-xl p-4 backdrop-blur-sm">
+                      <h4 class="text-lg font-semibold text-white mb-4">Cost Preview</h4>
+                      <div class="space-y-3">
+                        <div class="flex justify-between">
+                          <span class="text-emerald-200">Card Quantity:</span>
+                          <span class="font-semibold text-white">{{ giftForm.quantity }} cards</span>
+                        </div>
+                        <div class="flex justify-between">
+                          <span class="text-emerald-200">Amount per Card:</span>
+                          <span class="font-semibold text-white">{{ giftForm.amountPerCard }} USDC</span>
+                        </div>
+                        <div class="flex justify-between">
+                          <span class="text-emerald-200">Total Amount:</span>
+                          <span class="font-semibold text-white">{{ costPreview.totalAmount }} USDC</span>
+                        </div>
+                        <div class="border-t pt-3">
+                          <div class="flex justify-between text-lg">
+                            <span class="font-bold text-white">Total Cost:</span>
+                            <span class="font-bold text-emerald-400">{{ costPreview.total }} USDC</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <button
+                      type="submit"
+                      :disabled="!canSubmit"
+                      class="btn-primary-gift w-full group relative"
+                      :class="{ 'loading': isLoading }"
+                    >
+                      <!-- Button content -->
+                      <span v-if="isLoading" class="relative flex items-center justify-center gap-2 z-10">
+                        <div class="loading-spinner"></div>
+                        Minting...
+                      </span>
+                      <span v-else class="relative flex items-center justify-center gap-2 z-10">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"></path>
+                        </svg>
+                        {{ giftForm.recipientType === 'self' ? 'Mint Gift Cards' : 'Gift Cards' }}
+                      </span>
+                    </button>
+                  </form>
                 </div>
               </div>
             </div>
@@ -399,7 +397,7 @@
             <div class="flex items-center gap-3">
               <div class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
                 <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                 </svg>
               </div>
               <h3 class="text-xl font-bold text-white">Gift History</h3>
@@ -939,98 +937,6 @@ watch(isConnected, async (connected) => {
   z-index: 0;
 }
 
-/* Gift Card Background Pattern */
-.gift-card-pattern {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-image: 
-    linear-gradient(45deg, rgba(255, 255, 255, 0.02) 25%, transparent 25%),
-    linear-gradient(-45deg, rgba(255, 255, 255, 0.02) 25%, transparent 25%),
-    linear-gradient(45deg, transparent 75%, rgba(255, 255, 255, 0.02) 75%),
-    linear-gradient(-45deg, transparent 75%, rgba(255, 255, 255, 0.02) 75%);
-  background-size: 20px 20px;
-  background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
-  opacity: 0.3;
-  pointer-events: none;
-}
-
-/* Golden Sparkles */
-.golden-sparkles {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  pointer-events: none;
-  z-index: 5;
-}
-
-.sparkle {
-  position: absolute;
-  width: 4px;
-  height: 4px;
-  background: radial-gradient(circle, #fbbf24, #f59e0b);
-  border-radius: 50%;
-  animation: sparkle-twinkle 3s ease-in-out infinite;
-  box-shadow: 0 0 6px rgba(251, 191, 36, 0.6);
-}
-
-.sparkle-1 { top: 15%; left: 10%; animation-delay: 0s; }
-.sparkle-2 { top: 25%; left: 20%; animation-delay: 0.5s; }
-.sparkle-3 { top: 35%; left: 15%; animation-delay: 1s; }
-.sparkle-4 { top: 20%; left: 30%; animation-delay: 1.5s; }
-.sparkle-5 { top: 40%; left: 25%; animation-delay: 2s; }
-.sparkle-6 { top: 60%; right: 15%; animation-delay: 0.3s; }
-.sparkle-7 { top: 70%; right: 25%; animation-delay: 0.8s; }
-.sparkle-8 { top: 80%; right: 20%; animation-delay: 1.3s; }
-.sparkle-9 { top: 65%; right: 35%; animation-delay: 1.8s; }
-.sparkle-10 { top: 75%; right: 30%; animation-delay: 2.3s; }
-
-/* Gift Ribbon */
-.gift-ribbon {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  pointer-events: none;
-  z-index: 8;
-}
-
-.ribbon-horizontal {
-  position: absolute;
-  top: 50%;
-  left: 0;
-  right: 0;
-  height: 6px;
-  background: linear-gradient(90deg, 
-    transparent 0%, 
-    rgba(251, 191, 36, 0.8) 20%, 
-    #fbbf24 50%, 
-    rgba(251, 191, 36, 0.8) 80%, 
-    transparent 100%);
-  transform: translateY(-50%);
-  box-shadow: 0 2px 4px rgba(251, 191, 36, 0.4);
-}
-
-.ribbon-vertical {
-  position: absolute;
-  right: 15%;
-  top: 0;
-  bottom: 0;
-  width: 6px;
-  background: linear-gradient(180deg, 
-    transparent 0%, 
-    rgba(251, 191, 36, 0.8) 20%, 
-    #fbbf24 50%, 
-    rgba(251, 191, 36, 0.8) 80%, 
-    transparent 100%);
-  box-shadow: 2px 0 4px rgba(251, 191, 36, 0.4);
-}
-
 /* Gift Card Title Section */
 .gift-card-title-section {
   text-align: left;
@@ -1061,18 +967,6 @@ watch(isConnected, async (connected) => {
   margin-left: 0.1em;
   letter-spacing: 0.2em;
   text-transform: uppercase;
-}
-
-/* Sparkle Animation */
-@keyframes sparkle-twinkle {
-  0%, 100% { 
-    opacity: 0.3; 
-    transform: scale(1); 
-  }
-  50% { 
-    opacity: 1; 
-    transform: scale(1.2); 
-  }
 }
 
 /* Golden Border Animation */
@@ -1209,6 +1103,7 @@ watch(isConnected, async (connected) => {
 tbody:hover .add-recipient-row {
   @apply opacity-100;
 }
+
 @keyframes shimmer {
   0% { transform: translateX(-100%) skewX(-12deg); }
   100% { transform: translateX(200%) skewX(-12deg); }
