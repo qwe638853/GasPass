@@ -24,11 +24,11 @@ export class RelayerService {
       console.log(`📝 交易哈希: ${tx.hash}`);
       
       const receipt = await tx.wait();
-      console.log(`✅ 交易確認: ${receipt.transactionHash}`);
+      console.log(`✅ 交易確認: ${receipt.hash}`);
       
       return {
         success: true,
-        txHash: receipt.transactionHash,
+        txHash: receipt.hash,
         blockNumber: receipt.blockNumber,
         gasUsed: receipt.gasUsed.toString()
       };
@@ -52,11 +52,11 @@ export class RelayerService {
       console.log(`📝 交易哈希: ${tx.hash}`);
       
       const receipt = await tx.wait();
-      console.log(`✅ 交易確認: ${receipt.transactionHash}`);
+      console.log(`✅ 交易確認: ${receipt.hash}`);
       
       return {
         success: true,
-        txHash: receipt.transactionHash,
+        txHash: receipt.hash,
         blockNumber: receipt.blockNumber,
         gasUsed: receipt.gasUsed.toString()
       };
@@ -79,11 +79,11 @@ export class RelayerService {
       console.log(`📝 交易哈希: ${tx.hash}`);
       
       const receipt = await tx.wait();
-      console.log(`✅ 交易確認: ${receipt.transactionHash}`);
+      console.log(`✅ 交易確認: ${receipt.hash}`);
       
       return {
         success: true,
-        txHash: receipt.transactionHash,
+        txHash: receipt.hash,
         blockNumber: receipt.blockNumber,
         gasUsed: receipt.gasUsed.toString()
       };
@@ -108,11 +108,11 @@ export class RelayerService {
       console.log(`📝 交易哈希: ${tx.hash}`);
       
       const receipt = await tx.wait();
-      console.log(`✅ 交易確認: ${receipt.transactionHash}`);
+      console.log(`✅ 交易確認: ${receipt.hash}`);
       
       return {
         success: true,
-        txHash: receipt.transactionHash,
+        txHash: receipt.hash,
         blockNumber: receipt.blockNumber,
         gasUsed: receipt.gasUsed.toString()
       };
@@ -135,11 +135,11 @@ export class RelayerService {
       console.log(`📝 交易哈希: ${tx.hash}`);
       
       const receipt = await tx.wait();
-      console.log(`✅ 交易確認: ${receipt.transactionHash}`);
+      console.log(`✅ 交易確認: ${receipt.hash}`);
       
       return {
         success: true,
-        txHash: receipt.transactionHash,
+        txHash: receipt.hash,
         blockNumber: receipt.blockNumber,
         gasUsed: receipt.gasUsed.toString()
       };
@@ -162,11 +162,11 @@ export class RelayerService {
       console.log(`📝 交易哈希: ${tx.hash}`);
       
       const receipt = await tx.wait();
-      console.log(`✅ 交易確認: ${receipt.transactionHash}`);
+      console.log(`✅ 交易確認: ${receipt.hash}`);
       
       return {
         success: true,
-        txHash: receipt.transactionHash,
+        txHash: receipt.hash,
         blockNumber: receipt.blockNumber,
         gasUsed: receipt.gasUsed.toString()
       };

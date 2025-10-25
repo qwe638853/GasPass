@@ -3,6 +3,7 @@ import { ethers, formatUnits, parseUnits, parseEther, formatEther } from 'ethers
 import { GAS_PASS_CONFIG } from '@/config/gasPassConfig.js'
 import relayerService from './relayerService.js'
 import { getStoredPkpEthAddress } from './vincentAuthService.js'
+import { markRaw } from 'vue'
 
 // 自定義 splitSignature 函數 (ethers v6 中已移除)
 function splitSignature(signature) {
@@ -56,47 +57,127 @@ const USDC_CONFIG = {
 
 class ContractService {
   constructor() {
-    this.provider = null
+    this.ethProvider = null  // 真正的 MetaMask provider
     this.signer = null
     this.gasPassContract = null
     this.usdcContract = null
   }
 
-  // 初始化合約連接
-  async init(provider, signer) {
-    this.provider = provider
-    this.signer = signer
-    
-    // 確保 provider 是正確的
-    if (signer && signer.provider) {
-      this.provider = signer.provider
+  // 1) 拿到 "真正" 的 MetaMask provider
+  getMetaMaskProvider() {
+    const injected = window.ethereum
+    if (!injected) throw new Error("找不到注入錢包 (window.ethereum)")
+    // 如有多個注入，挑 MetaMask 那個
+    const metamask = injected.providers?.find?.(p => p.isMetaMask) ?? injected
+    return new ethers.BrowserProvider(metamask)
+  }
+
+  async initWallet() {
+    const provider = this.getMetaMaskProvider()
+    await provider.send("eth_requestAccounts", [])
+    const signer = await provider.getSigner()
+
+    // 防止 Vue 把原型包壞
+    this.ethProvider = markRaw(provider)
+    this.signer = markRaw(signer)
+    this.provider = this.ethProvider  // 設置 provider 以保持向後兼容
+
+    // 確認是 EOA（你現在合約只支援 ECDSA）
+    const owner = await this.signer.getAddress()
+    const code = await this.ethProvider.getCode(owner)
+    if (code !== "0x") {
+      throw new Error("當前帳戶是合約錢包（非 EOA）。請切回 MetaMask EOA，或等合約支援 EIP-1271。")
+    }
+    return owner
+  }
+
+  // 2) 統一讀寫來源 - 所有合約實例都使用相同的 provider
+  getContracts() {
+    if (!this.ethProvider || !this.signer) {
+      throw new Error('Provider or signer not initialized')
     }
     
-    // 使用 provider 來讀取合約狀態，使用 signer 來寫入
-    this.gasPassContract = new ethers.Contract(CONTRACT_CONFIG.address, CONTRACT_CONFIG.abi, this.provider)
-    this.usdcContract = new ethers.Contract(USDC_CONFIG.address, USDC_CONFIG.abi, this.provider)
+    console.log('🔍 創建合約實例，統一使用 ethProvider')
+    console.log('🔍 Provider 類型:', this.ethProvider.constructor?.name)
     
-    console.log('🔍 ContractService 初始化:', {
-      hasProvider: !!this.provider,
-      hasSigner: !!this.signer,
-      providerType: this.provider?.constructor?.name,
-      signerType: this.signer?.constructor?.name
-    })
+    // 統一使用 ethProvider，因為它已經確保是有效的 ethers provider
+    const gaspassRead = new ethers.Contract(CONTRACT_CONFIG.address, CONTRACT_CONFIG.abi, this.ethProvider)
+    const gaspassWrite = new ethers.Contract(CONTRACT_CONFIG.address, CONTRACT_CONFIG.abi, this.ethProvider)
+    const usdcRead = new ethers.Contract(USDC_CONFIG.address, USDC_CONFIG.abi, this.ethProvider)
+    
+    return { gaspassRead, gaspassWrite, usdcRead }
+  }
+
+  // 檢查 provider 是否為有效的 ethers provider
+  isValidEthersProvider(provider) {
+    return provider && 
+           typeof provider.getCode === 'function' && 
+           typeof provider.getSigner === 'function' &&
+           provider.constructor?.name === 'BrowserProvider'
+  }
+
+  // 創建 fallback provider
+  async createFallbackProvider() {
+    if (!window.ethereum) {
+      throw new Error('No ethereum provider found')
+    }
+    const provider = new ethers.BrowserProvider(window.ethereum)
+    const signer = await provider.getSigner()
+    console.log('🔍 創建 fallback ethers BrowserProvider')
+    return { provider, signer }
+  }
+
+  // 初始化合約連接（保持向後兼容）
+  async init(provider, signer) {
+    // 優先使用傳入的 provider，但需要驗證其有效性
+    if (this.isValidEthersProvider(provider) && signer) {
+      this.ethProvider = provider
+      this.signer = signer
+      this.provider = this.ethProvider  // 設置 provider 以保持向後兼容
+      console.log('🔍 ContractService 使用傳入的有效 ethers provider')
+      console.log('🔍 Provider 類型:', provider.constructor?.name)
+      console.log('🔍 Signer 類型:', signer.constructor?.name)
+    } else {
+      // Fallback: 創建真正的 ethers provider
+      console.log('🔍 傳入的 provider 無效，使用 fallback 邏輯')
+      const { provider: fallbackProvider, signer: fallbackSigner } = await this.createFallbackProvider()
+      this.ethProvider = fallbackProvider
+      this.signer = fallbackSigner
+      this.provider = this.ethProvider  // 設置 provider 以保持向後兼容
+      console.log('🔍 ContractService 使用 fallback ethers BrowserProvider')
+    }
+  }
+
+  // 確保合約服務已初始化
+  async ensureInitialized() {
+    if (!this.ethProvider || !this.signer) {
+      console.warn('⚠️ ContractService 未初始化，嘗試初始化...')
+      await this.initWallet()
+    }
   }
 
   // 檢查用戶是否有 GasPass token
   async hasGasPassCard(walletAddress) {
     try {
-      const totalSupply = await this.gasPassContract.totalSupply()
+      await this.ensureInitialized()
+      
+      const { gaspassRead } = this.getContracts()
+      console.log('🔍 檢查 GasPass 卡片，地址:', walletAddress)
+      
+      const totalSupply = await gaspassRead.totalSupply()
+      console.log('🔍 總供應量:', totalSupply.toString())
       
       // 遍歷所有 token 檢查擁有者
       for (let i = 0; i < totalSupply; i++) {
-        const tokenId = await this.gasPassContract.tokenByIndex(i)
-        const owner = await this.gasPassContract.ownerOf(tokenId)
+        const tokenId = await gaspassRead.tokenByIndex(i)
+        const owner = await gaspassRead.ownerOf(tokenId)
+        console.log(`🔍 Token ${i}: ID=${tokenId}, Owner=${owner}`)
         if (owner.toLowerCase() === walletAddress.toLowerCase()) {
+          console.log('✅ 找到用戶的卡片!')
           return true
         }
       }
+      console.log('❌ 未找到用戶的卡片')
       return false
     } catch (error) {
       console.error('Error checking GasPass cards:', error)
@@ -107,16 +188,24 @@ class ContractService {
   // 獲取用戶的所有 GasPass token
   async getUserCards(walletAddress) {
     try {
+      await this.ensureInitialized()
+      
+      const { gaspassRead } = this.getContracts()
+      console.log('🔍 獲取用戶卡片，地址:', walletAddress)
+      
       const cards = []
-      const totalSupply = await this.gasPassContract.totalSupply()
+      const totalSupply = await gaspassRead.totalSupply()
+      console.log('🔍 總供應量:', totalSupply.toString())
       
       for (let i = 0; i < totalSupply; i++) {
-        const tokenId = await this.gasPassContract.tokenByIndex(i)
-        const owner = await this.gasPassContract.ownerOf(tokenId)
+        const tokenId = await gaspassRead.tokenByIndex(i)
+        const owner = await gaspassRead.ownerOf(tokenId)
         
         if (owner.toLowerCase() === walletAddress.toLowerCase()) {
-          const balance = await this.gasPassContract.balanceOf(tokenId)
-          const balanceInUSDC = ethers.utils.formatUnits(balance, 6) // USDC 有 6 位小數
+          const balance = await gaspassRead.balanceOf(tokenId)
+          const balanceInUSDC = ethers.formatUnits(balance, 6) // USDC 有 6 位小數
+          
+          console.log(`✅ 找到卡片: ID=${tokenId}, Balance=${balanceInUSDC} USDC`)
           
           cards.push({
             tokenId: tokenId.toString(),
@@ -128,6 +217,7 @@ class ContractService {
         }
       }
       
+      console.log(`🔍 用戶共有 ${cards.length} 張卡片`)
       return cards
     } catch (error) {
       console.error('Error getting user cards:', error)
@@ -138,8 +228,11 @@ class ContractService {
   // 獲取 USDC 餘額
   async getUSDCBalance(walletAddress) {
     try {
-      const balance = await this.usdcContract.balanceOf(walletAddress)
-      return formatUnits(balance, 6)
+      await this.ensureInitialized()
+      const { usdcRead } = this.getContracts()
+      
+      const balance = await usdcRead.balanceOf(walletAddress)
+      return ethers.formatUnits(balance, 6)
     } catch (error) {
       console.error('Error getting USDC balance:', error)
       // 在測試網上，如果 USDC 合約不完整，返回模擬餘額
@@ -156,8 +249,8 @@ class ContractService {
         throw new Error('Provider not initialized')
       }
       
-      // 使用 provider 而不是 signer 來讀取 nonce
-      const usdcContract = new ethers.Contract(USDC_CONFIG.address, USDC_CONFIG.abi, this.provider)
+      // 使用 signer 來讀取 nonce
+      const usdcContract = new ethers.Contract(USDC_CONFIG.address, USDC_CONFIG.abi, this.signer)
       const nonce = await usdcContract.nonces(walletAddress)
       console.log('USDC nonce retrieved:', nonce.toString())
       return nonce
@@ -178,7 +271,7 @@ class ContractService {
       }
       
       // 從 GasPass 合約讀取 ownerNonces
-      const gasPassContract = new ethers.Contract(CONTRACT_CONFIG.address, CONTRACT_CONFIG.abi, this.provider)
+      const gasPassContract = new ethers.Contract(CONTRACT_CONFIG.address, CONTRACT_CONFIG.abi, this.signer)
       const nonce = await gasPassContract.ownerNonces(walletAddress)
       console.log('GasPass 合約 nonce 獲取成功:', nonce.toString())
       return nonce
@@ -193,12 +286,15 @@ class ContractService {
   // 創建 USDC permit 簽名
   async createUSDCPermit(owner, spender, value, deadline) {
     try {
-      const domain = {
-        name: 'USD Coin',
-        version: '2',
-        chainId: 42161, // Arbitrum Mainnet
-        verifyingContract: USDC_CONFIG.address
-      }
+      console.log('🔍 創建 USDC permit 簽名...')
+      console.log('🔍 參數:', { owner, spender, value, deadline })
+      
+      // 獲取 USDC nonce
+      const nonce = await this.getUSDCNonce(owner)
+      console.log('🔍 USDC nonce:', nonce.toString())
+      
+      const valueWei = parseUnits(value, 6)
+      console.log('🔍 valueWei:', valueWei.toString())
 
       const types = {
         Permit: [
@@ -210,9 +306,6 @@ class ContractService {
         ]
       }
 
-      const nonce = await this.getUSDCNonce(owner)
-      const valueWei = parseUnits(value, 6)
-
       const value_data = {
         owner: owner,
         spender: spender,
@@ -221,8 +314,21 @@ class ContractService {
         deadline: deadline
       }
 
-      const signature = await this.signer.signTypedData(domain, types, value_data, 'Permit')
+      console.log('🔍 permit 數據:', value_data)
+      
+      // 使用 EIP-712 typed data 簽名（不是 signMessage）
+      const domain = {
+        name: 'USD Coin',
+        version: '2',
+        chainId: 42161,
+        verifyingContract: USDC_CONFIG.address
+      }
+      
+      console.log('🔍 使用 EIP-712 typed data 簽名...')
+      const signature = await this.signer.signTypedData(domain, types, value_data)
       const sig = splitSignature(signature)
+
+      console.log('🔍 permit 簽名:', { v: sig.v, r: sig.r, s: sig.s })
 
       return {
         owner: owner,
@@ -234,12 +340,12 @@ class ContractService {
         s: sig.s.startsWith('0x') ? sig.s : '0x' + sig.s
       }
     } catch (error) {
-      console.error('Error creating USDC permit:', error)
+      console.error('❌ 創建 USDC permit 失敗:', error)
       throw error
     }
   }
 
-  // Mint GasPass token (使用 Relayer)
+  // 3) 鑄造主流程（mintWithSig）
   async mintGasPassCard(params) {
     try {
       const { to, amount } = params
@@ -247,153 +353,115 @@ class ContractService {
       console.log('🚀 開始鑄造 GasPass 儲值卡...')
       console.log('參數:', { to, amount })
       
-      const usdcAmount = parseUnits(amount, 6) // USDC 有 6 位小數
-      const deadline = Math.floor(Date.now() / 1000) + 3600
+      const owner = await this.signer.getAddress()
+      const { gaspassRead, usdcRead } = this.getContracts()
+
+      // ===== 讀鏈上 nonce（不要再 fallback 0）=====
+      const gaspassNonce = await gaspassRead.ownerNonces(owner)
+      const usdcNonce = await usdcRead.nonces(owner)
       
-      // 檢查 signer 是否初始化
-      if (!this.signer) {
-        throw new Error('Signer not initialized. Please call init() first.')
+      console.log('🔍 GasPass nonce:', gaspassNonce.toString())
+      console.log('🔍 USDC nonce:', usdcNonce.toString())
+
+      // ===== 建 USDC permit（EIP-2612）=====
+      const value = ethers.parseUnits(String(amount), 6) // USDC 6 decimals
+      const deadline = BigInt(Math.floor(Date.now()/1000) + 3600)
+
+      const usdcDomain = {
+        name: "USD Coin",       // ← 確認你鏈上 USDC 的實際 name/version
+        version: "2",
+        chainId: 42161,
+        verifyingContract: USDC_CONFIG.address,
+      }
+      const usdcTypes = {
+        Permit: [
+          { name: "owner",   type: "address" },
+          { name: "spender", type: "address" },
+          { name: "value",   type: "uint256" },
+          { name: "nonce",   type: "uint256" },
+          { name: "deadline",type: "uint256" },
+        ],
+      }
+      const usdcMessage = {
+        owner,
+        spender: CONTRACT_CONFIG.address,
+        value: BigInt(value),
+        nonce: BigInt(usdcNonce.toString()),
+        deadline,
       }
       
-      // 獲取當前簽名者地址
-      const signerAddress = await this.signer.getAddress()
-      console.log('🔍 當前簽名者地址:', signerAddress)
-      console.log('🔍 接收者地址:', to)
-      console.log('🔍 this.signer 對象:', this.signer)
-      console.log('🔍 this.signer.provider:', this.signer.provider)
-      
-      // 檢查 signerAddress 與 to 是否匹配
-      if (signerAddress.toLowerCase() !== to.toLowerCase()) {
-        console.warn('⚠️ 簽名者地址與接收者地址不匹配！')
-        console.warn('⚠️ 這可能導致簽名驗證失敗')
-      }
-      
-      // 獲取簽名者的實際 nonce
-      const nonce = await this.getUserNonce(signerAddress)
-      console.log('簽名者 nonce:', nonce.toString())
-      
-      // 創建 USDC permit 簽名（使用簽名者地址）
       console.log('📝 創建 USDC permit 簽名...')
-      const permitData = await this.createUSDCPermit(signerAddress, CONTRACT_CONFIG.address, amount, deadline)
-      console.log('🔍 permitData.owner:', permitData.owner)
-      console.log('🔍 permitData.owner 與 signerAddress 匹配:', permitData.owner.toLowerCase() === signerAddress.toLowerCase())
-      
-      // 創建 EIP-712 簽名數據
+      const usdcSig = await this.signer.signTypedData(usdcDomain, usdcTypes, usdcMessage)
+      const { v: pv, r: pr, s: ps } = ethers.Signature.from(usdcSig)
+
+      // 依合約 STABLECOIN_PERMIT_TYPEHASH 的 **型別與順序**編碼再 keccak
+      const STABLECOIN_PERMIT_TYPEHASH = ethers.keccak256(ethers.toUtf8Bytes('StablecoinPermitData(address owner,address spender,uint256 value,uint256 deadline,uint8 v,bytes32 r,bytes32 s)'))
+      const permitDataHash = ethers.keccak256(
+        ethers.AbiCoder.defaultAbiCoder().encode(
+          ["bytes32","address","address","uint256","uint256","uint8","bytes32","bytes32"],
+          [STABLECOIN_PERMIT_TYPEHASH, owner, CONTRACT_CONFIG.address, BigInt(value), deadline, pv, pr, ps]
+        )
+      )
+
+      // ===== 建 GasPass 的 712（MintWithSig）=====
       const domain = {
-        name: 'GasPass',
-        version: '1',
-        chainId: 42161, // Arbitrum Mainnet
-        verifyingContract: CONTRACT_CONFIG.address
+        name: "GasPass",
+        version: "1",
+        chainId: 42161,
+        verifyingContract: CONTRACT_CONFIG.address,
       }
-
-      // 計算 permitHash（與合約邏輯一致）
-      const permitHash = ethers.keccak256(ethers.AbiCoder.defaultAbiCoder().encode(
-        ['bytes32', 'address', 'address', 'uint256', 'uint256', 'uint8', 'bytes32', 'bytes32'],
-        [
-          ethers.keccak256(ethers.toUtf8Bytes('StablecoinPermitData(address owner,address spender,uint256 value,uint256 deadline,uint8 v,bytes32 r,bytes32 s)')),
-          permitData.owner,
-          permitData.spender,
-          permitData.value,
-          permitData.deadline,
-          permitData.v,
-          permitData.r,
-          permitData.s
-        ]
-      ))
-
       const types = {
-        StablecoinPermitData: [
-          { name: "owner",    type: "address" },
-          { name: "spender",  type: "address" },
-          { name: "value",    type: "uint256" },
-          { name: "deadline", type: "uint256" },
-          { name: "v",        type: "uint8"   },
-          { name: "r",        type: "bytes32" },
-          { name: "s",        type: "bytes32" },
-        ],
         MintWithSig: [
-          { name: "to",         type: "address" },
-          { name: "value",      type: "uint256" },
-          { name: "permitData", type: "StablecoinPermitData" }, // ← 關鍵
-          { name: "agent",      type: "address" },
-          { name: "nonce",      type: "uint256" },
-          { name: "deadline",   type: "uint256" },
+          { name: "to",             type: "address"  },
+          { name: "value",          type: "uint256"  },
+          { name: "permitDataHash", type: "bytes32"  },
+          { name: "agent",          type: "address"  },
+          { name: "nonce",          type: "uint256"  },
+          { name: "deadline",       type: "uint256"  },
         ],
-      };
-      const typedData = {
-        to: to,
-        value: usdcAmount.toString(),
-        permitData: {
-          owner: permitData.owner,
-          spender: permitData.spender,
-          value: permitData.value.toString(),
-          deadline: permitData.deadline.toString(),
-          v: permitData.v,
-          r: permitData.r,
-          s: permitData.s
-        },
-        agent: getStoredPkpEthAddress(),
-        nonce: nonce.toString(),
-        deadline: deadline.toString()
+      }
+      const message = {
+        to,
+        value: BigInt(value),
+        permitDataHash,
+        agent: getStoredPkpEthAddress(), // 你的 agent 地址；與合約邏輯無需等於 owner
+        nonce: BigInt(gaspassNonce.toString()),
+        deadline,
       }
 
       console.log('✍️ 簽署 EIP-712 數據...')
-      console.log('🔍 typedData 內容:', JSON.stringify(typedData, null, 2))
-      console.log('🔍 domain 內容:', JSON.stringify(domain, null, 2))
-      console.log('🔍 types 內容:', JSON.stringify(types, null, 2))
-      
-      // 手動計算 EIP-712 hash 來調試
-      let signature
-      try {
-        // 創建用於簽名的 typedData（使用 permitHash）
-        const signatureTypedData = {
-          to: to,
-          value: usdcAmount.toString(),
-          permitData: {
-            owner: permitData.owner,
-            spender: permitData.spender,
-            value: permitData.value.toString(),  // 轉換 BigInt 為字符串
-            deadline: permitData.deadline.toString(),
-            v: permitData.v,
-            r: permitData.r,
-            s: permitData.s,
-          },
-          agent: getStoredPkpEthAddress(),
-          nonce: nonce.toString(),
-          deadline: deadline.toString()
-        }
-        
-        console.log('🔍 簽名用的 typedData:', JSON.stringify(signatureTypedData, (key, value) => 
-          typeof value === 'bigint' ? value.toString() : value, 2))
-        console.log('🔍 permitHash:', permitHash)
-        console.log('🔍 agent:', getStoredPkpEthAddress())
-        console.log('🔍 nonce:', nonce.toString())
-        
-        const structHash = ethers.TypedDataEncoder.hashStruct('MintWithSig', types, signatureTypedData)
-        const domainSeparator = ethers.TypedDataEncoder.hashDomain(domain)
-        const digest = ethers.keccak256(ethers.concat(['0x1901', domainSeparator, structHash]))
-        console.log('🔍 手動計算的 EIP-712 digest:', digest)
-        
-        signature = await this.signer.signTypedData(domain, types, signatureTypedData)
-        console.log('🔍 簽名結果:', signature)
-        
-        // 驗證簽名者
-        const recoveredAddress = ethers.recoverAddress(digest, signature)
-        console.log('🔍 簽名者地址:', recoveredAddress)
-        console.log('🔍 期望的簽名者:', permitData.owner)
-        console.log('🔍 簽名者匹配:', recoveredAddress.toLowerCase() === permitData.owner.toLowerCase())
-        
-        if (recoveredAddress.toLowerCase() !== permitData.owner.toLowerCase()) {
-          throw new Error(`簽名者不匹配: 期望 ${permitData.owner}, 實際 ${recoveredAddress}`)
-        }
-      } catch (error) {
-        console.error('❌ EIP-712 計算錯誤:', error)
-        throw error
+      console.log('🔍 message:', message)
+
+      // 先自驗（不要自己手算 digest，直接用 ethers 幫你 recover）
+      const sig = await this.signer.signTypedData(domain, types, message)
+      const who = ethers.verifyTypedData(domain, types, message, sig)
+      if (who.toLowerCase() !== owner.toLowerCase()) {
+        throw new Error(`簽名者不匹配：期望 ${owner}，實際 ${who}`)
       }
       
+      console.log('✅ 簽名驗證通過！簽名者:', who)
+
+      // 準備發送給 relayer 的數據（與合約結構一致）
+      const mintTypedData = {
+        to: to,
+        value: value.toString(),
+        permitData: {
+          owner: owner,
+          spender: CONTRACT_CONFIG.address,
+          value: value.toString(),
+          deadline: deadline.toString(),
+          v: pv,
+          r: pr,
+          s: ps
+        },
+        agent: getStoredPkpEthAddress(),
+        nonce: gaspassNonce.toString(),
+        deadline: deadline.toString()
+      }
+
       console.log('📤 通過 Relayer 發送交易...')
-      console.log('🔍 發送給後端的數據:', { typedData, signature })
-      const result = await relayerService.relayMint(typedData, signature)
+      console.log('🔍 發送給後端的數據:', { typedData: mintTypedData, signature: sig })
+      const result = await relayerService.relayMint(mintTypedData, sig)
       
       console.log('✅ 鑄造成功!', result)
       return {
@@ -418,6 +486,9 @@ class ContractService {
       
       console.log('💰 開始為儲值卡充值...')
       console.log('參數:', { tokenId, amount })
+      
+      // 確保合約服務已初始化
+      await this.ensureInitialized()
       
       const usdcAmount = parseUnits(amount, 6) // USDC 有 6 位小數
       const deadline = Math.floor(Date.now() / 1000) + 3600
@@ -458,7 +529,7 @@ class ContractService {
         DepositWithSig: [
           { name: 'tokenId', type: 'uint256' },
           { name: 'amount', type: 'uint256' },
-          { name: 'permitData', type: 'bytes32' },  // 使用 bytes32 來表示 permitHash
+          { name: 'permitDataHash', type: 'bytes32' },  // EIP-712 簽名時使用 permitDataHash
           { name: 'nonce', type: 'uint256' },
           { name: 'deadline', type: 'uint256' }
         ]
@@ -487,7 +558,7 @@ class ContractService {
         const signatureTypedData = {
           tokenId: tokenId.toString(),
           amount: usdcAmount.toString(),
-          permitData: permitHash,  // 簽名時使用 permitHash
+          permitDataHash: permitHash,  // 簽名時使用 permitHash
           nonce: nonce.toString(),
           deadline: deadline.toString()
         }
@@ -506,6 +577,9 @@ class ContractService {
       return {
         success: true,
         txHash: result.txHash,
+        confirmations: result.confirmations,
+        gasUsed: result.gasUsed,
+        status: result.status,
         receipt: result.receipt
       }
     } catch (error) {
