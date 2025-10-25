@@ -245,13 +245,15 @@
                     <div class="space-y-4">
                       <div>
                         <label class="block text-sm font-semibold text-emerald-200 mb-2">Select Target Chain</label>
-                        <select v-model="manualRefuel.chainId" class="w-full p-3 bg-slate-600/50 border border-emerald-400/30 rounded-xl focus:border-emerald-400 focus:outline-none transition-colors text-white">
-                          <option value="1">Ethereum Mainnet</option>
-                          <option value="42161">Arbitrum One</option>
-                          <option value="10">Optimism</option>
-                          <option value="137">Polygon</option>
-                          <option value="8453">Base</option>
-                        </select>
+                        <button 
+                          @click="showManualChainModal = true"
+                          class="w-full p-3 bg-slate-600/50 border border-emerald-400/30 rounded-xl focus:border-emerald-400 focus:outline-none transition-colors text-white text-left flex items-center justify-between hover:bg-slate-600/70"
+                        >
+                          <span>{{ getChainName(manualRefuel.chainId) }}</span>
+                          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                          </svg>
+                        </button>
                       </div>
                       
                       <div>
@@ -336,13 +338,15 @@
                     <div class="space-y-4">
                       <div>
                         <label class="block text-sm font-semibold text-emerald-200 mb-2">Monitor Chain</label>
-                        <select v-model="agentRefuel.chainId" class="w-full p-3 bg-slate-600/50 border border-emerald-400/30 rounded-xl focus:border-emerald-400 focus:outline-none transition-colors text-white">
-                          <option value="1">Ethereum Mainnet</option>
-                          <option value="42161">Arbitrum One</option>
-                          <option value="10">Optimism</option>
-                          <option value="137">Polygon</option>
-                          <option value="8453">Base</option>
-                        </select>
+                        <button 
+                          @click="showAgentChainModal = true"
+                          class="w-full p-3 bg-slate-600/50 border border-emerald-400/30 rounded-xl focus:border-emerald-400 focus:outline-none transition-colors text-white text-left flex items-center justify-between hover:bg-slate-600/70"
+                        >
+                          <span>{{ getChainName(agentRefuel.chainId) }}</span>
+                          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                          </svg>
+                        </button>
                       </div>
                       
                       <div>
@@ -442,6 +446,89 @@
       </div>
     </section>
 
+    <!-- Chain Selection Modals -->
+    <div v-if="showManualChainModal" class="modal-overlay" @click="showManualChainModal = false">
+      <div class="modal-container" @click.stop>
+        <div class="modal-header">
+          <h3 class="modal-title">Select Target Chain</h3>
+          <button @click="showManualChainModal = false" class="modal-close">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+          </button>
+        </div>
+        
+        <div class="modal-content">
+          <div class="search-box">
+            <input 
+              v-model="manualChainSearch"
+              placeholder="Search chains..."
+              class="search-input"
+            />
+          </div>
+          
+          <div class="chains-grid">
+            <div 
+              v-for="(chain, chainId) in filteredManualChains" 
+              :key="chainId"
+              @click="selectManualChain(chainId)"
+              :class="['chain-card', { active: manualRefuel.chainId === chainId }]"
+            >
+              <div class="chain-icon">
+                <span v-if="chain.icon" class="text-2xl">{{ chain.icon }}</span>
+                <span v-else class="w-10 h-10 rounded-full bg-emerald-500/20 flex items-center justify-center text-lg">🌐</span>
+              </div>
+              <div class="chain-info">
+                <div class="chain-name">{{ chain.name }}</div>
+                <div class="chain-gas-symbol">{{ chain.nativeSymbol }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div v-if="showAgentChainModal" class="modal-overlay" @click="showAgentChainModal = false">
+      <div class="modal-container" @click.stop>
+        <div class="modal-header">
+          <h3 class="modal-title">Select Monitor Chain</h3>
+          <button @click="showAgentChainModal = false" class="modal-close">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+          </button>
+        </div>
+        
+        <div class="modal-content">
+          <div class="search-box">
+            <input 
+              v-model="agentChainSearch"
+              placeholder="Search chains..."
+              class="search-input"
+            />
+          </div>
+          
+          <div class="chains-grid">
+            <div 
+              v-for="(chain, chainId) in filteredAgentChains" 
+              :key="chainId"
+              @click="selectAgentChain(chainId)"
+              :class="['chain-card', { active: agentRefuel.chainId === chainId }]"
+            >
+              <div class="chain-icon">
+                <span v-if="chain.icon" class="text-2xl">{{ chain.icon }}</span>
+                <span v-else class="w-10 h-10 rounded-full bg-emerald-500/20 flex items-center justify-center text-lg">🌐</span>
+              </div>
+              <div class="chain-info">
+                <div class="chain-name">{{ chain.name }}</div>
+                <div class="chain-gas-symbol">{{ chain.nativeSymbol }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Modals -->
     <ManualRefuelModal 
       v-if="showManualRefuel"
@@ -463,6 +550,7 @@ import { useWeb3 } from '../composables/useWeb3.js'
 import { gasPassService } from '../services/gasPassService.js'
 import { contractService} from '../services/contractService.js'
 import { useVincentAuth } from '../composables/useVincentAuth.js'
+import { SUPPORTED_CHAINS } from '../config/BungeeConfig.js'
 import Layout from '../components/Layout.vue'
 import CuteGasJar from '../components/CuteGasJar.vue'
 import ManualRefuelModal from '../components/ManualRefuelModal.vue'
@@ -473,6 +561,9 @@ const { account, isConnected, isWalletReady, connectWallet, formatAddress, getUS
 
 // Vincent Auth composable（使用硬編碼的 App ID）
 const { ensureAuth, loadFromStorage, vincentJwt, vincentRedirecting, vincentPkpEthAddress } = useVincentAuth()
+
+// 暴露 SUPPORTED_CHAINS 給模板使用
+const supportedChains = SUPPORTED_CHAINS
 
 // Vincent JWT 狀態監聽（可選調試）
 // watch(vincentJwt, (newVal) => {
@@ -509,6 +600,12 @@ const agentStatus = ref({
   active: false,
   lastCheck: null
 })
+
+// 新增：模態視窗狀態
+const showManualChainModal = ref(false)
+const showAgentChainModal = ref(false)
+const manualChainSearch = ref('')
+const agentChainSearch = ref('')
 
 // Computed
 const hasCard = computed(() => userCards.value.length > 0)
@@ -610,14 +707,7 @@ const handleError = (error) => {
 
 // 新增：鏈名稱映射
 const getChainName = (chainId) => {
-  const chainMap = {
-    '1': 'Ethereum Mainnet',
-    '42161': 'Arbitrum One',
-    '10': 'Optimism',
-    '137': 'Polygon',
-    '8453': 'Base'
-  }
-  return chainMap[chainId] || 'Unknown Chain'
+  return SUPPORTED_CHAINS[chainId]?.name || 'Unknown Chain'
 }
 
 // 新增：計算實際到賬金額
@@ -625,6 +715,40 @@ const calculateActualAmount = (amount) => {
   if (!amount) return '0.00'
   const fee = parseFloat(amount) * 0.005 // 0.5% 手續費
   return (parseFloat(amount) - fee).toFixed(2)
+}
+
+// 新增：過濾鏈列表
+const filteredManualChains = computed(() => {
+  if (!manualChainSearch.value) return supportedChains
+  return Object.fromEntries(
+    Object.entries(supportedChains).filter(([chainId, chain]) =>
+      chain.name.toLowerCase().includes(manualChainSearch.value.toLowerCase()) ||
+      chain.nativeSymbol.toLowerCase().includes(manualChainSearch.value.toLowerCase())
+    )
+  )
+})
+
+const filteredAgentChains = computed(() => {
+  if (!agentChainSearch.value) return supportedChains
+  return Object.fromEntries(
+    Object.entries(supportedChains).filter(([chainId, chain]) =>
+      chain.name.toLowerCase().includes(agentChainSearch.value.toLowerCase()) ||
+      chain.nativeSymbol.toLowerCase().includes(agentChainSearch.value.toLowerCase())
+    )
+  )
+})
+
+// 新增：選擇鏈函數
+const selectManualChain = (chainId) => {
+  manualRefuel.value.chainId = chainId
+  showManualChainModal.value = false
+  manualChainSearch.value = ''
+}
+
+const selectAgentChain = (chainId) => {
+  agentRefuel.value.chainId = chainId
+  showAgentChainModal.value = false
+  agentChainSearch.value = ''
 }
 
 // 新增：分割錢包地址為四段
@@ -1389,6 +1513,87 @@ button:not(:disabled):active {
 @media (prefers-color-scheme: dark) {
   .card-item-enhanced {
     @apply bg-slate-800/50 border-emerald-400/30;
+  }
+}
+
+/* 模態視窗樣式 */
+.modal-overlay {
+  @apply fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 backdrop-blur-sm;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.modal-container {
+  @apply rounded-2xl shadow-2xl max-w-2xl w-full mx-4 max-h-[70vh] overflow-hidden;
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.98) 0%, rgba(30, 41, 59, 0.98) 50%, rgba(15, 23, 42, 0.98) 100%);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  box-shadow: 
+    0 25px 50px rgba(0, 0, 0, 0.4),
+    0 0 0 1px rgba(16, 185, 129, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.modal-header {
+  @apply flex items-center justify-between p-6 border-b border-emerald-400/20;
+}
+
+.modal-title {
+  @apply text-xl font-bold text-white;
+}
+
+.modal-close {
+  @apply p-2 text-emerald-300 hover:text-white hover:bg-emerald-500/20 rounded-lg transition-all duration-300;
+}
+
+.modal-content {
+  @apply p-6 max-h-[50vh] overflow-y-auto;
+}
+
+.search-box {
+  @apply mb-6;
+}
+
+.search-input {
+  @apply w-full p-3 bg-slate-600/50 border border-emerald-400/30 rounded-xl focus:border-emerald-400 focus:outline-none transition-colors text-white placeholder-emerald-300;
+}
+
+.chains-grid {
+  @apply grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3;
+}
+
+.chain-card {
+  @apply flex flex-col items-center p-4 bg-white/5 border border-emerald-300/20 rounded-lg cursor-pointer transition-all duration-300 hover:bg-emerald-500/10 hover:border-emerald-400/40 hover:shadow-md;
+  min-height: 120px;
+}
+
+.chain-card.active {
+  @apply bg-emerald-500/20 border-emerald-400/60 shadow-md;
+}
+
+.chain-card .chain-icon {
+  @apply mb-3;
+}
+
+.chain-card .chain-info {
+  @apply text-center;
+}
+
+.chain-card .chain-name {
+  @apply text-sm font-semibold text-white mb-1;
+}
+
+.chain-gas-symbol {
+  @apply text-xs text-emerald-300 font-medium;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
   }
 }
 </style>

@@ -53,6 +53,10 @@ export const GAS_PASS_ABI = [
 
   // chainPolicies now returns lastRefueled as well
   'function chainPolicies(uint256 tokenId, uint256 chainId) view returns (uint128 gasAmount, uint128 threshold, address agent, uint256 lastRefueled)',
+  
+  // Fee related functions
+  'function totalFeesCollected() view returns (uint256)',
+  'function getWithdrawableFees() view returns (uint256)',
 
   // (可選) 常數型別雜湊的 getter（若前端需要本地計算/校驗可保留）
   'function SET_REFUEL_POLICY_TYPEHASH() view returns (bytes32)',
@@ -95,116 +99,5 @@ export const GAS_PASS_ABI = [
 ];
 
 
-// 支援的鏈配置
-export const SUPPORTED_CHAINS = {
-  1: {
-    rpc: 'https://mainnet.infura.io/v3/YOUR-API-KEY',
-    name: 'Ethereum',
-    nativeSymbol: 'ETH',
-    nativeName: 'Ether'
-  },
-  42161: {
-    rpc: 'https://arb1.arbitrum.io/rpc',
-    name: 'Arbitrum One',
-    nativeSymbol: 'ETH',
-    nativeName: 'Ether'
-  },
-  8453: {
-    rpc: 'https://mainnet.base.org',
-    name: 'Base Mainnet',
-    nativeSymbol: 'ETH',
-    nativeName: 'Ether'
-  },
-  43114: {
-    rpc: 'https://api.avax.network/ext/bc/C/rpc',
-    name: 'Avalanche C-Chain',
-    nativeSymbol: 'AVAX',
-    nativeName: 'Avalanche'
-  },
-  56: {
-    rpc: 'https://bsc-dataseed.binance.org/',
-    name: 'Binance Smart Chain',
-    nativeSymbol: 'BNB',
-    nativeName: 'Binance Coin'
-  },
-  100: {
-    rpc: 'https://rpc.gnosischain.com',
-    name: 'Gnosis Chain',
-    nativeSymbol: 'xDAI',
-    nativeName: 'Gnosis'
-  },
-  5000: {
-    rpc: 'https://rpc.mantle.xyz/',
-    name: 'Mantle Network',
-    nativeSymbol: 'MNT',
-    nativeName: 'Mantle'
-  },
-  34443: {
-    rpc: 'https://mainnet.mode.network/',
-    name: 'Mode Mainnet',
-    nativeSymbol: 'ETH',
-    nativeName: 'Ether'
-  },
-  130: {
-    rpc: 'https://mainnet.unichain.org',
-    name: 'Unichain Mainnet',
-    nativeSymbol: 'UNIETH',
-    nativeName: 'Uni Ether'
-  },
-  1868: {
-    rpc: 'https://rpc.soneium.org/',
-    name: 'Soneium Mainnet',
-    nativeSymbol: 'Soneium',
-    nativeName: 'Soneium'
-  },
-  57073: {
-    rpc: 'https://rpc-qnd.inkonchain.com',
-    name: 'Ink Mainnet',
-    nativeSymbol: 'INK',
-    nativeName: 'Ink'
-  },
-  81457: {
-    rpc: 'https://rpc.ankr.com/blast',
-    name: 'Blast Mainnet',
-    nativeSymbol: 'BLAST',
-    nativeName: 'Blast'
-  },
-  59144: {
-    rpc: 'https://linea-rpc.publicnode.com',
-    name: 'Linea',
-    nativeSymbol: 'ETH',
-    nativeName: 'Ether'
-  },
-  137: {
-    rpc: 'https://polygon-rpc.com',
-    name: 'Polygon',
-    nativeSymbol: 'MATIC',
-    nativeName: 'Polygon'
-  },
-  534352: {
-    rpc: 'https://scroll-rpc.publicnode.com',
-    name: 'Scroll',
-    nativeSymbol: 'ETH',
-    nativeName: 'Ether'
-  },
-  146: {
-    rpc: 'https://rpc.soniclabs.com',
-    name: 'Sonic',
-    nativeSymbol: 'S',
-    nativeName: 'Sonic'
-  },
-  10: {
-    rpc: 'https://mainnet.optimism.io',
-    name: 'Optimism',
-    nativeSymbol: 'ETH',
-    nativeName: 'Ether'
-  },
-  80094: {
-    rpc: 'https://rpc.berachain.com',
-    name: 'Berachain',
-    nativeSymbol: 'BERA',
-    nativeName: 'Berachain'
-  }
-};
 
 export default GAS_PASS_CONFIG;
