@@ -126,7 +126,7 @@ forge script script/DeployGasPass.s.sol:DeployGasPass \
 
 ##  Integration SDK
 
-## How GasPass Integrates with Vincent Agent
+### How GasPass Integrates with Vincent Agent
 
 
 <img width="7290" height="3667" alt="image" src="https://github.com/user-attachments/assets/c6c72a69-1e6b-4668-9b52-f26318086f8b" />
@@ -134,7 +134,6 @@ forge script script/DeployGasPass.s.sol:DeployGasPass \
 
 This sequence diagram illustrates how GasPass, Vincent Agent, and Bungee Bridge collaborate to perform secure, automated cross-chain gas refueling.
 
----
 
 ###  Process Overview
 
