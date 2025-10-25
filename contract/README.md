@@ -34,8 +34,6 @@ flowchart TD
 
 ```
 
----
-
 ## Slot Design — Future Expansion
 
 GasPass currently uses a **single slot (slotId = 0)** for all cards, meaning every GasPass represents the same type of prepaid gas card.  
