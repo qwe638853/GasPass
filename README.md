@@ -156,20 +156,20 @@ This sequence diagram illustrates how GasPass, Vincent Agent, and Bungee Bridge 
 
 Process Overview
 
-1.Monitoring Loop
+  1.Monitoring Loop
 The Monitor Service continuously checks each user’s target-chain gas balance according to their on-chain RefuelPolicy[tokenId][chainId].
 This is an off-chain observation only — it cannot move funds or call contracts.
 
-2.Trigger Condition
+  2.Trigger Condition
 Once the wallet’s gas balance drops below the threshold, the monitor sends a signal to the Vincent Agent indicating that a refuel task is needed.
 
-3.Delegated Execution
+  3.Delegated Execution
 The Vincent Agent (Lit PKP), operating under a user-authorized Ability, directly calls
 autoRefuel(tokenId, inbox, req, expectedSorHash, targetChainId)
 on the GasPass (ERC-3525) contract.
 The Agent cannot act outside this Ability’s scope — it’s cryptographically constrained by user authorization.
 
-4.On-Chain Enforcement
+  4.On-Chain Enforcement
 Inside GasPass, the contract:
 
 Verifies the executor’s PKP address is in the authorized list.
@@ -178,7 +178,7 @@ Approves only the required amount of USDC for the Bungee Inbox.
 
 Creates a cross-chain refuel request with strict limits (spend cap, nonce, and expiry).
 
-5.Cross-Chain Execution via Bungee
+  5.Cross-Chain Execution via Bungee
 
 The Bungee Inbox forwards the request to the Bungee Gateway, which bridges and swaps stablecoins into native gas.
 
