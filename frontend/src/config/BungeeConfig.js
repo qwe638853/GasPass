@@ -16,7 +16,7 @@ export const SUPPORTED_CHAINS = {
     nativeSymbol: 'ETH',
     nativeName: 'Ether',
     icon: '⟠',
-    logo: null
+    logo: 'https://assets.coingecko.com/coins/images/279/large/ethereum.png'
   },
   42161: {
     rpc: 'https://arb1.arbitrum.io/rpc',
@@ -24,7 +24,7 @@ export const SUPPORTED_CHAINS = {
     nativeSymbol: 'ETH',
     nativeName: 'Ether',
     icon: '🔷',
-    logo: null
+    logo: 'https://assets.coingecko.com/coins/images/16547/large/photo_2023-03-29_21.47.00.jpeg'
   },
   8453: {
     rpc: 'https://mainnet.base.org',
@@ -32,7 +32,7 @@ export const SUPPORTED_CHAINS = {
     nativeSymbol: 'ETH',
     nativeName: 'Ether',
     icon: '🔵',
-    logo: null
+    logo: 'https://assets.coingecko.com/coins/images/27500/large/loken.png'
   },
   43114: {
     rpc: 'https://api.avax.network/ext/bc/C/rpc',
@@ -40,7 +40,7 @@ export const SUPPORTED_CHAINS = {
     nativeSymbol: 'AVAX',
     nativeName: 'Avalanche',
     icon: '🔺',
-    logo: null
+    logo: 'https://assets.coingecko.com/coins/images/12559/large/Avalanche_Circle_RedWhite_Trans.png'
   },
   56: {
     rpc: 'https://bsc-dataseed.binance.org/',
@@ -48,7 +48,7 @@ export const SUPPORTED_CHAINS = {
     nativeSymbol: 'BNB',
     nativeName: 'Binance Coin',
     icon: '🟡',
-    logo: null
+    logo: 'https://assets.coingecko.com/coins/images/825/large/bnb-icon2_2x.png'
   },
   100: {
     rpc: 'https://rpc.gnosischain.com',
@@ -56,7 +56,7 @@ export const SUPPORTED_CHAINS = {
     nativeSymbol: 'xDAI',
     nativeName: 'Gnosis',
     icon: '🟣',
-    logo: null
+    logo: 'https://assets.coingecko.com/coins/images/11062/large/gnosis.png'
   },
   5000: {
     rpc: 'https://rpc.mantle.xyz/',
@@ -64,7 +64,7 @@ export const SUPPORTED_CHAINS = {
     nativeSymbol: 'MNT',
     nativeName: 'Mantle',
     icon: '🟤',
-    logo: null
+    logo: 'https://assets.coingecko.com/coins/images/30980/large/mantle.jpg'
   },
   34443: {
     rpc: 'https://mainnet.mode.network/',
@@ -72,7 +72,7 @@ export const SUPPORTED_CHAINS = {
     nativeSymbol: 'ETH',
     nativeName: 'Ether',
     icon: '🟠',
-    logo: null
+    logo: 'https://assets.coingecko.com/coins/images/34443/large/mode.png'
   },
   130: {
     rpc: 'https://mainnet.unichain.org',
@@ -80,7 +80,7 @@ export const SUPPORTED_CHAINS = {
     nativeSymbol: 'UNIETH',
     nativeName: 'Uni Ether',
     icon: '🔗',
-    logo: null
+    logo: 'https://assets.coingecko.com/coins/images/12559/large/Avalanche_Circle_RedWhite_Trans.png'
   },
   1868: {
     rpc: 'https://rpc.soneium.org/',
@@ -88,7 +88,7 @@ export const SUPPORTED_CHAINS = {
     nativeSymbol: 'Soneium',
     nativeName: 'Soneium',
     icon: '🎵',
-    logo: null
+    logo: 'https://assets.coingecko.com/coins/images/146/large/sonic.png'
   },
   57073: {
     rpc: 'https://rpc-qnd.inkonchain.com',
@@ -96,7 +96,7 @@ export const SUPPORTED_CHAINS = {
     nativeSymbol: 'INK',
     nativeName: 'Ink',
     icon: '🖋️',
-    logo: null
+    logo: 'https://assets.coingecko.com/coins/images/57073/large/ink.png'
   },
   81457: {
     rpc: 'https://rpc.ankr.com/blast',
@@ -104,7 +104,7 @@ export const SUPPORTED_CHAINS = {
     nativeSymbol: 'BLAST',
     nativeName: 'Blast',
     icon: '💥',
-    logo: null
+    logo: 'https://assets.coingecko.com/coins/images/81457/large/blast.png'
   },
   59144: {
     rpc: 'https://linea-rpc.publicnode.com',
@@ -112,7 +112,7 @@ export const SUPPORTED_CHAINS = {
     nativeSymbol: 'ETH',
     nativeName: 'Ether',
     icon: '📏',
-    logo: null
+    logo: 'https://assets.coingecko.com/coins/images/59144/large/linea.png'
   },
   137: {
     rpc: 'https://polygon-rpc.com',
@@ -120,7 +120,7 @@ export const SUPPORTED_CHAINS = {
     nativeSymbol: 'MATIC',
     nativeName: 'Polygon',
     icon: '🔷',
-    logo: null
+    logo: 'https://assets.coingecko.com/coins/images/4713/large/matic-token-icon.png'
   },
   534352: {
     rpc: 'https://scroll-rpc.publicnode.com',
@@ -128,7 +128,7 @@ export const SUPPORTED_CHAINS = {
     nativeSymbol: 'ETH',
     nativeName: 'Ether',
     icon: '📜',
-    logo: null
+    logo: 'https://assets.coingecko.com/coins/images/534352/large/scroll.png'
   },
   146: {
     rpc: 'https://rpc.soniclabs.com',
@@ -136,7 +136,7 @@ export const SUPPORTED_CHAINS = {
     nativeSymbol: 'S',
     nativeName: 'Sonic',
     icon: '🎵',
-    logo: null
+    logo: 'https://assets.coingecko.com/coins/images/146/large/sonic.png'
   },
   10: {
     rpc: 'https://mainnet.optimism.io',
@@ -144,7 +144,7 @@ export const SUPPORTED_CHAINS = {
     nativeSymbol: 'ETH',
     nativeName: 'Ether',
     icon: '🔴',
-    logo: null
+    logo: 'https://assets.coingecko.com/coins/images/25244/large/Optimism.png'
   },
   80094: {
     rpc: 'https://rpc.berachain.com',
@@ -152,6 +152,6 @@ export const SUPPORTED_CHAINS = {
     nativeSymbol: 'BERA',
     nativeName: 'Berachain',
     icon: '🐻',
-    logo: null
+    logo: 'https://assets.coingecko.com/coins/images/80094/large/berachain.png'
   }
 };
