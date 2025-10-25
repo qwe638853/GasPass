@@ -330,10 +330,10 @@ contract SetRefuelPolicyScript is Script {
         // env
         address gasPass = vm.envAddress("GASPASS_ADDRESS");
         uint256 ownerPk = vm.envUint("PRIVATE_KEY"); // ★ 必須是 tokenId 的 owner
-        uint256 tokenId = 2;
+        uint256 tokenId = 1;
         uint256 targetChainId = 10;
-        uint128 gasAmount = 3000000;   // 目標鏈要補的原生幣數量（wei）
-        uint128 threshold = 3000000;     // 觸發門檻（wei）
+        uint128 gasAmount = 500000;   // 目標鏈要補的原生幣數量（wei）
+        uint128 threshold = 1000000;     // 觸發門檻（wei）
         address agent = vm.addr(ownerPk);                // 已綁到 owner 的 agent
 
         console.log("Setting policy...");
@@ -344,6 +344,21 @@ contract SetRefuelPolicyScript is Script {
         console.log("gasAmt  :", gasAmount);
         console.log("thres   :", threshold);
         console.log("agent   :", agent);
+
+        // 檢查 agent 綁定狀態
+        address currentWallet = GasPass(gasPass).agentToWallet(agent);
+        console.log("Current agent wallet:", currentWallet);
+        
+        if (currentWallet == address(0)) {
+            console.log("ERROR: Agent not bound! Need to bind agent first.");
+            console.log("Please run the mint script again to bind the agent.");
+            revert("Agent not bound");
+        } else if (currentWallet != vm.addr(ownerPk)) {
+            console.log("ERROR: Agent bound to different wallet:", currentWallet);
+            revert("Agent bound to different wallet");
+        } else {
+            console.log("SUCCESS: Agent properly bound to wallet");
+        }
 
         vm.startBroadcast(ownerPk);
         GasPass(gasPass).setRefuelPolicy(

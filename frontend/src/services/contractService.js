@@ -24,10 +24,12 @@ const CONTRACT_CONFIG = {
     'function ownerOf(uint256) view returns (address)',
     'function balanceOf(uint256) view returns (uint256)',
     'function ownerNonces(address) view returns (uint256)',
+    'function nonces(uint256) view returns (uint256)',
     
     // GasPass 特定函數
     'function mintWithSig(tuple(address to, uint256 value, tuple(address owner, address spender, uint256 value, uint256 deadline, uint8 v, bytes32 r, bytes32 s) permitData, address agent, uint256 nonce, uint256 deadline) typedData, bytes signature) external',
     'function depositWithSig(tuple(uint256 tokenId, uint256 amount, tuple(address owner, address spender, uint256 value, uint256 deadline, uint8 v, bytes32 r, bytes32 s) permitData, uint256 nonce, uint256 deadline) typedData, bytes signature) external',
+    'function setRefuelPolicyWithSig(tuple(uint256 tokenId, uint256 targetChainId, uint128 gasAmount, uint128 threshold, address agent, uint256 nonce, uint256 deadline) policy, bytes signature) external',
     'function chainPolicies(uint256, uint256) view returns (uint128 gasAmount, uint128 threshold, address agent, uint256 lastRefueled)',
     'function setRefuelPolicy(uint256 tokenId, uint256 targetChainId, uint128 gasAmount, uint128 threshold, address agent) external',
     'function autoRefuel(uint256 tokenId, uint256 targetChainId) external',
@@ -591,30 +593,95 @@ class ContractService {
     }
   }
 
-  // 設置 refuel policy
-  async setRefuelPolicy(params) {
+  // 設置 refuel policy (EIP-712 簽名版本)
+  async setRefuelPolicy(tokenId, targetChainId, gasAmount, threshold, agent) {
     try {
-      const { tokenId, targetChainId, gasAmount, threshold } = params
-      
-      // 創建一個使用 signer 的合約實例來執行寫入操作
-      const gasPassContractWithSigner = new ethers.Contract(CONTRACT_CONFIG.address, CONTRACT_CONFIG.abi, this.signer)
-      
-      const tx = await gasPassContractWithSigner.setRefuelPolicy(
+      console.log('🔧 設定 Refuel Policy:', {
         tokenId,
         targetChainId,
-        parseUnits(gasAmount, 6), // gasAmount in USDC
-        parseEther(threshold), // threshold in ETH
-      )
+        gasAmount,
+        threshold,
+        agent
+      })
+
+      // 獲取合約實例
+      const { gaspassRead } = this.getContracts()
       
-      const receipt = await tx.wait()
-      
+      // 先測試合約連接
+      console.log('🔍 測試合約連接...')
+      try {
+        const totalSupply = await gaspassRead.totalSupply()
+        console.log('📊 總供應量:', totalSupply.toString())
+        
+        // 檢查 Token 是否存在
+        const owner = await gaspassRead.ownerOf(tokenId)
+        console.log('👤 Token 擁有者:', owner)
+        
+      // 獲取 nonce - 使用正確的方法
+      console.log('🔍 獲取 Token nonce...')
+      console.log('🔍 TokenId 類型:', typeof tokenId, '值:', tokenId)
+      const nonce = await gaspassRead.nonces(BigInt(tokenId))
+      console.log('📝 Token nonce:', nonce.toString())
+        
+      } catch (error) {
+        console.error('❌ 合約調用失敗:', error)
+        console.error('❌ 錯誤詳情:', {
+          code: error.code,
+          message: error.message,
+          data: error.data
+        })
+        throw new Error(`合約調用失敗: ${error.message}`)
+      }
+
+      // 設定 deadline (1 小時後)
+      const deadline = Math.floor(Date.now() / 1000) + 3600
+
+      // 創建 typedData
+      const typedData = {
+        tokenId: BigInt(tokenId),
+        targetChainId: BigInt(targetChainId),
+        gasAmount: BigInt(gasAmount),
+        threshold: BigInt(threshold),
+        agent: agent,
+        nonce: BigInt(nonce.toString()),
+        deadline: BigInt(deadline)
+      }
+
+      console.log('📋 TypedData:', typedData)
+
+      // EIP-712 簽名
+      const domain = {
+        name: 'GasPass',
+        version: '1',
+        chainId: 42161, // Arbitrum Mainnet
+        verifyingContract: CONTRACT_CONFIG.address
+      }
+
+      const types = {
+        SetRefuelPolicy: [
+          { name: 'tokenId', type: 'uint256' },
+          { name: 'targetChainId', type: 'uint256' },
+          { name: 'gasAmount', type: 'uint128' },
+          { name: 'threshold', type: 'uint128' },
+          { name: 'agent', type: 'address' },
+          { name: 'nonce', type: 'uint256' },
+          { name: 'deadline', type: 'uint256' }
+        ]
+      }
+
+      const sig = await this.signer.signTypedData(domain, types, typedData)
+      console.log('✍️ 簽名完成:', sig)
+
+      // 通過 relayer 發送
+      const result = await relayerService.relaySetRefuelPolicy(typedData, sig)
+      console.log('🚀 Relayer 結果:', result)
+
       return {
         success: true,
-        txHash: tx.hash,
-        receipt: receipt
+        result: result
       }
     } catch (error) {
-      console.error('Set refuel policy failed:', error)
+      console.error('❌ Set refuel policy failed:', error)
       return {
         success: false,
         error: error.message

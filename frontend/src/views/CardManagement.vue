@@ -350,14 +350,15 @@
                       </div>
                       
                       <div>
-                        <label class="block text-sm font-semibold text-emerald-200 mb-2">Trigger Threshold (ETH)</label>
+                        <label class="block text-sm font-semibold text-emerald-200 mb-2">Trigger Threshold (USDC)</label>
                         <input 
                           v-model="agentRefuel.threshold"
                           type="number"
-                          step="0.001"
-                          min="0.001"
+                          step="0.01"
+                          min="0.01"
                           placeholder="Trigger when balance falls below this value"
                           class="w-full p-3 bg-slate-600/50 border border-emerald-400/30 rounded-xl focus:border-emerald-400 focus:outline-none transition-colors text-white placeholder-emerald-300"
+                          style="-moz-appearance: textfield; appearance: textfield;"
                         />
                       </div>
                       
@@ -367,21 +368,13 @@
                           v-model="agentRefuel.amount"
                           type="number"
                           step="0.01"
-                          min="1"
+                          min="0.01"
                           placeholder="Amount to refill each time"
                           class="w-full p-3 bg-slate-600/50 border border-emerald-400/30 rounded-xl focus:border-emerald-400 focus:outline-none transition-colors text-white placeholder-emerald-300"
+                          style="-moz-appearance: textfield; appearance: textfield;"
                         />
                       </div>
                       
-                      <div>
-                        <label class="block text-sm font-semibold text-emerald-200 mb-2">Recipient Address</label>
-                        <input 
-                          v-model="agentRefuel.recipient"
-                          type="text"
-                          placeholder="Enter recipient address"
-                          class="w-full p-3 bg-slate-600/50 border border-emerald-400/30 rounded-xl focus:border-emerald-400 focus:outline-none transition-colors text-white placeholder-emerald-300"
-                        />
-                      </div>
                     </div>
                     
                     <button 
@@ -417,7 +410,7 @@
                       </div>
                       <div class="flex items-center justify-between">
                         <span class="text-emerald-200">Trigger Threshold:</span>
-                        <span class="font-semibold text-white">{{ agentRefuel.threshold || '0' }} ETH</span>
+                        <span class="font-semibold text-white">{{ agentRefuel.threshold || '0' }} USDC</span>
                       </div>
                       <div class="flex items-center justify-between">
                         <span class="text-emerald-200">Refill Amount:</span>
@@ -568,6 +561,8 @@ import { useWeb3 } from '../composables/useWeb3.js'
 import { gasPassService } from '../services/gasPassService.js'
 import { contractService} from '../services/contractService.js'
 import { useVincentAuth } from '../composables/useVincentAuth.js'
+import { getStoredPkpEthAddress } from '../services/vincentAuthService.js'
+import { parseUnits, formatUnits } from 'ethers'
 import { SUPPORTED_CHAINS } from '../config/BungeeConfig.js'
 import Layout from '../components/Layout.vue'
 import CuteGasJar from '../components/CuteGasJar.vue'
@@ -609,8 +604,7 @@ const manualRefuel = ref({
 const agentRefuel = ref({
   chainId: '42161', // 預設 Arbitrum
   threshold: '',
-  amount: '',
-  recipient: ''
+  amount: ''
 })
 
 // 新增：Agent 狀態
@@ -642,7 +636,6 @@ const canSetupAgentRefuel = computed(() => {
          parseFloat(agentRefuel.value.threshold) > 0 &&
          agentRefuel.value.amount && 
          parseFloat(agentRefuel.value.amount) > 0 &&
-         agentRefuel.value.recipient &&
          hasCard.value
 })
 
@@ -782,6 +775,11 @@ const handleImageError = (event) => {
   }
 }
 
+// 新增：當前 Token ID (從用戶的卡片中獲取)
+const currentTokenId = computed(() => {
+  return userCards.value.length > 0 ? userCards.value[0].tokenId : null
+})
+
 // 新增：分割錢包地址為四段
 const getAddressSegment = (index) => {
   if (!account.value) return 'Not Connected'
@@ -832,11 +830,69 @@ const setupAgentRefuel = async () => {
   if (!canSetupAgentRefuel.value) return
   
   try {
-    // 這裡會設定 Agent 監測策略
-    console.log('設定 Agent 監測:', agentRefuel.value)
+    // 獲取 PKP 地址
+    const pkpAddress = getStoredPkpEthAddress()
+    if (!pkpAddress) {
+      alert('請先登入 Vincent 以獲取 PKP 地址')
+      return
+    }
     
-    // 模擬 API 調用
-    await new Promise(resolve => setTimeout(resolve, 2000))
+    // 檢查錢包連接
+    if (!account.value) {
+      alert('請先連接錢包')
+      return
+    }
+    
+    // 檢查是否有 Token ID
+    if (!currentTokenId.value) {
+      alert('請先創建 GasPass 卡片')
+      return
+    }
+    
+    // 驗證輸入值
+    if (!agentRefuel.value.threshold || !agentRefuel.value.amount) {
+      alert('請填寫完整的 Agent 設定資訊')
+      return
+    }
+    
+    // 轉換為數字並驗證
+    const thresholdNum = parseFloat(agentRefuel.value.threshold)
+    const amountNum = parseFloat(agentRefuel.value.amount)
+    
+    if (isNaN(thresholdNum) || isNaN(amountNum) || thresholdNum <= 0 || amountNum <= 0) {
+      alert('請輸入有效的數值')
+      return
+    }
+    
+    // 轉換 USDC 為最小單位 (1 USDC = 1000000 最小單位)
+    const thresholdInWei = parseUnits(thresholdNum.toString(), 6) // USDC 有 6 位小數
+    const amountInWei = parseUnits(amountNum.toString(), 6)
+    
+    console.log('設定 Agent 監測:', {
+      tokenId: currentTokenId.value,
+      chainId: agentRefuel.value.chainId,
+      threshold: agentRefuel.value.threshold,
+      amount: agentRefuel.value.amount,
+      thresholdInWei: thresholdInWei.toString(),
+      amountInWei: amountInWei.toString(),
+      agent: pkpAddress
+    })
+    
+    // 使用 contractService 設定策略
+    const result = await contractService.setRefuelPolicy(
+      currentTokenId.value, // 當前 Token ID
+      agentRefuel.value.chainId, // 目標鏈 ID
+      amountInWei.toString(), // 補氣金額 (USDC 最小單位)
+      thresholdInWei.toString(), // 觸發閾值 (USDC 最小單位)
+      pkpAddress // PKP 地址作為 agent
+    )
+    
+    console.log('Agent 策略設定結果:', result)
+    
+    // 檢查結果
+    if (!result.success) {
+      throw new Error(result.error || '設定失敗')
+    }
     
     // 更新 Agent 狀態
     agentStatus.value = {
@@ -928,7 +984,6 @@ onMounted(async () => {
   // 預設填入當前錢包地址
   if (account.value) {
     manualRefuel.value.recipient = account.value
-    agentRefuel.value.recipient = account.value
   }
 })
 
@@ -1496,6 +1551,18 @@ button:not(:disabled):active {
 
 .loading-dot:nth-child(3) {
   animation-delay: 0.4s;
+}
+
+/* 新增：隱藏數字輸入框的箭頭 */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type="number"] {
+  -moz-appearance: textfield;
+  appearance: textfield;
 }
 
 /* 新增：響應式設計增強 */

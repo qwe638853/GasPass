@@ -102,7 +102,7 @@ export class RelayerService {
       console.log(`🎫 Token ID: ${typedData.tokenId}`);
       console.log(`⛓️ 目標鏈: ${typedData.targetChainId}`);
       console.log(`💰 Gas 金額: ${ethers.formatUnits(typedData.gasAmount, 6)} USDC`);
-      console.log(`⚠️ 觸發閾值: ${ethers.formatEther(typedData.threshold)} ETH`);
+      console.log(`⚠️ 觸發閾值: ${ethers.formatUnits(typedData.threshold, 6)} USDC`);
       
       const tx = await this.contract.setRefuelPolicyWithSig(typedData, signature);
       console.log(`📝 交易哈希: ${tx.hash}`);
