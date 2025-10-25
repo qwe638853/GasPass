@@ -24,13 +24,14 @@ It combines **EIP-712 typed data signatures**, **EIP-2612 stablecoin permits**, 
 ## Contract Architecture
 
 ```mermaid
-graph TD
-A[Frontend / User Wallet] -->|EIP712 Signature| B[Relayer]
-B -->|mintWithSig / depositWithSig| C[GasPass Contract (ERC3525)]
-C -->|transferFrom Permit| D[Stablecoin (USDC)]
-C -->|autoRefuel| E[Bungee Inbox]
-E --> F[Bungee Gateway]
-F --> G[Destination Wallet (Native Gas Top-up)]
+flowchart TD
+    A[Frontend / User Wallet] -->|EIP712 Signature| B[Relayer];
+    B -->|mintWithSig / depositWithSig| C[GasPass Contract (ERC-3525)];
+    C -->|permit transferFrom| D[Stablecoin (USDC)];
+    C -->|autoRefuel| E[Bungee Inbox];
+    E --> F[Bungee Gateway];
+    F --> G[Destination Wallet\n(Native Gas Top-up)];
+
 ```
 
 ---
