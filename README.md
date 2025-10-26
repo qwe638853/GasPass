@@ -169,13 +169,13 @@ Even if the backend or the Vincent service is compromised, any out-of-scope call
 ---
 ## Use Cases
 
-- **Hackathon Distribution:
+- **Hackathon Distribution:**
 Distribute GasPass cards to participants, enabling them to instantly deploy smart contracts across multiple chains.
 
-- **Brand Marketing Giveaway:
+- **Brand Marketing Giveaway:**
 Companies can issue GasPass cards as raffle prizes to increase brand engagement and user loyalty.
 
-- **Onboarding Card for New Users:
+- **Onboarding Card for New Users:**
 Web3 apps can gift GasPass cards to new users to lower the entry barrier and simplify their first on-chain experience.
 
 
