@@ -192,9 +192,9 @@ This enables GasPass to offer a true one-click refill experience.
 2. Intent-Based Verification Layer
 Avail’s Intent System transforms every cross-chain operation into a verifiable execution intent.
 Unlike traditional bridges that simply relay funds, each intent includes:
-- Signature verification
-- Execution guardrails (slippage, gas ceiling)
-- Replay protection (nonce, expiry)
+  - Signature verification
+  - Execution guardrails (slippage, gas ceiling)
+  - Replay protection (nonce, expiry)
 These security primitives align perfectly with GasPass’s safety requirements.
 
 3. Neutral and Open Execution Layer
