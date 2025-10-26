@@ -38,9 +38,7 @@ Status	Cross-chain prototype deployed on Arbitrum & Base testnets
 ---
 
 ##  Architecture
-
-
-<img width="779" height="428" alt="截圖 2025-10-26 凌晨1 27 06" src="https://github.com/user-attachments/assets/c7eee6e8-a3a1-4581-8f49-ab3d8762fdd9" />
+<img width="927" height="518" alt="截圖 2025-10-26 晚上8 01 45" src="https://github.com/user-attachments/assets/0b705ce9-ccb3-4005-b89a-51438cbc0165" />
 
 ###  [How It Works]
 
