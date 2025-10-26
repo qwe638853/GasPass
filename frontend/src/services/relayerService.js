@@ -1,6 +1,6 @@
 /**
- * GasPass Relayer 服務
- * 負責與後端 Relayer 通信，代送用戶交易
+ * GasPass Relayer Service
+ * Responsible for communicating with backend Relayer to submit user transactions
  */
 
 import { GAS_PASS_CONFIG } from '@/config/gasPassConfig.js';
@@ -13,20 +13,20 @@ class RelayerService {
   }
 
   /**
-   * 檢查 Relayer 健康狀態
+   * Check Relayer health status
    */
   async checkHealth() {
     try {
       const response = await fetch(`${this.baseURL}/health`);
       return await response.json();
     } catch (error) {
-      console.error('Relayer 健康檢查失敗:', error);
-      throw new Error('無法連接到 Relayer 服務');
+      console.error('Relayer health check failed:', error);
+      throw new Error('Unable to connect to Relayer service');
     }
   }
 
   /**
-   * 獲取 Relayer 地址
+   * Get Relayer address
    */
   async getRelayerAddress() {
     try {
@@ -34,13 +34,13 @@ class RelayerService {
       const data = await response.json();
       return data.address;
     } catch (error) {
-      console.error('獲取 Relayer 地址失敗:', error);
-      throw new Error('無法獲取 Relayer 地址');
+      console.error('Failed to get Relayer address:', error);
+      throw new Error('Unable to get Relayer address');
     }
   }
 
   /**
-   * 代送 mintWithSig 交易
+   * Relay mintWithSig transaction
    */
   async relayMint(typedData, signature) {
     try {

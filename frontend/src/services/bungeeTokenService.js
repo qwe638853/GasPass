@@ -1,6 +1,6 @@
 /**
- * Bungee Token List API 服務
- * 用於獲取代幣列表和圖標
+ * Bungee Token List API Service
+ * Used to fetch token lists and icons
  */
 
 const BUNGEE_API_BASE = 'https://public-backend.bungee.exchange';
@@ -8,13 +8,13 @@ const BUNGEE_API_BASE = 'https://public-backend.bungee.exchange';
 class BungeeTokenService {
   constructor() {
     this.tokenCache = new Map();
-    this.cacheExpiry = 5 * 60 * 1000; // 5分鐘緩存
+    this.cacheExpiry = 5 * 60 * 1000; // 5 minutes cache
     this.lastFetchTime = 0;
   }
 
   /**
-   * 獲取所有代幣列表
-   * @returns {Promise<Array>} 代幣列表
+   * Get all token lists
+   * @returns {Promise<Array>} Token list
    */
   async getTokenList() {
     try {
@@ -28,9 +28,9 @@ class BungeeTokenService {
       }
       const data = await response.json();
       
-      // Bungee API 返回的數據結構是 { success: true, result: { "1": [...], "42161": [...] } }
+      // Bungee API returns data structure: { success: true, result: { "1": [...], "42161": [...] } }
       if (data.success && data.result) {
-        // 將所有鏈的代幣合併成一個數組
+        // Merge tokens from all chains into a single array
         const allTokens = [];
         Object.values(data.result).forEach(chainTokens => {
           allTokens.push(...chainTokens);
@@ -46,9 +46,9 @@ class BungeeTokenService {
   }
 
   /**
-   * 根據鏈ID獲取代幣列表
-   * @param {number} chainId - 鏈ID
-   * @returns {Promise<Array>} 該鏈的代幣列表
+   * Get token list by chain ID
+   * @param {number} chainId - Chain ID
+   * @returns {Promise<Array>} Token list for that chain
    */
   async getTokensByChain(chainId) {
     try {
@@ -61,10 +61,10 @@ class BungeeTokenService {
   }
 
   /**
-   * 根據地址獲取代幣信息
-   * @param {string} address - 代幣合約地址
-   * @param {number} chainId - 鏈ID
-   * @returns {Promise<Object|null>} 代幣信息
+   * Get token information by address
+   * @param {string} address - Token contract address
+   * @param {number} chainId - Chain ID
+   * @returns {Promise<Object|null>} Token information
    */
   async getTokenByAddress(address, chainId) {
     try {
@@ -79,15 +79,15 @@ class BungeeTokenService {
   }
 
   /**
-   * 獲取代幣圖標URL
-   * @param {string} address - 代幣合約地址
-   * @param {number} chainId - 鏈ID
-   * @returns {Promise<string|null>} 圖標URL
+   * Get token icon URL
+   * @param {string} address - Token contract address
+   * @param {number} chainId - Chain ID
+   * @returns {Promise<string|null>} Icon URL
    */
   async getTokenIcon(address, chainId) {
     const cacheKey = `${chainId}-${address.toLowerCase()}`;
     
-    // 檢查緩存
+    // Check cache
     if (this.tokenCache.has(cacheKey)) {
       const cached = this.tokenCache.get(cacheKey);
       if (Date.now() - cached.timestamp < this.cacheExpiry) {
@@ -99,7 +99,7 @@ class BungeeTokenService {
       const token = await this.getTokenByAddress(address, chainId);
       const icon = token?.logoURI || null;
       
-      // 緩存結果
+      // Cache result
       this.tokenCache.set(cacheKey, {
         icon,
         timestamp: Date.now()
@@ -113,15 +113,15 @@ class BungeeTokenService {
   }
 
   /**
-   * 批量獲取代幣圖標
-   * @param {Array} tokenAddresses - 代幣地址數組 [{address, chainId}]
-   * @returns {Promise<Map>} 地址到圖標URL的映射
+   * Batch get token icons
+   * @param {Array} tokenAddresses - Token address array [{address, chainId}]
+   * @returns {Promise<Map>} Map of address to icon URL
    */
   async getTokenIconsBatch(tokenAddresses) {
     const iconMap = new Map();
     
     try {
-      // 按鏈ID分組
+      // Group by chain ID
       const tokensByChain = {};
       tokenAddresses.forEach(({ address, chainId }) => {
         if (!tokensByChain[chainId]) {
@@ -130,7 +130,7 @@ class BungeeTokenService {
         tokensByChain[chainId].push(address);
       });
 
-      // 並行獲取每個鏈的代幣列表
+      // Fetch each chain's token list in parallel
       const chainPromises = Object.entries(tokensByChain).map(async ([chainId, addresses]) => {
         const tokens = await this.getTokensByChain(parseInt(chainId));
         addresses.forEach(address => {
@@ -152,7 +152,7 @@ class BungeeTokenService {
   }
 
   /**
-   * 清除緩存
+   * Clear cache
    */
   clearCache() {
     this.tokenCache.clear();
@@ -160,9 +160,9 @@ class BungeeTokenService {
   }
 
   /**
-   * 獲取原生代幣圖標（使用預設圖標）
-   * @param {number} chainId - 鏈ID
-   * @returns {string} 原生代幣圖標URL
+   * Get native token icon (using default icon)
+   * @param {number} chainId - Chain ID
+   * @returns {string} Native token icon URL
    */
   getNativeTokenIcon(chainId) {
     const nativeTokenIcons = {
@@ -190,7 +190,7 @@ class BungeeTokenService {
   }
 }
 
-// 創建單例實例
+// Create singleton instance
 export const bungeeTokenService = new BungeeTokenService();
 
 export default bungeeTokenService;

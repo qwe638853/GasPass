@@ -1,10 +1,10 @@
 <template>
   <div class="token-icon-demo">
-    <h3 class="text-xl font-bold text-white mb-4">代幣圖標測試</h3>
+    <h3 class="text-xl font-bold text-white mb-4">Token Icon Test</h3>
     
-    <!-- 單個代幣圖標測試 -->
+    <!-- Single Token Icon Test -->
     <div class="mb-6">
-      <h4 class="text-lg font-semibold text-emerald-200 mb-3">單個代幣圖標</h4>
+      <h4 class="text-lg font-semibold text-emerald-200 mb-3">Single Token Icon</h4>
       <div class="flex items-center gap-4">
         <div v-for="token in testTokens" :key="token.address" class="flex items-center gap-2">
           <div class="relative">
@@ -26,9 +26,9 @@
       </div>
     </div>
 
-    <!-- 鏈圖標測試 -->
+    <!-- Chain Icon Test -->
     <div class="mb-6">
-      <h4 class="text-lg font-semibold text-emerald-200 mb-3">鏈圖標</h4>
+      <h4 class="text-lg font-semibold text-emerald-200 mb-3">Chain Icon</h4>
       <div class="flex items-center gap-4">
         <div v-for="chainId in testChains" :key="chainId" class="flex items-center gap-2">
           <img 
@@ -42,15 +42,15 @@
       </div>
     </div>
 
-    <!-- 批量加載測試 -->
+    <!-- Batch Load Test -->
     <div class="mb-6">
-      <h4 class="text-lg font-semibold text-emerald-200 mb-3">批量加載</h4>
+      <h4 class="text-lg font-semibold text-emerald-200 mb-3">Batch Load</h4>
       <button 
         @click="loadBatchIcons"
         :disabled="batchLoading"
         class="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg transition-colors duration-200 disabled:opacity-50"
       >
-        {{ batchLoading ? '加載中...' : '批量加載圖標' }}
+        {{ batchLoading ? 'Loading...' : 'Load Batch Icons' }}
       </button>
       
       <div v-if="batchIcons.size > 0" class="mt-4 flex flex-wrap gap-4">
@@ -66,9 +66,9 @@
       </div>
     </div>
 
-    <!-- 錯誤處理測試 -->
+    <!-- Error Handling Test -->
     <div class="mb-6">
-      <h4 class="text-lg font-semibold text-emerald-200 mb-3">錯誤處理</h4>
+      <h4 class="text-lg font-semibold text-emerald-200 mb-3">Error Handling</h4>
       <div class="flex items-center gap-4">
         <div class="flex items-center gap-2">
           <img 
@@ -77,24 +77,24 @@
             class="w-8 h-8 rounded-full bg-gray-600"
             @error="handleImageError"
           />
-          <span class="text-white text-sm">無效URL</span>
+          <span class="text-white text-sm">Invalid URL</span>
         </div>
       </div>
     </div>
 
-    <!-- 控制按鈕 -->
+    <!-- Control Buttons -->
     <div class="flex gap-3">
       <button 
         @click="clearAllCache"
         class="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors duration-200"
       >
-        清除緩存
+        Clear Cache
       </button>
       <button 
         @click="preloadTokens"
         class="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors duration-200"
       >
-        預載入常用代幣
+        Preload Common Tokens
       </button>
     </div>
   </div>
@@ -104,7 +104,7 @@
 import { ref, onMounted } from 'vue';
 import { useTokenIcons } from '../composables/useTokenIcons.js';
 
-// 使用圖標服務
+// Use icon service
 const {
   getTokenIcon,
   getChainIcon,
@@ -113,7 +113,7 @@ const {
   clearCache
 } = useTokenIcons();
 
-// 測試數據
+// Test data
 const testTokens = ref([
   {
     address: '0xA0b86a33E6441b8C4C8C0C4C8C0C4C8C0C4C8C0C',
@@ -134,11 +134,11 @@ const testTokens = ref([
 
 const testChains = ref([1, 42161, 8453, 137, 56]);
 
-// 批量加載狀態
+// Batch loading state
 const batchLoading = ref(false);
 const batchIcons = ref(new Map());
 
-// 方法
+// Methods
 const loadBatchIcons = async () => {
   batchLoading.value = true;
   try {
@@ -174,11 +174,11 @@ const clearAllCache = () => {
 
 const handleImageError = (event) => {
   console.log('Image load error:', event.target.src);
-  // 設置默認圖標
+  // Set default icon
   event.target.src = 'https://media.socket.tech/networks/ethereum.svg';
 };
 
-// 組件掛載時預載入
+// Preload when component mounts
 onMounted(() => {
   preloadTokens();
 });

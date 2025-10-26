@@ -1,11 +1,11 @@
-// 贈送儲值卡服務
+// Gift card service
 import { ethers, formatUnits, parseUnits, parseEther, formatEther } from 'ethers'
 import { GAS_PASS_CONFIG } from '@/config/gasPassConfig.js'
 import relayerService from './relayerService.js'
 import { getStoredPkpEthAddress } from './vincentAuthService.js'
 import { markRaw } from 'vue'
 
-// 自定義 splitSignature 函數 (ethers v6 中已移除)
+// Custom splitSignature function (removed in ethers v6)
 function splitSignature(signature) {
   const r = signature.slice(0, 66)
   const s = signature.slice(66, 130)
@@ -13,7 +13,7 @@ function splitSignature(signature) {
   return { r, s, v }
 }
 
-// 合約配置
+// Contract configuration
 const CONTRACT_CONFIG = {
   address: GAS_PASS_CONFIG.contractAddress,
   abi: [
@@ -28,7 +28,7 @@ const CONTRACT_CONFIG = {
   ]
 }
 
-// USDC 合約配置 (Arbitrum Mainnet)
+// USDC contract configuration (Arbitrum Mainnet)
 const USDC_CONFIG = {
   address: '0xaf88d065e77c8cC2239327C5EDb3A432268e5831', // Arbitrum Mainnet USDC
   abi: [

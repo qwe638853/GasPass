@@ -2,7 +2,7 @@
   <div class="modal-overlay" @click="$emit('close')">
     <div class="modal-content" @click.stop>
       <div class="modal-header">
-        <h2 class="modal-title">⚙️ 兌換設定</h2>
+        <h2 class="modal-title">⚙️ Swap Settings</h2>
         <button @click="$emit('close')" class="close-btn">
           <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
@@ -14,14 +14,14 @@
         <!-- Slippage Tolerance -->
         <div class="setting-section">
           <div class="setting-header">
-            <h3 class="setting-title">滑點容忍度</h3>
+            <h3 class="setting-title">Slippage Tolerance</h3>
             <div class="setting-info">
               <svg class="w-4 h-4 text-gaspass-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
               </svg>
               <div class="info-tooltip">
-                <p>滑點是指預期價格與實際執行價格之間的差異</p>
-                <p>設定過低可能導致交易失敗，設定過高可能造成損失</p>
+                <p>Slippage is the difference between expected and actual execution prices</p>
+                <p>Setting too low may cause transaction failure, setting too high may cause losses</p>
               </div>
             </div>
           </div>
@@ -61,14 +61,14 @@
         <!-- Transaction Deadline -->
         <div class="setting-section">
           <div class="setting-header">
-            <h3 class="setting-title">交易截止時間</h3>
+            <h3 class="setting-title">Transaction Deadline</h3>
             <div class="setting-info">
               <svg class="w-4 h-4 text-gaspass-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
               </svg>
               <div class="info-tooltip">
-                <p>交易必須在此時間內完成，否則會被取消</p>
-                <p>跨鏈交易通常需要較長時間，建議設定 20 分鐘以上</p>
+                <p>Transaction must complete within this time, otherwise it will be cancelled</p>
+                <p>Cross-chain transactions typically require longer time, recommend setting 20+ minutes</p>
               </div>
             </div>
           </div>
@@ -81,7 +81,7 @@
               class="deadline-btn"
               :class="{ 'active': localDeadline === option }"
             >
-              {{ option }} 分鐘
+              {{ option }} minutes
             </button>
             <div class="custom-deadline">
               <input 
@@ -93,7 +93,7 @@
                 class="custom-input"
                 placeholder="自訂"
               />
-              <span class="custom-unit">分鐘</span>
+              <span class="custom-unit">minutes</span>
             </div>
           </div>
         </div>
@@ -101,14 +101,14 @@
         <!-- MEV Protection -->
         <div class="setting-section">
           <div class="setting-header">
-            <h3 class="setting-title">MEV 保護</h3>
+            <h3 class="setting-title">MEV Protection</h3>
             <div class="setting-info">
               <svg class="w-4 h-4 text-gaspass-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
               </svg>
               <div class="info-tooltip">
-                <p>MEV (Maximal Extractable Value) 保護可以避免被搶跑或夾子攻擊</p>
-                <p>啟用後交易會通過私人記憶體池執行，提高安全性</p>
+                <p>MEV (Maximal Extractable Value) protection can prevent front-running or sandwich attacks</p>
+                <p>When enabled, transactions will execute through private mempool, improving security</p>
               </div>
             </div>
           </div>
@@ -123,9 +123,9 @@
               <span class="toggle-slider"></span>
             </label>
             <div class="toggle-info">
-              <div class="toggle-label">啟用 MEV 保護</div>
+              <div class="toggle-label">Enable MEV Protection</div>
               <div class="toggle-description">
-                {{ mevProtection ? '交易將通過安全路徑執行' : '使用標準記憶體池' }}
+                {{ mevProtection ? 'Transactions will execute through secure path' : 'Using standard mempool' }}
               </div>
             </div>
           </div>
@@ -134,7 +134,7 @@
         <!-- Advanced Settings -->
         <div class="setting-section">
           <div class="advanced-toggle" @click="showAdvanced = !showAdvanced">
-            <h3 class="setting-title">進階設定</h3>
+            <h3 class="setting-title">Advanced Settings</h3>
             <svg 
               class="w-5 h-5 transition-transform"
               :class="{ 'rotate-180': showAdvanced }"
@@ -148,7 +148,7 @@
           
           <div v-if="showAdvanced" class="advanced-settings">
             <div class="advanced-item">
-              <label class="advanced-label">Gas 價格倍數</label>
+              <label class="advanced-label">Gas Price Multiplier</label>
               <div class="advanced-input-wrapper">
                 <input 
                   v-model="gasMultiplier"
@@ -160,18 +160,18 @@
                 />
                 <span class="advanced-unit">x</span>
               </div>
-              <p class="advanced-description">調整 Gas 價格以加快交易確認速度</p>
+              <p class="advanced-description">Adjust Gas price to speed up transaction confirmation</p>
             </div>
             
             <div class="advanced-item">
-              <label class="advanced-label">橋接協議偏好</label>
+              <label class="advanced-label">Bridge Protocol Preference</label>
               <select v-model="bridgePreference" class="advanced-select">
-                <option value="auto">自動選擇</option>
+                <option value="auto">Auto Select</option>
                 <option value="avail">Avail DA</option>
                 <option value="layerzero">LayerZero</option>
                 <option value="stargate">Stargate</option>
               </select>
-              <p class="advanced-description">選擇偏好的跨鏈橋接協議</p>
+              <p class="advanced-description">Choose preferred cross-chain bridge protocol</p>
             </div>
           </div>
         </div>
@@ -179,10 +179,10 @@
         <!-- Action Buttons -->
         <div class="action-buttons">
           <button @click="resetToDefaults" class="reset-btn">
-            重置預設值
+            Reset to Defaults
           </button>
           <button @click="saveSettings" class="save-btn">
-            儲存設定
+            Save Settings
           </button>
         </div>
       </div>
@@ -221,11 +221,11 @@ const deadlineOptions = [10, 20, 30, 60]
 const getSlippageWarning = () => {
   const slippage = parseFloat(localSlippage.value)
   if (slippage < 0.1) {
-    return '滑點設定過低，交易可能失敗'
+    return 'Slippage set too low, transaction may fail'
   } else if (slippage > 5) {
-    return '滑點設定過高，可能造成較大損失'
+    return 'Slippage set too high, may cause significant losses'
   } else if (slippage > 1) {
-    return '較高的滑點設定，請謹慎確認'
+    return 'High slippage setting, please confirm carefully'
   }
   return null
 }

@@ -1,6 +1,6 @@
 /**
- * 圖標 URL 映射服務
- * 提供可靠的圖標 URL，避免 CORS 問題
+ * Icon URL Mapping Service
+ * Provides reliable icon URLs, avoiding CORS issues
  */
 
 class IconUrlService {
@@ -10,12 +10,12 @@ class IconUrlService {
   }
 
   /**
-   * 初始化圖標 URL 映射
+   * Initialize icon URL mappings
    */
   initIconUrls() {
-    // 使用更可靠的 CDN 和圖標來源 - 優先使用 Socket.tech 和 CoinGecko
+    // Use more reliable CDN and icon sources - prefer Socket.tech and CoinGecko
     const iconMappings = {
-      // 主要鏈圖標 - 使用 Socket.tech 的圖標
+      // Main chain icons - using Socket.tech icons
       'ethereum': 'https://media.socket.tech/networks/ethereum.svg',
       'arbitrum': 'https://media.socket.tech/networks/arbitrum.svg',
       'base': 'https://media.socket.tech/networks/base.svg',
@@ -34,7 +34,7 @@ class IconUrlService {
       'ink': 'https://media.socket.tech/networks/ink.svg',
       'unichain': 'https://media.socket.tech/networks/unichain.png',
       
-      // 常用代幣圖標 - 使用 CoinGecko
+      // Common token icons - using CoinGecko
       'usdc': 'https://assets.coingecko.com/coins/images/6319/large/usdc.png',
       'usdt': 'https://assets.coingecko.com/coins/images/325/large/Tether.png',
       'weth': 'https://assets.coingecko.com/coins/images/2518/large/weth.png',
@@ -48,16 +48,16 @@ class IconUrlService {
       'fdusd': 'https://assets.coingecko.com/coins/images/31079/large/FDUSD_icon_black.png'
     };
 
-    // 將映射添加到 Map 中
+    // Add mappings to Map
     Object.entries(iconMappings).forEach(([key, url]) => {
       this.iconUrls.set(key.toLowerCase(), url);
     });
   }
 
   /**
-   * 獲取鏈圖標 URL
-   * @param {number} chainId - 鏈ID
-   * @returns {string} 圖標URL
+   * Get chain icon URL
+   * @param {number} chainId - Chain ID
+   * @returns {string} Icon URL
    */
   getChainIconUrl(chainId) {
     const chainMap = {
@@ -86,9 +86,9 @@ class IconUrlService {
   }
 
   /**
-   * 獲取代幣圖標 URL
-   * @param {string} symbol - 代幣符號
-   * @returns {string} 圖標URL
+   * Get token icon URL
+   * @param {string} symbol - Token symbol
+   * @returns {string} Icon URL
    */
   getTokenIconUrl(symbol) {
     if (!symbol) return this.getDefaultIconUrl();
@@ -98,41 +98,41 @@ class IconUrlService {
   }
 
   /**
-   * 獲取默認圖標 URL
-   * @returns {string} 默認圖標URL
+   * Get default icon URL
+   * @returns {string} Default icon URL
    */
   getDefaultIconUrl() {
     return 'https://media.socket.tech/networks/ethereum.svg';
   }
 
   /**
-   * 檢查圖標 URL 是否存在
-   * @param {string} url - 圖標URL
-   * @returns {boolean} 是否存在
+   * Check if icon URL exists
+   * @param {string} url - Icon URL
+   * @returns {boolean} Whether it exists
    */
   hasIconUrl(key) {
     return this.iconUrls.has(key.toLowerCase());
   }
 
   /**
-   * 添加自定義圖標 URL
-   * @param {string} key - 圖標鍵
-   * @param {string} url - 圖標URL
+   * Add custom icon URL
+   * @param {string} key - Icon key
+   * @param {string} url - Icon URL
    */
   addIconUrl(key, url) {
     this.iconUrls.set(key.toLowerCase(), url);
   }
 
   /**
-   * 獲取所有圖標 URL
-   * @returns {Map} 所有圖標URL映射
+   * Get all icon URLs
+   * @returns {Map} All icon URL mappings
    */
   getAllIconUrls() {
     return new Map(this.iconUrls);
   }
 }
 
-// 創建單例實例
+// Create singleton instance
 export const iconUrlService = new IconUrlService();
 
 export default iconUrlService;

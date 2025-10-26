@@ -502,7 +502,7 @@
           </div>
           
           <div class="chains-tokens-container">
-            <!-- 左側：來源鏈列表 -->
+            <!-- Left: Source chain list -->
             <div class="chains-section">
               <h4 class="section-title">Source Chain</h4>
               <div class="chains-list">
@@ -521,7 +521,7 @@
               </div>
               </div>
               
-            <!-- 右側：來源代幣列表 -->
+            <!-- Right: Source token list -->
             <div class="tokens-section">
               <h4 class="section-title">Source Token</h4>
               <div class="tokens-list">
@@ -597,7 +597,7 @@
      <div v-if="showSwapProcessing" class="modal-overlay">
        <div class="modal-container processing-modal" @click.stop>
          <div class="processing-content">
-           <!-- Gas Pass 風格 Loading 動畫 -->
+           <!-- Gas Pass style Loading animation -->
            <div class="processing-icon">
              <div v-if="!nexusState.swapProgress.completed" class="gas-pass-loader">
                <div class="gas-bottle"></div>
@@ -662,7 +662,7 @@
      <div v-if="showSwapSuccess" class="modal-overlay">
        <div class="modal-container success-modal" @click.stop>
          <div class="success-content">
-           <!-- Gas Pass 風格成功圖標 -->
+           <!-- Gas Pass style success icon -->
            <div class="success-icon">
              <div class="success-icon-gas">
                <div class="success-circle">
@@ -912,7 +912,7 @@ const usdcBalances = getSelectedTokenBalances
 const allBalances = computed(() => {
   const list = getSelectedTokenBalances.value || []
   
-  // 按餘額大小排序（從大到小）
+  // Sort by balance size (descending)
   const sortedList = [...list].sort((a, b) => {
     const balanceA = parseFloat(a.formattedBalance) || 0
     const balanceB = parseFloat(b.formattedBalance) || 0
@@ -922,16 +922,16 @@ const allBalances = computed(() => {
   return sortedList
 })
 
-// 所有支援的主網列表
+// All supported mainnet list
 const allSupportedChains = computed(() => {
   return supportedChains.value || []
 })
 
-// 交易記錄相關 computed
+// Transaction history related computed
 const visibleTransactions = computed(() => {
   const list = recentTransactions.value || []
   if (showAllTransactions.value) return list
-  return list.slice(0, 4) // 預設顯示前4筆
+  return list.slice(0, 4) // Default show first 4 entries
 })
 
 const hiddenTransactionCount = computed(() => {
@@ -946,26 +946,26 @@ const supportedChains = computed(() => {
     name: chain.name,
     symbol: chain.symbol,
     icon: chain.icon,
-    logo: chain.logo // 添加 Nexus SDK 提供的 logo
+    logo: chain.logo // Add logo provided by Nexus SDK
   }))
 })
 
 // Swap related computed properties
 const availableFromChains = computed(() => {
-  // 來源代幣：使用 getSwapSupportedChainsAndTokens 返回的完整數據
+  // Source tokens: use complete data returned by getSwapSupportedChainsAndTokens
   const chains = nexusState.swapSupportedChains || []
-  console.log('[GasExchange] 可用來源鏈:', chains)
+  console.log('[GasExchange] Available source chains:', chains)
   return chains.filter(chain => chain.tokens && chain.tokens.length > 0)
 })
 
 const availableToChains = computed(() => {
-  // 目標代幣：使用 DESTINATION_SWAP_TOKENS 提供的數據
+  // Target tokens: use data provided by DESTINATION_SWAP_TOKENS
   const chains = []
   if (nexusState.destinationTokens && nexusState.destinationTokens.size > 0) {
-    // 從 destinationTokens Map 構建鏈列表
+    // Build chain list from destinationTokens Map
     for (const [chainId, tokens] of nexusState.destinationTokens) {
       if (tokens && tokens.length > 0) {
-        // 使用代幣中的鏈信息，如果沒有則嘗試獲取 metadata
+        // Use chain info from token, or try to get metadata if not available
         const chainInfo = tokens[0] || {}
         const chainMetadata = getChainMetadata(chainId)
         
@@ -978,11 +978,11 @@ const availableToChains = computed(() => {
       }
     }
   }
-  console.log('[GasExchange] 可用目標鏈:', chains)
+  console.log('[GasExchange] Available target chains:', chains)
   return chains
 })
 
-// 過濾後的來源鏈（基於搜尋）
+// Filtered source chains (based on search)
 const filteredFromChains = computed(() => {
   if (!fromTokenSearch.value) return availableFromChains.value
   
@@ -1000,7 +1000,7 @@ const filteredFromChains = computed(() => {
   })
 })
 
-// 過濾後的目標鏈（基於搜尋）
+// Filtered target chains (based on search)
 const filteredToChains = computed(() => {
   if (!toTokenSearch.value) return availableToChains.value
   
@@ -1056,7 +1056,7 @@ const onSelectToken = async (symbol) => {
     } else {
       await fetchUnifiedToken(symbol)
     }
-    // 收合清單回到預設
+    // Collapse list back to default
     showAllBalances.value = false
   } catch (e) {
     console.error('Select token failed:', e)
@@ -1066,33 +1066,33 @@ const onSelectToken = async (symbol) => {
 
 const loadRecentTransactions = async () => {
   try {
-    // 從 localStorage 載入交易記錄
+    // Load transaction history from localStorage
     const savedTransactions = localStorage.getItem('gasPassTransactions')
     if (savedTransactions) {
       recentTransactions.value = JSON.parse(savedTransactions)
     } else {
-      // 如果沒有記錄，初始化為空數組
+      // If no records, initialize as empty array
       recentTransactions.value = []
     }
   } catch (error) {
-    console.error('載入交易記錄失敗:', error)
+    console.error('Failed to load transaction history:', error)
     recentTransactions.value = []
   }
 }
 
-// 保存交易記錄到 localStorage
+// Save transaction history to localStorage
 const saveTransactions = () => {
   try {
     localStorage.setItem('gasPassTransactions', JSON.stringify(recentTransactions.value))
   } catch (error) {
-    console.error('保存交易記錄失敗:', error)
+    console.error('Failed to save transaction history:', error)
   }
 }
 
-// 添加新交易記錄
+// Add new transaction record
 const addTransaction = (transaction) => {
   const newTransaction = {
-    id: Date.now(), // 使用時間戳作為唯一 ID
+    id: Date.now(), // Use timestamp as unique ID
     amount: transaction.amount,
     symbol: transaction.symbol,
     chain: transaction.chain,
@@ -1109,19 +1109,19 @@ const addTransaction = (transaction) => {
     explorerURL: transaction.explorerURL
   }
   
-  // 添加到數組開頭（最新的在前面）
+  // Add to array beginning (newest first)
   recentTransactions.value.unshift(newTransaction)
   
-  // 限制最多保存 50 筆交易記錄
+  // Limit to maximum 50 transaction records
   if (recentTransactions.value.length > 50) {
     recentTransactions.value = recentTransactions.value.slice(0, 50)
   }
   
-  // 保存到 localStorage
+  // Save to localStorage
   saveTransactions()
 }
 
-// 獲取狀態文字
+// Get status text
 const getStatusText = (status) => {
   const statusMap = {
     'completed': 'Completed',
@@ -1132,7 +1132,7 @@ const getStatusText = (status) => {
   return statusMap[status] || status
 }
 
-// 獲取狀態樣式類別
+// Get status style class
 const getStatusClass = (status) => {
   const classMap = {
     'completed': 'text-emerald-400',
@@ -1143,9 +1143,9 @@ const getStatusClass = (status) => {
   return classMap[status] || 'text-emerald-300'
 }
 
-// ===== Swap 相關方法 =====
+// ===== Swap Related Methods =====
 
-// 選擇來源鏈
+// Select source chain
 const selectFromChain = (chainId) => {
   selectedFromChain.value = chainId
   // 清空已選的代幣，因為鏈改變了
@@ -1156,7 +1156,7 @@ const selectFromChain = (chainId) => {
 }
 
 
-// 選擇來源代幣
+// Select source token
 const selectFromToken = (token, chainId) => {
   selectedFromToken.value = token
   selectedFromChain.value = chainId || token.chainId
@@ -1172,7 +1172,7 @@ const selectFromToken = (token, chainId) => {
   }
 }
 
-// 選擇目標代幣
+// Select target token
 const selectToToken = (token, chainId) => {
   selectedToToken.value = token
   selectedToChain.value = chainId || token.chainId
@@ -1189,7 +1189,7 @@ const selectToToken = (token, chainId) => {
   }
 }
 
-// 選擇目標鏈
+// Select target chain
 const selectToChain = (chainId) => {
   selectedToChain.value = chainId
   selectedToToken.value = null // 清空代幣選擇，因為我們只選擇鏈
@@ -1205,20 +1205,20 @@ const selectToChain = (chainId) => {
   }
 }
 
-// 處理輸入金額變化
+// Handle input amount change
 const handleFromAmountChange = () => {
-  toAmount.value = '' // 清空輸出金額
+  toAmount.value = '' // Clear output amount
   estimateSwap()
 }
 
-// 設置最大輸入金額
+// Set maximum input amount
 const setMaxFromAmount = () => {
   if (!selectedFromToken.value || !selectedFromChain.value) return
   
   const balance = getTokenBalance(selectedFromToken.value, selectedFromChain.value)
   const numericBalance = parseFloat(balance) || 0
   
-  // 保留一些代幣作為 gas（如果是原生代幣）
+  // Reserve some token as gas (if native token)
   if (selectedFromToken.value.address === '0x0000000000000000000000000000000000000000') {
     fromAmount.value = Math.max(0, numericBalance - 0.01).toString()
   } else {
@@ -1228,16 +1228,16 @@ const setMaxFromAmount = () => {
   handleFromAmountChange()
 }
 
-// 反轉 swap（暫時禁用，因為目標是固定選擇鏈的原生代幣）
+// Reverse swap (temporarily disabled because target is a fixed selected chain's native token)
 const reverseSwap = () => {
-  // 暫時不實現，因為目標是選擇鏈的原生代幣
+  // Temporarily not implemented, because target is the selected chain's native token
 }
 
-// 估算 swap
+// Estimate swap
 const estimateSwap = async () => {
   if (!canSwap.value) return
   
-  // 節流：防止頻繁請求
+  // Throttle: prevent frequent requests
   const now = Date.now()
   if (lastEstimationTime.value && (now - lastEstimationTime.value) < 1000) {
     return

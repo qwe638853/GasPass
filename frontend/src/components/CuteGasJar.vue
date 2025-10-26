@@ -286,8 +286,8 @@ const handleSubmit = async () => {
       showSuccess.value = true
       // Trigger celebration animation
       celebrateSuccess()
-      // 發送成功事件讓父組件刷新數據
-      console.log('✅ 充值成功，發送 success 事件')
+      // Send success event for parent component to refresh data
+      console.log('✅ Refuel successful, sending success event')
       emit('success', {
         type: props.isFirstTime ? 'mint' : 'deposit',
         result: result
@@ -324,18 +324,18 @@ const celebrateSuccess = () => {
   }, 2000)
 }
 
-// 處理模態框點擊
+// Handle modal click
 const handleModalClick = () => {
-  // 點擊背景關閉模態框
+  // Click background to close modal
   handleContinue()
 }
 
-// 處理繼續按鈕
+// Handle continue button
 const handleContinue = () => {
   showSuccess.value = false
-  // 如果是第一次創建，發送 success 事件讓父組件切換視圖
+  // If first time creation, send success event for parent component to switch view
   if (props.isFirstTime) {
-    console.log('🎉 用戶點擊繼續，發送 success 事件...')
+    console.log('🎉 User clicked continue, sending success event...')
     emit('success')
   }
 }

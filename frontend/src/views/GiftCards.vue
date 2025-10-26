@@ -82,7 +82,7 @@
         <!-- Connected State -->
         <div v-else>
           <!-- Main Content -->
-          <!-- 鑄造儲值卡區塊 -->
+          <!-- Mint Gift Card Block -->
           <div class="gift-card-container rounded-3xl shadow-2xl border border-white/30 p-8 mb-8 relative overflow-hidden group">
             <!-- Content -->
             <div class="relative z-10">
@@ -384,17 +384,17 @@
       </div>
     </div>
     
-    <!-- 贈送記錄彈出視窗 -->
+    <!-- Gift History Popup -->
     <div v-if="showGiftHistory" class="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <!-- 背景模糊遮罩 -->
+      <!-- Background Blur Overlay -->
       <div 
         class="fixed inset-0 bg-black/50 backdrop-blur-sm transition-opacity duration-300"
         @click="showGiftHistory = false"
       ></div>
       
-      <!-- 彈出視窗 -->
+      <!-- Popup Window -->
       <div class="relative gift-history-modal rounded-2xl shadow-2xl max-w-2xl w-full max-h-[80vh] overflow-hidden z-10 transform transition-all duration-300">
-        <!-- 視窗標題 -->
+        <!-- Window Title -->
         <div class="gift-history-header p-6">
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-3">
@@ -416,7 +416,7 @@
           </div>
         </div>
         
-        <!-- 視窗內容 -->
+        <!-- Window Content -->
         <div class="p-6 overflow-y-auto max-h-[calc(80vh-88px)]">
           <div v-if="giftHistory.length === 0" class="text-center py-8">
             <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -451,18 +451,18 @@
         </div>
       </div>
     </div>
-
-    <!-- 成功彈窗 -->
+    
+    <!-- Success Popup -->
     <div v-if="showSuccessModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <!-- 背景模糊遮罩 -->
+      <!-- Background Blur Overlay -->
       <div 
         class="fixed inset-0 bg-black/50 backdrop-blur-sm transition-opacity duration-300"
         @click="showSuccessModal = false"
       ></div>
       
-      <!-- 成功彈窗 -->
+      <!-- Success Popup -->
       <div class="relative success-modal rounded-2xl shadow-2xl max-w-2xl w-full max-h-[80vh] overflow-hidden z-10 transform transition-all duration-300">
-        <!-- 視窗標題 -->
+        <!-- Window Title -->
         <div class="success-header p-6">
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-3">
@@ -487,7 +487,7 @@
           </div>
         </div>
         
-        <!-- 視窗內容 -->
+        <!-- Window Content -->
         <div class="p-6 overflow-y-auto max-h-[calc(80vh-88px)]">
           <div class="space-y-6">
             <!-- Basic Information -->

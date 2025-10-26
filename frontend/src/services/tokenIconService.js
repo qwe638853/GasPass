@@ -1,6 +1,6 @@
 /**
- * 代幣圖標服務
- * 整合 Bungee API 和本地配置，提供統一的代幣圖標獲取接口
+ * Token Icon Service
+ * Integrates Bungee API and local configuration to provide unified token icon retrieval interface
  */
 
 import { bungeeTokenService } from './bungeeTokenService.js';
@@ -15,10 +15,10 @@ class TokenIconService {
   }
 
   /**
-   * 初始化備用圖標
+   * Initialize fallback icons
    */
   initFallbackIcons() {
-    // 常見代幣的備用圖標 - 使用 CoinGecko
+    // Common tokens' fallback icons - using CoinGecko
     this.fallbackIcons.set('USDC', 'https://assets.coingecko.com/coins/images/6319/large/USD_Coin_icon.png');
     this.fallbackIcons.set('USDT', 'https://assets.coingecko.com/coins/images/325/large/Tether.png');
     this.fallbackIcons.set('WETH', 'https://assets.coingecko.com/coins/images/279/large/ethereum.png');
@@ -32,35 +32,35 @@ class TokenIconService {
   }
 
   /**
-   * 獲取代幣圖標
-   * @param {string} address - 代幣合約地址
-   * @param {number} chainId - 鏈ID
-   * @param {string} symbol - 代幣符號（可選，用於備用圖標）
-   * @returns {Promise<string>} 圖標URL
+   * Get token icon
+   * @param {string} address - Token contract address
+   * @param {number} chainId - Chain ID
+   * @param {string} symbol - Token symbol (optional, used for fallback icon)
+   * @returns {Promise<string>} Icon URL
    */
   async getTokenIcon(address, chainId, symbol = null) {
     const cacheKey = `${chainId}-${address.toLowerCase()}`;
     
-    // 檢查緩存
+    // Check cache
     if (this.iconCache.has(cacheKey)) {
       return this.iconCache.get(cacheKey);
     }
 
     try {
-      // 首先嘗試從 Bungee API 獲取
+      // First try to get from Bungee API
       let iconUrl = await bungeeTokenService.getTokenIcon(address, chainId);
       
-      // 如果沒有找到，嘗試使用備用圖標
+      // If not found, try to use fallback icon
       if (!iconUrl && symbol) {
         iconUrl = this.fallbackIcons.get(symbol.toUpperCase());
       }
       
-      // 如果還是沒有，使用默認圖標
+      // If still not found, use default icon
       if (!iconUrl) {
         iconUrl = this.getDefaultTokenIcon();
       }
 
-      // 緩存結果
+      // Cache result
       this.iconCache.set(cacheKey, iconUrl);
       return iconUrl;
     } catch (error) {
@@ -70,55 +70,55 @@ class TokenIconService {
   }
 
   /**
-   * 獲取原生代幣圖標
-   * @param {number} chainId - 鏈ID
-   * @returns {string} 原生代幣圖標URL
+   * Get native token icon
+   * @param {number} chainId - Chain ID
+   * @returns {string} Native token icon URL
    */
   getNativeTokenIcon(chainId) {
     return bungeeTokenService.getNativeTokenIcon(chainId);
   }
 
   /**
-   * 獲取鏈圖標
-   * @param {number} chainId - 鏈ID
-   * @returns {string} 鏈圖標URL
+   * Get chain icon
+   * @param {number} chainId - Chain ID
+   * @returns {string} Chain icon URL
    */
   getChainIcon(chainId) {
-    // 首先嘗試使用 iconUrlService
+    // First try to use iconUrlService
     const iconUrl = iconUrlService.getChainIconUrl(chainId);
     if (iconUrl !== iconUrlService.getDefaultIconUrl()) {
       return iconUrl;
     }
     
-    // 回退到配置文件
+    // Fallback to config file
     const chain = SUPPORTED_CHAINS[chainId];
     return chain?.logo || this.getDefaultChainIcon();
   }
 
   /**
-   * 批量獲取代幣圖標
-   * @param {Array} tokens - 代幣數組 [{address, chainId, symbol}]
-   * @returns {Promise<Map>} 地址到圖標URL的映射
+   * Batch get token icons
+   * @param {Array} tokens - Token array [{address, chainId, symbol}]
+   * @returns {Promise<Map>} Map of address to icon URL
    */
   async getTokenIconsBatch(tokens) {
     const iconMap = new Map();
     
     try {
-      // 使用 Bungee 服務批量獲取
+      // Use Bungee service for batch retrieval
       const tokenAddresses = tokens.map(t => ({ address: t.address, chainId: t.chainId }));
       const bungeeIcons = await bungeeTokenService.getTokenIconsBatch(tokenAddresses);
       
-      // 處理結果
+      // Process results
       tokens.forEach(token => {
         const cacheKey = `${token.chainId}-${token.address.toLowerCase()}`;
         let iconUrl = bungeeIcons.get(cacheKey);
         
-        // 如果 Bungee 沒有，嘗試備用圖標
+        // If Bungee doesn't have it, try fallback icon
         if (!iconUrl && token.symbol) {
           iconUrl = this.fallbackIcons.get(token.symbol.toUpperCase());
         }
         
-        // 最後使用默認圖標
+        // Finally use default icon
         if (!iconUrl) {
           iconUrl = this.getDefaultTokenIcon();
         }
@@ -128,7 +128,7 @@ class TokenIconService {
       });
     } catch (error) {
       console.error('Failed to get token icons batch:', error);
-      // 使用默認圖標
+      // Use default icons
       tokens.forEach(token => {
         const cacheKey = `${token.chainId}-${token.address.toLowerCase()}`;
         const iconUrl = this.fallbackIcons.get(token.symbol?.toUpperCase()) || this.getDefaultTokenIcon();
@@ -141,12 +141,12 @@ class TokenIconService {
   }
 
   /**
-   * 預載入常用代幣圖標
-   * @param {number} chainId - 鏈ID
+   * Preload common token icons
+   * @param {number} chainId - Chain ID
    */
   async preloadCommonTokens(chainId) {
     const commonTokens = [
-      { address: '0xA0b86a33E6441b8C4C8C0C4C8C0C4C8C0C4C8C0C', symbol: 'USDC' }, // 示例地址
+      { address: '0xA0b86a33E6441b8C4C8C0C4C8C0C4C8C0C4C8C0C', symbol: 'USDC' }, // Example address
       { address: '0xdAC17F958D2ee523a2206206994597C13D831ec7', symbol: 'USDT' },
       { address: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2', symbol: 'WETH' },
       { address: '0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599', symbol: 'WBTC' }
@@ -163,23 +163,23 @@ class TokenIconService {
   }
 
   /**
-   * 獲取默認代幣圖標
-   * @returns {string} 默認圖標URL
+   * Get default token icon
+   * @returns {string} Default icon URL
    */
   getDefaultTokenIcon() {
     return iconUrlService.getDefaultIconUrl();
   }
 
   /**
-   * 獲取默認鏈圖標
-   * @returns {string} 默認鏈圖標URL
+   * Get default chain icon
+   * @returns {string} Default chain icon URL
    */
   getDefaultChainIcon() {
     return iconUrlService.getDefaultIconUrl();
   }
 
   /**
-   * 清除緩存
+   * Clear cache
    */
   clearCache() {
     this.iconCache.clear();
@@ -187,9 +187,9 @@ class TokenIconService {
   }
 
   /**
-   * 檢查圖標URL是否有效
-   * @param {string} url - 圖標URL
-   * @returns {Promise<boolean>} 是否有效
+   * Check if icon URL is valid
+   * @param {string} url - Icon URL
+   * @returns {Promise<boolean>} Whether it's valid
    */
   async isValidIconUrl(url) {
     try {
@@ -201,15 +201,15 @@ class TokenIconService {
   }
 
   /**
-   * 獲取所有支援的鏈
-   * @returns {Object} 支援的鏈配置
+   * Get all supported chains
+   * @returns {Object} Supported chains configuration
    */
   getSupportedChains() {
     return SUPPORTED_CHAINS;
   }
 }
 
-// 創建單例實例
+// Create singleton instance
 export const tokenIconService = new TokenIconService();
 
 export default tokenIconService;

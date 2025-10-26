@@ -10,7 +10,7 @@ export const BUNGEE_CONFIG = {
   tokenListApi: 'https://public-backend.bungee.exchange/api/v1/tokens/list'
 };
 
-// 支援的鏈配置
+// Supported chains configuration
 export const SUPPORTED_CHAINS = {
   1: {
     rpc: 'https://mainnet.infura.io/v3/YOUR-API-KEY',

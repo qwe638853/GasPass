@@ -9,25 +9,25 @@ const provider = ref(null)
 const signer = ref(null)
 const isConnected = computed(() => !!account.value)
 const isWalletReady = ref(false)
-// 檢查是否連接到 Arbitrum Mainnet
+// Check if connected to Arbitrum Mainnet
 const isArbitrum = computed(() => chainId.value === 42161) // Arbitrum One (mainnet)
 
 let removeListener = null
 
-// 更新 provider 和 signer
+// Update provider and signer
 const updateProviderAndSigner = async () => {
   try {
     if (account.value) {
-      // 使用 Web3Modal 的狀態創建 provider 和 signer
+      // Use Web3Modal's state to create provider and signer
       const wagmiConfig = walletService.getWagmiConfig()
       const accountData = getAccount(wagmiConfig)
       const chainIdData = getChainId(wagmiConfig)
       
       if (accountData.isConnected && window.ethereum) {
-        // 創建一個簡單的 provider 包裝器
+        // Create a simple provider wrapper
         provider.value = {
           getSigner: async () => {
-            // 返回一個簡單的 signer 包裝器
+            // Return a simple signer wrapper
             return {
               getAddress: () => accountData.address,
               provider: {
@@ -46,7 +46,7 @@ const updateProviderAndSigner = async () => {
                 waitForTransaction: async (txHash, confirmations = 1) => {
                   return new Promise((resolve, reject) => {
                     let attempts = 0
-                    const maxAttempts = 30 // 最多等待 30 秒
+                    const maxAttempts = 30 // Wait up to 30 seconds
                     
                     const checkReceipt = async () => {
                       try {
@@ -61,7 +61,7 @@ const updateProviderAndSigner = async () => {
                         } else if (receipt && receipt.status === '0x0') {
                           reject(new Error('Transaction failed'))
                         } else if (attempts >= maxAttempts) {
-                          // 如果等待太久，假設交易成功（可能是 RPC 問題）
+                          // If waited too long, assume transaction success (may be RPC issue)
                           console.warn('Transaction receipt not found after 30 seconds, assuming success')
                           resolve({ status: '0x1', transactionHash: txHash })
                         } else {
@@ -69,7 +69,7 @@ const updateProviderAndSigner = async () => {
                         }
                       } catch (error) {
                         if (attempts >= maxAttempts) {
-                          // 如果 RPC 錯誤持續，假設交易成功
+                          // If RPC errors persist, assume transaction success
                           console.warn('RPC error after 30 seconds, assuming transaction success')
                           resolve({ status: '0x1', transactionHash: txHash })
                         } else {
@@ -89,16 +89,16 @@ const updateProviderAndSigner = async () => {
                 })
               },
               signTypedData: async (domain, types, value, primaryType = 'MintWithSig') => {
-                // 處理 BigInt 序列化
+                // Handle BigInt serialization
                 const serializeBigInt = (obj) => {
                   return JSON.parse(JSON.stringify(obj, (key, val) =>
                     typeof val === 'bigint' ? val.toString() : val
                   ))
                 }
                 
-                // 使用 getAddress() 獲取當前地址，確保一致性
+                // Use getAddress() to get current address, ensure consistency
                 const currentAddress = accountData.address
-                console.log('🔍 useWeb3 signTypedData 使用地址:', currentAddress)
+                console.log('🔍 useWeb3 signTypedData using address:', currentAddress)
                 
                 return await window.ethereum.request({
                   method: 'eth_signTypedData_v4',
@@ -111,7 +111,7 @@ const updateProviderAndSigner = async () => {
                 })
               },
               sendTransaction: async (tx) => {
-                // 確保交易對象包含 from 字段
+                // Ensure transaction object includes from field
                 const transaction = {
                   ...tx,
                   from: accountData.address
@@ -126,7 +126,7 @@ const updateProviderAndSigner = async () => {
           }
         }
         
-        // 獲取 signer
+        // Get signer
         signer.value = await provider.value.getSigner()
         
         console.log('Provider and signer updated using Web3Modal state')
@@ -147,26 +147,26 @@ const updateProviderAndSigner = async () => {
 }
 
 export function useWeb3() {
-  // 初始化時檢查錢包狀態
+  // Check wallet state on initialization
   onMounted(async () => {
     try {
-      // 等待一下讓 Web3Modal 完全初始化
+      // Wait a bit to let Web3Modal fully initialize
       await new Promise(resolve => setTimeout(resolve, 100))
       
-      // 嘗試無 UI 重連（可還原 WalletConnect/Injected 連線）
+      // Try silent reconnect (can restore WalletConnect/Injected connections)
       try { await walletService.attemptReconnect() } catch {}
       const state = await walletService.getState()
-      // 移除冗長的 console，保留關鍵資訊
+      // Remove verbose console, keep key information
       console.log('[useWeb3] Initial wallet chain:', state.chainId)
       account.value = state.account
       chainId.value = state.chainId
       
-      // 初始化 provider 和 signer
+      // Initialize provider and signer
       await updateProviderAndSigner()
 
-      // 設置事件監聽
+      // Set up event listeners
       removeListener = walletService.addEventListener((event, data) => {
-        // 精簡事件日誌
+        // Simplified event logging
         // console.log('Wallet event:', event, data)
         switch (event) {
           case 'connected':
@@ -174,7 +174,7 @@ export function useWeb3() {
             // console.log('Updating account state:', data)
             account.value = data.account
             chainId.value = data.chainId
-            // 更新 provider 和 signer
+            // Update provider and signer
             updateProviderAndSigner()
             // console.log('State updated - account:', account.value, 'chainId:', chainId.value)
             break
@@ -231,7 +231,7 @@ export function useWeb3() {
     }
   }
 
-  // 提供通用切換到指定主網鏈的方法
+  // Provide generic method to switch to specified mainnet chain
   const switchToChain = async (id) => {
     try {
       const result = await walletService.switchNetwork(id)
@@ -246,7 +246,7 @@ export function useWeb3() {
     }
   }
 
-  // 切換到 Arbitrum Mainnet
+  // Switch to Arbitrum Mainnet
   const switchToArbitrum = async () => {
     try {
       const result = await walletService.switchNetwork(42161) // Arbitrum Mainnet Chain ID

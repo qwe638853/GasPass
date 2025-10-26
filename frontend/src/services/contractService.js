@@ -1,11 +1,11 @@
-// GasPass 合約服務
+// GasPass contract service
 import { ethers, formatUnits, parseUnits, parseEther, formatEther } from 'ethers'
 import { GAS_PASS_CONFIG } from '@/config/gasPassConfig.js'
 import relayerService from './relayerService.js'
 import { getStoredPkpEthAddress } from './vincentAuthService.js'
 import { markRaw } from 'vue'
 
-// 自定義 splitSignature 函數 (ethers v6 中已移除)
+// Custom splitSignature function (removed in ethers v6)
 function splitSignature(signature) {
   const r = signature.slice(0, 66)
   const s = signature.slice(66, 130)
@@ -13,12 +13,12 @@ function splitSignature(signature) {
   return { r, s, v }
 }
 
-// 合約配置
+// Contract configuration
 const CONTRACT_CONFIG = {
-  // Arbitrum Mainnet - 使用已部署的合約地址
+  // Arbitrum Mainnet - using deployed contract address
   address: GAS_PASS_CONFIG.contractAddress,
   abi: [
-    // ERC3525 基本函數
+    // ERC3525 basic functions
     'function totalSupply() view returns (uint256)',
     'function tokenByIndex(uint256) view returns (uint256)',
     'function ownerOf(uint256) view returns (address)',
@@ -26,7 +26,7 @@ const CONTRACT_CONFIG = {
     'function ownerNonces(address) view returns (uint256)',
     'function nonces(uint256) view returns (uint256)',
     
-    // GasPass 特定函數
+    // GasPass specific functions
     'function mintWithSig(tuple(address to, uint256 value, tuple(address owner, address spender, uint256 value, uint256 deadline, uint8 v, bytes32 r, bytes32 s) permitData, address agent, uint256 nonce, uint256 deadline) typedData, bytes signature) external',
     'function depositWithSig(tuple(uint256 tokenId, uint256 amount, tuple(address owner, address spender, uint256 value, uint256 deadline, uint8 v, bytes32 r, bytes32 s) permitData, uint256 nonce, uint256 deadline) typedData, bytes signature) external',
     'function setRefuelPolicyWithSig(tuple(uint256 tokenId, uint256 targetChainId, uint128 gasAmount, uint128 threshold, address agent, uint256 nonce, uint256 deadline) policy, bytes signature) external',
@@ -35,7 +35,7 @@ const CONTRACT_CONFIG = {
     'function autoRefuel(uint256 tokenId, uint256 targetChainId) external',
     'function agentToWallet(address) view returns (address)',
     
-    // 事件
+    // Events
     'event Minted(address indexed to, uint256 value, address indexed agent)',
     'event Deposited(address indexed owner, uint256 indexed tokenId, uint256 amount)',
     'event RefuelPolicySet(uint256 indexed tokenId, uint256 indexed targetChainId, uint128 gasAmount, uint128 threshold, address indexed agent)',
@@ -43,7 +43,7 @@ const CONTRACT_CONFIG = {
   ]
 }
 
-// USDC 合約配置 (Arbitrum Mainnet)
+// USDC contract configuration (Arbitrum Mainnet)
 const USDC_CONFIG = {
   address: '0xaf88d065e77c8cC2239327C5EDb3A432268e5831', // Arbitrum Mainnet USDC
   abi: [

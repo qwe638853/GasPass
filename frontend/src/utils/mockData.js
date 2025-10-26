@@ -1,4 +1,4 @@
-// 模擬數據
+// Mock data
 
 export const mockGasPassCards = [
   {
@@ -23,7 +23,7 @@ export const mockTransactionHistory = [
   {
     id: 1,
     hash: '0x123abc456def789ghi012jkl345mno678pqr901stu234vwx567yz890',
-    type: '鑄造儲值卡',
+    type: 'Mint Card',
     amount: '100.00',
     tokenId: 1,
     timestamp: '2024-01-15 14:30',
@@ -32,7 +32,7 @@ export const mockTransactionHistory = [
   {
     id: 2,
     hash: '0x456def789ghi012jkl345mno678pqr901stu234vwx567yz890abc123',
-    type: '儲值',
+    type: 'Deposit',
     amount: '50.25',
     tokenId: 1,
     timestamp: '2024-01-14 16:45',
@@ -41,7 +41,7 @@ export const mockTransactionHistory = [
   {
     id: 3,
     hash: '0x789ghi012jkl345mno678pqr901stu234vwx567yz890abc123def456',
-    type: '手動補 Gas',
+    type: 'Manual Refuel',
     amount: '0.01',
     chainId: 1,
     cost: '20.1',
@@ -152,31 +152,31 @@ export const mockAgentActivity = [
   {
     id: 1,
     type: 'execution',
-    title: 'Ethereum Gas 補充',
-    description: '為 0x123...abc 補充 0.01 ETH，消耗 20.1 USDC',
+    title: 'Ethereum Gas Refuel',
+    description: 'Refueled 0x123...abc with 0.01 ETH, cost 20.1 USDC',
     timestamp: '15:30',
     chainId: 1
   },
   {
     id: 2,
     type: 'execution',
-    title: 'Polygon Gas 補充',
-    description: '為 0x123...abc 補充 50 MATIC，消耗 40 USDC',
+    title: 'Polygon Gas Refuel',
+    description: 'Refueled 0x123...abc with 50 MATIC, cost 40 USDC',
     timestamp: '14:20',
     chainId: 137
   },
   {
     id: 3,
     type: 'alert',
-    title: '餘額警告',
-    description: 'Token ID 1 餘額不足 10 USDC，建議充值',
+    title: 'Balance Warning',
+    description: 'Token ID 1 balance below 10 USDC, recommend deposit',
     timestamp: '13:45'
   },
   {
     id: 4,
     type: 'error',
-    title: '橋接失敗',
-    description: 'BNB Chain 橋接超時，將在下次檢查時重試',
+    title: 'Bridge Failed',
+    description: 'BNB Chain bridge timeout, will retry on next check',
     timestamp: '12:30',
     chainId: 56
   }
@@ -211,7 +211,7 @@ export const mockSwapHistory = [
   }
 ]
 
-// 用戶偏好設定
+// User preference settings
 export const mockUserPreferences = {
   theme: 'light',
   language: 'zh-TW',
@@ -228,7 +228,7 @@ export const mockUserPreferences = {
   }
 }
 
-// Gas 價格數據
+// Gas price data
 export const mockGasPrices = {
   1: { slow: 20, standard: 25, fast: 35, unit: 'gwei' },
   137: { slow: 30, standard: 35, fast: 45, unit: 'gwei' },
@@ -238,7 +238,7 @@ export const mockGasPrices = {
   250: { slow: 100, standard: 150, fast: 200, unit: 'gwei' }
 }
 
-// 價格數據 (USD)
+// Price data (USD)
 export const mockTokenPrices = {
   'ETH': 2500,
   'MATIC': 0.9,
