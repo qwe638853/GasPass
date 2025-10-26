@@ -480,7 +480,7 @@ contract GasPassTest is Test {
             destinationChainId: 137,
             deadline: block.timestamp + 1 hours,
             nonce: 12345,
-            sender: address(gasPass),
+            sender: mockInbox,
             receiver: mockReceiver,
             delegate: mockReceiver,
             bungeeGateway: address(0x1000000000000000000000000000000000000000),
@@ -529,8 +529,8 @@ contract GasPassTest is Test {
         gasPass.autoRefuel(1, mockInbox, req, expectedSorHash, 137);
         
         // Verify results
-        assertEq(gasPass.balanceOf(1), initialBalance - 10 ether - (10 ether * 5 / 1000)); // 10 ether + 0.5% fee
-        assertEq(gasPass.totalFeesCollected(), initialFees + (10 ether * 5 / 1000));
+        assertEq(gasPass.balanceOf(1), initialBalance - 10 ether); // Only deduct the gas amount, no fee
+        assertEq(gasPass.totalFeesCollected(), initialFees);
         
         // Verify policy was updated
         (, , , uint256 lastRefueled) = gasPass.chainPolicies(1, 137);
@@ -562,7 +562,7 @@ contract GasPassTest is Test {
             destinationChainId: 137,
             deadline: block.timestamp + 1 hours,
             nonce: 12345,
-            sender: address(gasPass),
+            sender: mockInbox,
             receiver: address(0x2000000000000000000000000000000000000000),
             delegate: address(0x2000000000000000000000000000000000000000),
             bungeeGateway: address(0x1000000000000000000000000000000000000000),
@@ -614,7 +614,7 @@ contract GasPassTest is Test {
             destinationChainId: 137,
             deadline: block.timestamp + 1 hours,
             nonce: 12345,
-            sender: address(gasPass),
+            sender: mockInbox,
             receiver: address(0x2000000000000000000000000000000000000000),
             delegate: address(0x2000000000000000000000000000000000000000),
             bungeeGateway: address(0x1000000000000000000000000000000000000000),
@@ -672,7 +672,7 @@ contract GasPassTest is Test {
             destinationChainId: 137,
             deadline: block.timestamp + 1 hours,
             nonce: 12345,
-            sender: address(gasPass),
+            sender: mockInbox,
             receiver: mockReceiver,
             delegate: mockReceiver,
             bungeeGateway: address(0x1000000000000000000000000000000000000000),

@@ -6,15 +6,15 @@ pragma solidity ^0.8.20;
  * @notice Shared struct definitions for GasPass contract.
  */
 library GasPassTypes {
-    /// @notice 設定自動補氣策略的 EIP-712 型別資料。
+    /// @notice EIP-712 type data for setting automatic refueling policy.
     struct SetRefuelPolicyTypedData {
         uint256 tokenId;
         uint256 targetChainId;
-        uint128 gasAmount; // 自動refuel的額度
-        uint128 threshold; // 低於此threshold時，會自動refuel
+        uint128 gasAmount; // Amount for automatic refuel
+        uint128 threshold; // Will automatically refuel when balance falls below this threshold
         address agent;
-        uint256 nonce; // 一次性nonce
-        uint256 deadline; // 過期時間
+        uint256 nonce; // One-time nonce
+        uint256 deadline; // Expiration time
     }
 
     struct SetAgentToWalletWithSigTypedData {
@@ -24,7 +24,7 @@ library GasPassTypes {
         uint256 deadline;
     }
 
-    /// @notice 取消自動補氣策略的 EIP-712 型別資料。
+    /// @notice EIP-712 type data for canceling automatic refueling policy.
     struct CancelRefuelPolicyTypedData {
         uint256 tokenId;
         uint256 targetChainId;
@@ -32,24 +32,24 @@ library GasPassTypes {
         uint256 deadline;
     }
 
-    /// @notice 每鏈之補氣策略設定。
+    /// @notice Refueling policy settings per chain.
     struct RefuelPolicy {
-        uint128 gasAmount; // 自動refuel的額度
-        uint128 threshold; // 低於此threshold時，會自動refuel
+        uint128 gasAmount; // Amount for automatic refuel
+        uint128 threshold; // Will automatically refuel when balance falls below this threshold
         address agent;
         uint256 lastRefueled;
     }
 
-    /// @notice 穩定幣 EIP-2612 的 permit 參數，用於授權合約轉移資金。
+    /// @notice Stablecoin EIP-2612 permit parameters for authorizing contract to transfer funds.
     struct StablecoinPermitData {
-        address owner;      // 付款人
-        address spender;    // 必須是 address(this)
-        uint256 value;      // 授權額度（建議 >= 本次 amount）
-        uint256 deadline;   // permit 截止時間
+        address owner;      // Payer
+        address spender;    // Must be address(this)
+        uint256 value;      // Authorization amount (recommended >= current amount)
+        uint256 deadline;   // Permit deadline
         uint8 v; bytes32 r; bytes32 s;
     }
 
-    /// @notice 使用簽章鑄造 GasPass 的型別資料。
+    /// @notice Type data for minting GasPass using signature.
     struct MintWithSigTypedData {
         address to;
         uint256 value;
@@ -61,15 +61,15 @@ library GasPassTypes {
 
     struct MintBatchWithSigTypedData {
         address to;
-        uint256 amount; // 鑄造數量
-        uint256 singleValue; // 每個 token 的值
+        uint256 amount; // Number of tokens to mint
+        uint256 singleValue; // Value per token
         address agent;
         StablecoinPermitData permitData;
         uint256 nonce;
         uint256 deadline;
     }
 
-    /// @notice 使用簽章為既有 tokenId 充值 value 的型別資料。
+    /// @notice Type data for depositing value to an existing tokenId using signature.
     struct DepositWithSigTypedData {
         uint256 tokenId;
         uint256 amount;

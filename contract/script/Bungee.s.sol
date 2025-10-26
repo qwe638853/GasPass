@@ -5,29 +5,29 @@ import "forge-std/Script.sol";
 import {GasPass} from "../src/GasPass.sol";
 import {GasPassTypes} from "../src/types/GasPassTypes.sol";
 import {IBungeeInbox} from "../src/bungee/IBungeeInbox.sol";
-import {BungeeInboxRequest} from "../src/bungee/BasicRequestLib.sol"; // 提供 createSORHash(req)
+import {BungeeInboxRequest} from "../src/bungee/BasicRequestLib.sol"; // Provides createSORHash(req)
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 contract AutoRefuelToOPScript is Script {
     function run() public {
-        // === 讀取環境變數 ===
+        // === Read environment variables ===
         address gasPassAddr   = vm.envAddress("GASPASS_ADDRESS");
-        uint256 agentPk       = vm.envUint("PRIVATE_KEY"); // ★ 一定要是 policy.agent 的私鑰
-        uint256 tokenId       = 2;      // 要 refuel 的 3525 tokenId
-        address receiver  = vm.addr(agentPk); // Optimism 鏈上的接收地址（EOA/合約皆可）
-        // 你可以改 GAS_AMOUNT_USDC；預設 1 USDC = 1_000_000（6 decimals）
+        uint256 agentPk       = vm.envUint("PRIVATE_KEY"); // ★ Must be the private key of policy.agent
+        uint256 tokenId       = 2;      // 3525 tokenId to refuel
+        address receiver  = vm.addr(agentPk); // Receiving address on Optimism chain (can be EOA or contract)
+        // You can modify GAS_AMOUNT_USDC; default 1 USDC = 1_000_000 (6 decimals)
         uint256 gasAmountUSDC = vm.envOr("GAS_AMOUNT_USDC", uint256(3_000_000));
-        // 避免過期（可調整）
+        // Avoid expiration (adjustable)
         uint256 deadlineDelta = vm.envOr("DEADLINE_SECONDS", uint256(10 minutes));
-        // 進階選項（一般用 0）
+        // Advanced option (generally use 0)
         uint256 minDestGas    = vm.envOr("MIN_DEST_GAS", uint256(0));
 
-        uint256 originChainId = block.chainid; // 應為 42161（Arbitrum）
+        uint256 originChainId = block.chainid; // Should be 42161 (Arbitrum)
         uint256 targetChainId = 10;            // Optimism Mainnet
 
         GasPass gasPass = GasPass(gasPassAddr);
 
-        // 讀取合約重要地址
+        // Read important contract addresses
         address inbox    = gasPass.bungeeInbox();
         address gateway  = gasPass.bungeeGateway();
         address stable   = address(gasPass.stablecoin());
@@ -46,7 +46,7 @@ contract AutoRefuelToOPScript is Script {
         
         
         (uint128 gasAmt, uint128 thres, address policyAgent, uint256 last) = gasPass.chainPolicies(tokenId, targetChainId);
-         // === 檢查 policy 與餘額（可選但實用） ===
+         // === Check policy and balance (optional but useful) ===
         console.log("policyAgent:", policyAgent);
         console.log("agentPk:", vm.addr(agentPk));
         require(policyAgent == vm.addr(agentPk), "agent mismatch with policy");
@@ -55,7 +55,7 @@ contract AutoRefuelToOPScript is Script {
         
         uint256 currentTimestamp = block.timestamp;
         uint256 deadline = currentTimestamp + deadlineDelta;
-        // 防止 stack-too-deep，拆變數
+        // Prevent stack-too-deep by splitting variables
         uint256 inputAmount = gasAmountUSDC;
         uint256 chainSlug_  = targetChainId;
         uint256 nonce = uint256(
@@ -65,7 +65,7 @@ contract AutoRefuelToOPScript is Script {
                         abi.encodePacked(
                             currentTimestamp,
                             block.number,
-                            gasPassAddr,           // script 合約地址 (無所謂，只是 entropy)
+                            gasPassAddr,           // Script contract address (doesn't matter, just for entropy)
                             inputAmount,
                             chainSlug_,
                             gasleft()
@@ -76,7 +76,7 @@ contract AutoRefuelToOPScript is Script {
         );
         console.log("nonce:", nonce);
 
-        // === 構造 IBungeeInbox.Request ===
+        // === Construct IBungeeInbox.Request ===
         IBungeeInbox.BasicRequest memory basic = IBungeeInbox.BasicRequest({
             originChainId:        originChainId,
             destinationChainId:   targetChainId,
@@ -105,10 +105,10 @@ contract AutoRefuelToOPScript is Script {
             exclusiveTransmitter: address(0)
         });
 
-        // 合約內會驗證的 hash
+        // Hash that will be verified in the contract
         bytes32 expectedSorHash = BungeeInboxRequest.createSORHash(req);
 
-        // === 呼叫 autoRefuel ===
+        // === Call autoRefuel ===
         vm.startBroadcast(agentPk);
         gasPass.autoRefuel(tokenId, inbox, req, expectedSorHash, targetChainId);
         vm.stopBroadcast();

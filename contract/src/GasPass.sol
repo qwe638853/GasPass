@@ -17,13 +17,13 @@ import {BungeeInboxRequest} from "./bungee/BasicRequestLib.sol";
 
 /**
  * @title GasPass
- * @notice ERC-3525 半同質化代幣，用於預存並在多鏈環境中按策略發放 gas。
- * @dev 結合 EIP-712 型別資料簽名流程，支援以穩定幣 permit 的鑄造與存入；
- * 同時提供以所有者簽章由 relayer 代送的自動補氣策略設定/取消流程。
+ * @notice ERC-3525 Semi-Fungible Token for pre-storing and distributing gas across multiple chains according to strategies.
+ * @dev Integrates EIP-712 typed data signature flow with stablecoin permit for minting and depositing;
+ * Also provides an automated refueling policy setup/cancellation flow with owner signatures relayed by a relayer.
  */
 contract GasPass is ERC3525, Ownable, EIP712 {
     using SafeERC20 for IERC20;
-    /** @dev EIP-712 型別雜湊常數，用於鏈下簽章結構。 */
+    /** @dev EIP-712 type hash constants for off-chain signature structures. */
     bytes32 public constant SET_REFUEL_POLICY_TYPEHASH = keccak256("SetRefuelPolicy(uint256 tokenId,uint256 targetChainId,uint128 gasAmount,uint128 threshold,address agent,uint256 nonce,uint256 deadline)");
     bytes32 public constant CANCEL_REFUEL_POLICY_TYPEHASH = keccak256("CancelRefuelPolicy(uint256 tokenId,uint256 targetChainId,uint256 nonce,uint256 deadline)");
     bytes32 public constant STABLECOIN_PERMIT_TYPEHASH = keccak256("StablecoinPermitData(address owner,address spender,uint256 value,uint256 deadline,uint8 v,bytes32 r,bytes32 s)");
@@ -43,24 +43,24 @@ contract GasPass is ERC3525, Ownable, EIP712 {
     event ManualRefueled(uint256 indexed tokenId, uint256 indexed targetChainId, uint256 amount, address indexed owner);
     event RelayerChanged(address indexed oldRelayer, address indexed newRelayer);
     event FeesWithdrawn(address indexed to, uint256 amount);
-    event USDCWithdrawn(address indexed owner, uint256 indexed tokenId, uint256 amount, address indexed to); //測試用，我要提
+    event USDCWithdrawn(address indexed owner, uint256 indexed tokenId, uint256 amount, address indexed to); // For testing purposes
     event BungeeForwarded(uint256 indexed tokenId, address indexed inbox, uint256 inputAmount, bytes32 sorHash);
 
-    /** @dev 每個 tokenId 的次數器，供策略簽章使用，防重放。 */
+    /** @dev Nonce counter for each tokenId, used for policy signatures to prevent replay attacks. */
     mapping(uint256 => uint256) public nonces;     
-    /** @dev 每個使用者地址對應的次數器，供 mint/deposit 的簽章使用，防重放。 */
+    /** @dev Nonce counter for each user address, used for mint/deposit signatures to prevent replay attacks. */
     mapping(address => uint256) public ownerNonces;  
-    /** @dev tokenId => (chainId => RefuelPolicy) 的策略對應。 */
+    /** @dev Policy mapping: tokenId => (chainId => RefuelPolicy). */
     mapping(uint256 => mapping(uint256 => GasPassTypes.RefuelPolicy)) public chainPolicies;
-    /** @dev 代理人映射：agent 地址對應其所屬錢包地址（該錢包需為 token 擁有者）。 */
+    /** @dev Agent mapping: agent address maps to its wallet address (the wallet must be the token owner). */
     mapping(address => address) public agentToWallet;
-    /** @dev 作為 GasPass 資金來源的 EIP-2612 支援之穩定幣合約。 */
+    /** @dev Stablecoin contract supporting EIP-2612, used as the funding source for GasPass. */
     IERC20Permit public immutable stablecoin;
-    /** @dev 被授權可代送策略簽章交易的中繼者。 */
+    /** @dev Authorized relayer that can submit policy signature transactions on behalf of users. */
     address public relayer;
-    /** @dev 透過 autoRefuel 累積的手續費總額（單位：穩定幣最小單位）。 */
+    /** @dev Total fees collected from autoRefuel operations (in stablecoin smallest unit). */
     uint256 public totalFeesCollected;
-    // Bungee相關
+    // Bungee-related
     address public bungeeGateway;
     address public bungeeInbox;
 
@@ -81,9 +81,9 @@ contract GasPass is ERC3525, Ownable, EIP712 {
     }
 
     /**
-     * @notice 部署合約。
-     * @param _stablecoin 支援 EIP-2612 的穩定幣合約地址。
-     * @param _relayer 被授權代送策略簽章交易的 relayer 地址。
+     * @notice Deploys the contract.
+     * @param _stablecoin Address of stablecoin contract supporting EIP-2612.
+     * @param _relayer Address of the relayer authorized to submit policy signature transactions.
      */
     constructor(address _stablecoin,address _relayer,address _bungeeGateway,address _bungeeInbox) ERC3525("GAS Pass", "GPASS", 6) Ownable(msg.sender) EIP712("GasPass", "1") {
         stablecoin = IERC20Permit(_stablecoin);
@@ -91,16 +91,16 @@ contract GasPass is ERC3525, Ownable, EIP712 {
         bungeeGateway = _bungeeGateway;
         bungeeInbox = _bungeeInbox;
     }
-    // Todo: slot可定義Gas Pass種類，目前固定為0(只有一種)
+    // Todo: slot can define different Gas Pass types, currently fixed at 0 (only one type)
     /**
-     * @notice 以簽章鑄造新的 GasPass，並同時透過 permit 轉入對應穩定幣金額。
-     * @dev 僅合約擁有者可呼叫。會驗證:
-     *  - 時效、數值與使用者 nonce
-     *  - 由付款人對 EIP-712 摘要的 ECDSA 簽章
-     *  - 以 permit 授權後安全轉入金額
-     * 最後以 slot=0 鑄造 ERC3525 token。
-     * @param typedData 鑄造所需之型別資料（含 permit 參數）。
-     * @param signature 付款人對 MINT_WITH_SIG 結構之簽章。
+     * @notice Mints a new GasPass with signature and simultaneously transfers corresponding stablecoin amount via permit.
+     * @dev Only contract owner can call. Verifies:
+     *  - Deadline, value, and user nonce
+     *  - ECDSA signature on EIP-712 digest by the payer
+     *  - Safe transfer of amount after permit authorization
+     * Finally mints ERC3525 token with slot=0.
+     * @param typedData Type data required for minting (including permit parameters).
+     * @param signature Payer's signature on the MINT_WITH_SIG structure.
      */
     function mintWithSig(GasPassTypes.MintWithSigTypedData calldata typedData, bytes memory signature) public onlyRelayer {
         require(typedData.deadline >= block.timestamp, "Signature expired");
@@ -235,9 +235,9 @@ contract GasPass is ERC3525, Ownable, EIP712 {
 
 
     /**
-     * @notice 以簽章為既有 tokenId 增加值，並透過 permit 轉入對應穩定幣。
-     * @param typedData 充值所需之型別資料（含 permit 參數）。
-     * @param signature 付款人對 DEPOSIT_WITH_SIG 結構之簽章。
+     * @notice Adds value to an existing tokenId with signature and transfers corresponding stablecoin via permit.
+     * @param typedData Type data required for deposit (including permit parameters).
+     * @param signature Payer's signature on the DEPOSIT_WITH_SIG structure.
      */
     function depositWithSig(GasPassTypes.DepositWithSigTypedData calldata typedData, bytes memory signature) public onlyRelayer {
         require(typedData.deadline >= block.timestamp, "Signature expired");
@@ -280,17 +280,17 @@ contract GasPass is ERC3525, Ownable, EIP712 {
         ownerNonces[typedData.permitData.owner]++;
     }
 
-    // Todo: 可定義Mint之前
+    // Todo: Can define before Mint
 
-    // 設定自動refuel的policy
+    // Set automatic refuel policy
     /**
-     * @notice 直接設定指定 tokenId 在某鏈的自動補氣策略。
-     * @dev 僅 token 擁有者可呼叫；且對應 agent 必須已綁定至該擁有者。
-     * @param tokenId 目標 ERC3525 tokenId。
-     * @param targetChainId 目標鏈 ID（如 8453/42161/10/137）。
-     * @param gasAmount 每次補氣的金額（單位：穩定幣最小單位）。
-     * @param threshold 當餘額低於該值時觸發自動補氣。
-     * @param agent 被授權可觸發自動補氣的代理人地址。
+     * @notice Directly sets the automatic refueling policy for a given tokenId on a specific chain.
+     * @dev Only token owner can call; the corresponding agent must be bound to this owner.
+     * @param tokenId Target ERC3525 tokenId.
+     * @param targetChainId Target chain ID (e.g., 8453/42161/10/137).
+     * @param gasAmount Amount to refuel each time (in stablecoin smallest unit).
+     * @param threshold Threshold value to trigger automatic refueling when balance falls below.
+     * @param agent Agent address authorized to trigger automatic refueling.
      */
     function setRefuelPolicy(uint256 tokenId, uint256 targetChainId, uint128 gasAmount, uint128 threshold, address agent) public  {
         require(agentToWallet[agent] == ownerOf(tokenId), "Invalid agent");
@@ -298,12 +298,12 @@ contract GasPass is ERC3525, Ownable, EIP712 {
         chainPolicies[tokenId][targetChainId] = GasPassTypes.RefuelPolicy(gasAmount, threshold, agent, 0);
     }
     
-    // 設定自動refuel的policy with signature
+    // Set automatic refuel policy with signature
     /**
-     * @notice 透過所有者簽章，由 relayer 代送設定某 tokenId 的自動補氣策略。
-     * @dev 僅 relayer 可呼叫；會驗證簽章、時效、nonce、餘額與 agent 合法性。
-     * @param policy 以 EIP-712 簽章之策略結構。
-     * @param signature token 擁有者對策略結構的簽章。
+     * @notice Sets automatic refueling policy for a tokenId via owner signature, relayed by relayer.
+     * @dev Only relayer can call; verifies signature, deadline, nonce, balance, and agent validity.
+     * @param policy Policy structure signed with EIP-712.
+     * @param signature Token owner's signature on the policy structure.
      */
     function setRefuelPolicyWithSig(GasPassTypes.SetRefuelPolicyTypedData calldata policy, bytes memory signature) public onlyRelayer {
         require(policy.deadline >= block.timestamp, "Signature expired");
@@ -336,9 +336,9 @@ contract GasPass is ERC3525, Ownable, EIP712 {
     }   
 
     /**
-     * @notice 由 token 擁有者直接取消某鏈的自動補氣策略。
-     * @param tokenId 目標 tokenId。
-     * @param targetChainId 目標鏈 ID。
+     * @notice Cancels automatic refueling policy on a specific chain directly by token owner.
+     * @param tokenId Target tokenId.
+     * @param targetChainId Target chain ID.
      */
     function cancelRefuelPolicy(uint256 tokenId, uint256 targetChainId) public {
         require(msg.sender == ownerOf(tokenId), "Not token owner");
@@ -346,12 +346,12 @@ contract GasPass is ERC3525, Ownable, EIP712 {
 
     }
     
-    // 取消自動refuel的policy
+    // Cancel automatic refuel policy
     /**
-     * @notice 透過所有者簽章，由 relayer 代送取消某鏈的自動補氣策略。
-     * @dev 僅 relayer 可呼叫；驗證簽章、時效與 nonce 後移除策略。
-     * @param typedData 以 EIP-712 簽章之取消結構。
-     * @param signature token 擁有者對取消結構的簽章。
+     * @notice Cancels automatic refueling policy on a specific chain via owner signature, relayed by relayer.
+     * @dev Only relayer can call; verifies signature, deadline, and nonce before removing policy.
+     * @param typedData Cancellation structure signed with EIP-712.
+     * @param signature Token owner's signature on the cancellation structure.
      */
     function cancelRefuelPolicyWithSig(GasPassTypes.CancelRefuelPolicyTypedData calldata typedData, bytes memory signature) public onlyRelayer {
         require(typedData.deadline >= block.timestamp, "Signature expired");
@@ -368,16 +368,16 @@ contract GasPass is ERC3525, Ownable, EIP712 {
         nonces[typedData.tokenId]++;
     }    
 
-    // 自動refuel (只能由agent呼叫)
+    // Automatic refuel (only callable by agent)
     /**
-     * @notice 代理人針對指定鏈執行自動補氣。
-     * @dev 僅限已綁定之 agent 呼叫；會收取 0.5% 手續費並從 token 值中扣除。
-     * @param tokenId 目標 tokenId。
-     * @param targetChainId 目標鏈 ID。
+     * @notice Agent executes automatic refueling for a specified chain.
+     * @dev Only bound agents can call.
+     * @param tokenId Target tokenId.
+     * @param targetChainId Target chain ID.
      */
     function autoRefuel(uint256 tokenId, address inbox,IBungeeInbox.Request calldata req,bytes32 expectedSorHash, uint256 targetChainId) public onlyAgent(tokenId) {
 
-            // === 0) 基本檢查 ===
+            // === 0) Basic checks ===
         require(inbox != address(0), "inbox=0");
         require(req.basicReq.originChainId == block.chainid, "wrong origin");
         require(req.basicReq.inputAmount > 0, "inputAmount=0");
@@ -408,12 +408,12 @@ contract GasPass is ERC3525, Ownable, EIP712 {
 
         policy.lastRefueled = block.timestamp;
         emit BungeeForwarded(tokenId, inbox, gasAmount, sorHash);
-        emit AutoRefueled(tokenId, targetChainId, gasAmount); // 延用你原本事件
+        emit AutoRefueled(tokenId, targetChainId, gasAmount); // Emit existing event
     }
     
-    // 只允許 agent 觸發的「手動補氣」，不需要 policy
+    // Manual refueling triggered only by agent, no policy required
     function manualRefuelByAgent(uint256 tokenId,address inbox,IBungeeInbox.Request calldata req,bytes32 expectedSorHash,uint256 targetChainId) public onlyAgent(tokenId) {
-        // === 0) 基本檢查（與 autoRefuel 對齊） ===
+        // === 0) Basic checks (aligned with autoRefuel) ===
         require(inbox != address(0), "inbox=0");
         require(inbox == bungeeInbox, "inbox mismatch");
         require(req.basicReq.sender == inbox, "sender!=inbox");
@@ -429,28 +429,28 @@ contract GasPass is ERC3525, Ownable, EIP712 {
         address owner = ownerOf(tokenId);
         require(req.basicReq.receiver == owner, "receiver!=owner");
 
-        // 金額檢查與卡片餘額
+        // Amount check and card balance
         uint256 amount = req.basicReq.inputAmount;
         require(amount > 0, "inputAmount=0");
         require(balanceOf(tokenId) >= amount, "insufficient card balance");
         
-        // SOR 防篡改檢查
+        // SOR anti-tampering check
         bytes32 sorHash = BungeeInboxRequest.createSORHash(req);
         require(sorHash == expectedSorHash, "SOR hash mismatch");
 
-        // === 1) 扣卡、授權、送出 ===
+        // === 1) Deduct from card, approve, and send ===
         _burnValue(tokenId, amount);
         IERC20(address(stablecoin)).approve(inbox, amount);
         IBungeeInbox(inbox).createRequest(req);
 
-        // === 2) 事件 ===
+        // === 2) Events ===
         emit BungeeForwarded(tokenId, inbox, amount, sorHash);
         emit ManualRefueled(tokenId, targetChainId, amount, owner);
     }
     
     /**
-     * @notice 設定 relayer。
-     * @param _relayer 新的 relayer 地址。
+     * @notice Sets the relayer.
+     * @param _relayer New relayer address.
      */
     function setRelayer(address _relayer) public onlyOwner {
         require(_relayer != address(0), "Invalid relayer");
@@ -460,9 +460,9 @@ contract GasPass is ERC3525, Ownable, EIP712 {
     }
     
     /**
-     * @notice 提領累積的手續費收入。
-     * @dev 僅合約擁有者可呼叫，將所有累積手續費轉給指定地址。
-     * @param to 接收手續費的地址。
+     * @notice Withdraws accumulated fee income.
+     * @dev Only contract owner can call, transfers all accumulated fees to the specified address.
+     * @param to Address to receive the fees.
      */
     function withdrawFees(address to) public onlyOwner {
         require(to != address(0), "Invalid address");
@@ -478,7 +478,7 @@ contract GasPass is ERC3525, Ownable, EIP712 {
         return totalFeesCollected;
     }
    
-    function withdrawAllUSDC(uint256 tokenId, address to) public { //測試用，領取儲值卡的USDC
+    function withdrawAllUSDC(uint256 tokenId, address to) public { // For testing purposes, withdraw all USDC from the card
         require(msg.sender == ownerOf(tokenId), "Not token owner");
         require(to != address(0), "Invalid address");
         
@@ -501,9 +501,9 @@ contract GasPass is ERC3525, Ownable, EIP712 {
     }
     
     /**
-     * @dev 綁定 agent 與錢包地址的關係，僅內部使用。
-     * @param agent 代理人地址。
-     * @param wallet 所屬錢包地址（必須為 token 擁有者）。
+     * @dev Binds the relationship between agent and wallet address, internal use only.
+     * @param agent Agent address.
+     * @param wallet Wallet address (must be a token owner).
      */
     function _setAgentToWallet(address agent, address wallet) internal {
         require(agent != address(0), "Invalid agent");
@@ -512,13 +512,13 @@ contract GasPass is ERC3525, Ownable, EIP712 {
     }
     
     /**
-     * @notice 查詢指定 agent 綁定之錢包地址。
-    * @param agent 代理人地址。
-     * @return 綁定的錢包地址。
+     * @notice Queries the wallet address bound to a specific agent.
+     * @param agent Agent address.
+     * @return Bound wallet address.
      */
     function getAgentToWallet(address agent) public view returns (address) {
         return agentToWallet[agent];
     }
 
-    // Todo:轉移ERC3525的一些檢查邏輯
+    // Todo: Some checking logic for ERC3525 transfers
 }

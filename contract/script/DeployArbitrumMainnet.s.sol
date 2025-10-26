@@ -7,7 +7,7 @@ import {MockERC20Permit} from "../test/mocks/MockERC20Permit.sol";
 
 contract DeployArbitrumMainnet is Script {
     function run() public {
-        // 獲取私鑰
+        // Get private key
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
         address deployer = vm.addr(deployerPrivateKey);
         
@@ -17,11 +17,11 @@ contract DeployArbitrumMainnet is Script {
         
         vm.startBroadcast(deployerPrivateKey);
         
-        // 部署參數 - 請填入真實地址
+        // Deployment parameters - please fill in real addresses
         address stablecoin = 0xaf88d065e77c8cC2239327C5EDb3A432268e5831; // USDC on Arbitrum
-        address relayer = 0x4aA5d60cb4d5C02C8ae0e83fc0Ec8e30e4a76a7d; // TODO: 填入真實 relayer 地址
+        address relayer = 0x4aA5d60cb4d5C02C8ae0e83fc0Ec8e30e4a76a7d; // TODO: Fill in real relayer address
         address bungeeGateway = 0xCdEa28Ee7BD5bf7710B294d9391e1b6A318d809a; // Bungee Gateway on Arbitrum
-        address bungeeInbox = 0xA3BF43451CdEb6DEC588B8833838fC419CE4F54c; // TODO: 填入真實 bungee inbox 地址
+        address bungeeInbox = 0xA3BF43451CdEb6DEC588B8833838fC419CE4F54c; // TODO: Fill in real bungee inbox address
         
         console.log("Deployment parameters:");
         console.log("- Stablecoin (USDC):", stablecoin);
@@ -29,7 +29,7 @@ contract DeployArbitrumMainnet is Script {
         console.log("- Bungee Gateway:", bungeeGateway);
         console.log("- Bungee Inbox:", bungeeInbox);
         
-        // 部署 GasPass 合約
+        // Deploy GasPass contract
         console.log("\nDeploying GasPass contract...");
         GasPass gasPass = new GasPass(stablecoin, relayer, bungeeGateway, bungeeInbox);
         

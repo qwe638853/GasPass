@@ -7,11 +7,11 @@ import {GasPassTypes} from "../src/types/GasPassTypes.sol";
 import {IERC20Permit} from "@openzeppelin/contracts/token/ERC20/extensions/IERC20Permit.sol";
 
 interface IERC20PermitDomain is IERC20Permit {
-    // 多數 ERC20Permit 代幣會提供，若沒有會在 try/catch 內 fallback
+    // Most ERC20Permit tokens provide this; fallback in try/catch if not available
     function DOMAIN_SEPARATOR() external view returns (bytes32);
     function name() external view returns (string memory);
 }
-/// @notice 在 Arbitrum 主網與 GasPass 合約互動，使用 USDC 的 permit + GasPass 的 EIP712 簽名 進行存入
+/// @notice Interacts with GasPass contract on Arbitrum mainnet, uses USDC permit + GasPass EIP712 signature for deposit
 contract DepositWithSigScript is Script {
     bytes32 constant EIP712DOMAIN_TYPEHASH =
         keccak256("EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)");
@@ -19,16 +19,16 @@ contract DepositWithSigScript is Script {
         keccak256("Permit(address owner,address spender,uint256 value,uint256 nonce,uint256 deadline)");
 
     function run() public {
-        // ---------- 環境與帳號 ----------
-        uint256 userPk     = vm.envUint("PRIVATE_KEY");           // 使用者：簽 USDC permit 與 GasPass EIP-712
-        uint256 relayerPk  = vm.envUint("RELAYER_PRIVATE_KEY");   // 廣播者：送鏈上交易（若合約限制 relayer，需對上）
+        // ---------- Environment and accounts ----------
+        uint256 userPk     = vm.envUint("PRIVATE_KEY");           // User: signs USDC permit and GasPass EIP-712
+        uint256 relayerPk  = vm.envUint("RELAYER_PRIVATE_KEY");   // Broadcaster: submits on-chain transaction (must match if contract restricts relayer)
         address user       = vm.addr(userPk);
         address relayer    = vm.addr(relayerPk);
 
         address gasPassAddress     = vm.envAddress("GASPASS_ADDRESS");
         address stablecoinAddress  = vm.envAddress("STABLECOIN_ADDRESS");
 
-        uint256 tokenId            = 1; // 改成你的卡片 ID
+        uint256 tokenId            = 1; // Change to your card ID
         uint256 amount             = vm.envOr("AMOUNT_USDC", uint256(500_000)); // 0.5 USDC
         uint256 deadline           = block.timestamp + 1 hours;
 
@@ -42,10 +42,10 @@ contract DepositWithSigScript is Script {
         GasPass gasPass = GasPass(gasPassAddress);
         IERC20PermitDomain usdc = IERC20PermitDomain(stablecoinAddress);
 
-        // ---------- 1) 對 USDC 做 permit 簽名 (EIP-2612) ----------
+        // ---------- 1) Sign permit for USDC (EIP-2612) ----------
         uint256 usdcNonce = usdc.nonces(user);
 
-        // 用 token 的 DOMAIN_SEPARATOR（最安全）
+        // Use token's DOMAIN_SEPARATOR (safest)
         bytes32 usdcDomainSeparator;
         bool hasDS = true;
         try usdc.DOMAIN_SEPARATOR() returns (bytes32 sep) {
@@ -77,7 +77,7 @@ contract DepositWithSigScript is Script {
             s: ps
         });
 
-        // 給 GasPass 綁定用（依你的合約定義）
+        // For GasPass binding (as per your contract definition)
         bytes32 permitHash = keccak256(abi.encode(
             gasPass.STABLECOIN_PERMIT_TYPEHASH(),
             permitData.owner,
@@ -89,7 +89,7 @@ contract DepositWithSigScript is Script {
             permitData.s
         ));
 
-        // ---------- 2) 為 GasPass 的 depositWithSig 做 EIP-712 簽名 ----------
+        // ---------- 2) Sign GasPass depositWithSig EIP-712 ----------
         uint256 depNonce = gasPass.ownerNonces(user);
 
         GasPassTypes.DepositWithSigTypedData memory depData = GasPassTypes.DepositWithSigTypedData({
@@ -100,7 +100,7 @@ contract DepositWithSigScript is Script {
             deadline: deadline
         });
 
-        // 取 EIP-712 domain（優先使用 ERC-5267）
+        // Get EIP-712 domain (prefer ERC-5267)
         (string memory gpName, string memory gpVersion, uint256 gpChainId, address gpVerifying) =
             ("GasPass", "1", block.chainid, gasPassAddress);
         try gasPass.eip712Domain() returns (
@@ -144,19 +144,19 @@ contract DepositWithSigScript is Script {
         console.log("USDC permit v,r,s:", pv, vm.toString(pr), vm.toString(ps));
         console.log("GasPass deposit v,r,s:", dv, vm.toString(dr), vm.toString(ds));
 
-        // ---------- 3) 廣播交易 ----------
+        // ---------- 3) Broadcast transaction ----------
         vm.startBroadcast(relayerPk);
         gasPass.depositWithSig(depData, depSignature);
         vm.stopBroadcast();
 
-        // ---------- 顯示結果 ----------
+        // ---------- Display results ----------
         uint256 newValue = gasPass.balanceOf(tokenId);
         console.log("Deposit success. tokenId:", tokenId);
         console.log("New value(balanceOf tokenId):", newValue);
     }
 }
 
-/// @notice 在 Arbitrum 主網與 GasPass 合約互動，使用 USDC 的 permit + GasPass 的 EIP712 簽名
+/// @notice Interacts with GasPass contract on Arbitrum mainnet, uses USDC permit + GasPass EIP712 signature
 contract MintWithSigScript is Script {
     bytes32 constant EIP712DOMAIN_TYPEHASH =
         keccak256("EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)");
@@ -164,7 +164,7 @@ contract MintWithSigScript is Script {
         keccak256("Permit(address owner,address spender,uint256 value,uint256 nonce,uint256 deadline)");
 
     function run() public {
-        // ---------- 環境與帳號 ----------
+        // ---------- Environment and accounts ----------
         uint256 userPk     = vm.envUint("PRIVATE_KEY");
         uint256 relayerPk  = vm.envUint("RELAYER_PRIVATE_KEY");
         address user       = vm.addr(userPk);
@@ -181,14 +181,14 @@ contract MintWithSigScript is Script {
         GasPass gasPass = GasPass(gasPassAddress);
         IERC20PermitDomain usdc = IERC20PermitDomain(stablecoinAddress);
 
-        // ---------- 參數 ----------
+        // ---------- Parameters ----------
         uint256 value = 2_000_000; // 1 USDC (6 decimals)
         uint256 deadline = block.timestamp + 1 hours;
 
-        // ---------- 1) 先對 USDC 做 permit 簽名 (EIP-2612) ----------
+        // ---------- 1) Sign permit for USDC first (EIP-2612) ----------
         uint256 usdcNonce = usdc.nonces(user);
 
-        // 盡量讀 token 自帶的 DOMAIN_SEPARATOR（最安全，避免 name/version/chainId 不一致）
+        // Try to read token's built-in DOMAIN_SEPARATOR (safest, avoids name/version/chainId mismatch)
         bytes32 usdcDomainSeparator;
         bool hasDS = true;
         try usdc.DOMAIN_SEPARATOR() returns (bytes32 sep) {
@@ -212,7 +212,7 @@ contract MintWithSigScript is Script {
 
         (uint8 pv, bytes32 pr, bytes32 ps) = vm.sign(userPk, digestPermit);
 
-        // 準備進 GasPass 的 permitData（這是 USDC 的簽名）
+        // Prepare permitData for GasPass (this is the USDC signature)
         GasPassTypes.StablecoinPermitData memory permitData = GasPassTypes.StablecoinPermitData({
             owner: user,
             spender: gasPassAddress,
@@ -223,7 +223,7 @@ contract MintWithSigScript is Script {
             s: ps
         });
 
-        // 這個哈希是給 GasPass 用來綁定剛才的 permit 簽名（依你的合約定義，包含 v/r/s）
+        // This hash is used by GasPass to bind the permit signature (as per your contract definition, includes v/r/s)
         bytes32 permitHash = keccak256(abi.encode(
             gasPass.STABLECOIN_PERMIT_TYPEHASH(),
             permitData.owner,
@@ -235,9 +235,9 @@ contract MintWithSigScript is Script {
             permitData.s
         ));
 
-        // ---------- 2) 再對 GasPass 的 mintWithSig 做 EIP-712 簽名 ----------
+        // ---------- 2) Sign GasPass mintWithSig EIP-712 ----------
         uint256 mintNonce = gasPass.ownerNonces(user);
-        address agent = 0xF0f26bAfEf9D969a5A1660959C886907D6312cF7; // 你目前用自身當 agent OK
+        address agent = 0xF0f26bAfEf9D969a5A1660959C886907D6312cF7; // Currently using self as agent is OK
 
         GasPassTypes.MintWithSigTypedData memory mintData = GasPassTypes.MintWithSigTypedData({
             to: user,
@@ -248,10 +248,10 @@ contract MintWithSigScript is Script {
             deadline: deadline
         });
 
-        // 嘗試用 ERC-5267 取得正確的 domain（避免硬編 name/version）
+        // Try to get correct domain using ERC-5267 (avoid hardcoding name/version)
         (string memory gpName, string memory gpVersion, uint256 gpChainId, address gpVerifying) =
             ("GasPass", "1", block.chainid, gasPassAddress);
-        // eip712Domain() 可能存在於合約（OpenZeppelin EIP712 v5+ 或自行實作）
+        // eip712Domain() may exist in contract (OpenZeppelin EIP712 v5+ or custom implementation)
         try gasPass.eip712Domain() returns (
             bytes1 /*fields*/,
             string memory _name,
@@ -266,7 +266,7 @@ contract MintWithSigScript is Script {
             gpChainId = _chainId;
             gpVerifying = _verifyingContract;
         } catch {
-            // 若不支援 ERC-5267，就使用預設 ("GasPass","1",block.chainid,gasPass)
+            // If ERC-5267 is not supported, use default ("GasPass","1",block.chainid,gasPass)
         }
 
         bytes32 gasPassDomainSeparator = keccak256(abi.encode(
@@ -296,12 +296,12 @@ contract MintWithSigScript is Script {
         console.log("USDC permit v,r,s:", pv, vm.toString(pr), vm.toString(ps));
         console.log("GasPass mint v,r,s:", mv, vm.toString(mr), vm.toString(ms));
 
-        // ---------- 3) relayer 廣播交易 ----------
+        // ---------- 3) Relayer broadcasts transaction ----------
         vm.startBroadcast(relayerPk);
         gasPass.mintWithSig(mintData, mintSignature);
         vm.stopBroadcast();
 
-        // ---------- 顯示結果 ----------
+        // ---------- Display results ----------
         uint256 newId = gasPass.tokenByIndex(gasPass.totalSupply() - 1);
         console.log("Mint success. tokenId:", newId);
         console.log("Balance (value):", gasPass.balanceOf(newId));
@@ -329,12 +329,12 @@ contract SetRefuelPolicyScript is Script {
     function run() public {
         // env
         address gasPass = vm.envAddress("GASPASS_ADDRESS");
-        uint256 ownerPk = vm.envUint("PRIVATE_KEY"); // ★ 必須是 tokenId 的 owner
+        uint256 ownerPk = vm.envUint("PRIVATE_KEY"); // ★ Must be the owner of tokenId
         uint256 tokenId = 1;
         uint256 targetChainId = 10;
-        uint128 gasAmount = 500000;   // 目標鏈要補的原生幣數量（wei）
-        uint128 threshold = 1000000;     // 觸發門檻（wei）
-        address agent = vm.addr(ownerPk);                // 已綁到 owner 的 agent
+        uint128 gasAmount = 500000;   // Amount of native tokens to refuel on target chain (wei)
+        uint128 threshold = 1000000;     // Trigger threshold (wei)
+        address agent = vm.addr(ownerPk);                // Agent bound to owner
 
         console.log("Setting policy...");
         console.log("contract:", gasPass);
@@ -345,7 +345,7 @@ contract SetRefuelPolicyScript is Script {
         console.log("thres   :", threshold);
         console.log("agent   :", agent);
 
-        // 檢查 agent 綁定狀態
+        // Check agent binding status
         address currentWallet = GasPass(gasPass).agentToWallet(agent);
         console.log("Current agent wallet:", currentWallet);
         
@@ -370,7 +370,7 @@ contract SetRefuelPolicyScript is Script {
         );
         vm.stopBroadcast();
 
-        // 讀回確認
+        // Read back to confirm
         (uint128 g, uint128 th, address a, uint256 last) = GasPass(gasPass).chainPolicies(tokenId, targetChainId);
         console.log("  setRefuelPolicy ok");
         console.log("   gasAmount  :", g);
@@ -384,7 +384,7 @@ contract SetRefuelPolicyScript is Script {
 contract WithdrawAllUSDCScript is Script {
     function run() public {
         uint256 ownerPk = vm.envUint("PRIVATE_KEY");
-        uint256 tokenId = 1;  // 根據自己創建的儲值卡ID去做修改
+        uint256 tokenId = 1;  // Modify based on your own prepaid card ID
         address to = vm.addr(ownerPk);
         address gasPassAddress = vm.envAddress("GASPASS_ADDRESS");
         vm.startBroadcast(ownerPk);
