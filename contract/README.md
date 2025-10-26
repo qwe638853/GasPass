@@ -31,7 +31,7 @@ flowchart TD
 
     %% === Minting & Deposit ===
     subgraph Mint_Deposit_Process [Mint & Deposit Process]
-        C -->|mintWithSig / depositWithSig| D[Store Stablecoin and Update Token Balance]
+        C -->|mintWithSig / depositWithSig| D[Store stablecoin & update token balance]
         D -->|permit - EIP2612| E[Stablecoin - USDC]
     end
 
@@ -39,7 +39,7 @@ flowchart TD
     subgraph Policy_Setup [Policy Setup]
         A -->|EIP712 Signature| B2[setRefuelPolicyWithSig]
         B2 --> C
-        C -->|Store policy params| F1[chainPolicies[tokenId][chainId]]
+        C -->|Store policy params| F1["chainPolicies[tokenId][chainId]"]
         F1 -->|agent = authorized| F2[AgentToWallet Mapping]
     end
 
