@@ -5,7 +5,7 @@
 
 export const GAS_PASS_CONFIG = {
   // 合約地址
-  contractAddress: '0x88eab1ba9bE26F2d3B30d83869642132702Dd2Dd',
+  contractAddress: '0x283558ceff90f1420C1Ee3c9A9B79f36501576Aa',
   
   // 網絡配置
   network: {
