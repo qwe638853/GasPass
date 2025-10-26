@@ -13,7 +13,7 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
-    "@lit-protocol/lit-node-client": "^7.2.3",
+    "@lit-protocol/lit-node-client": "^7.3.1",
     "@lit-protocol/vincent-ability-erc20-approval": "3.1.0",
     "@lit-protocol/vincent-app-sdk": "^2.2.3",
     "@lit-protocol/vincent-scaffold-sdk": "1.1.9-mma",

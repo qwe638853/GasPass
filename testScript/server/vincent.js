@@ -17,7 +17,8 @@ let delegateeSigner = null;
 
 // 環境設定（提供預設值）
 const LIT_NETWORK = process.env.LIT_NETWORK || 'datil';
-const LIT_RPC_URL = process.env.LIT_RPC_URL || 'https://yellowstone-rpc.litprotocol.com/';
+
+const LIT_RPC_URL = 'https://1rpc.io/arb';
 const DEFAULT_RPC_URL = process.env.VINCENT_DEFAULT_RPC_URL || '';
 const DEFAULT_SLIPPAGE_BPS = process.env.VINCENT_DEFAULT_SLIPPAGE_BPS
   ? Number(process.env.VINCENT_DEFAULT_SLIPPAGE_BPS)
@@ -49,10 +50,12 @@ export async function ensureInitialized() {
   }
 
   const yellowstoneProvider = new ethers.JsonRpcProvider(LIT_RPC_URL);
+  console.log('yellowstoneProvider:', yellowstoneProvider);
   delegateeSigner = new ethers.Wallet(DELEGATEE_PRIVATE_KEY, yellowstoneProvider);
   console.log('Delegatee address:', delegateeSigner.address);
 
-  litNodeClient = new LitNodeClient({ litNetwork: LIT_NETWORK, debug: true });
+  litNodeClient = new LitNodeClient({ litNetwork: 'datil', debug: true });
+  
   await litNodeClient.connect();
   console.log('Connected to Lit Network');
 
