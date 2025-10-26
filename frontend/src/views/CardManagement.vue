@@ -132,80 +132,94 @@
               </div>
             </div>
 
-            <!-- 有儲值卡的情況 - 統一卡片設計 -->
+            <!-- 有儲值卡的情況 - 與沒有儲值卡畫面保持一致 -->
             <div v-else class="py-8 -mt-8">
+              <!-- 多張卡片時的選擇器 -->
+              <div v-if="userCards.length > 1" class="mb-6 flex justify-center">
+                <div class="card-selector-elegant">
+                  <div class="flex items-center gap-3">
+                    <div class="flex items-center gap-2">
+                      <div class="w-2 h-2 bg-emerald-400 rounded-full"></div>
+                      <span class="text-sm text-emerald-300 font-medium">Select Card</span>
+                    </div>
+                    <div class="flex gap-1">
+                      <button 
+                        v-for="card in userCards" 
+                        :key="card.tokenId"
+                        @click="selectCard(card.tokenId)"
+                        class="card-chip"
+                        :class="{ 'active': selectedTokenId === card.tokenId }"
+                      >
+                        <span class="font-semibold">#{{ card.tokenId }}</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 主要卡片區域 - 與沒有儲值卡畫面保持一致 -->
               <div class="premium-card-main px-8 py-4 max-w-5xl mx-auto relative overflow-hidden">
                 <!-- 背景裝飾 -->
                 <div class="absolute inset-0 bg-gradient-to-br from-emerald-50/10 to-teal-50/10"></div>
                 <div class="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-emerald-200/20 to-teal-200/20 rounded-full -translate-y-32 translate-x-32"></div>
                 <div class="absolute bottom-0 left-0 w-48 h-48 bg-gradient-to-tr from-teal-200/20 to-emerald-200/20 rounded-full translate-y-24 -translate-x-24"></div>
                 
-                <div class="relative z-10">
-                  <!-- 卡片信息區域 -->
-                  <div class="text-center lg:text-left">
-                    <div class="flex items-center justify-between mb-6">
-                      <div>
-                        <h2 class="text-4xl lg:text-5xl font-bold text-white mb-4">Welcome back!</h2>
-                        <p class="text-lg text-emerald-300">Your GasPass card is ready for more deposits!</p>
-                      </div>
-                      <!-- 切換按鈕 -->
-                      <button 
-                        @click="showGasJar = !showGasJar"
-                        class="flex items-center gap-2 px-4 py-2 bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-400/30 hover:border-emerald-400/50 text-emerald-300 hover:text-emerald-200 rounded-xl transition-all duration-300 font-medium backdrop-blur-sm"
-                      >
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"></path>
-                        </svg>
-                        {{ showGasJar ? 'Hide Refill' : 'Show Refill' }}
-                      </button>
+                <!-- 錢包地址 -->
+                <div class="card-number-display">
+                  <span class="number-segment">{{ getAddressSegment(0) }}</span>
+                  <span class="number-segment">{{ getAddressSegment(1) }}</span>
+                  <span class="number-segment">{{ getAddressSegment(2) }}</span>
+                  <span class="number-segment">{{ getAddressSegment(3) }}</span>
                     </div>
                     
-                    <!-- 卡片信息 -->
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                      <div 
-                        v-for="card in userCards" 
-                        :key="card.tokenId" 
-                        @click="selectCard(card.tokenId)"
-                        class="p-6 bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl hover:bg-white/10 transition-all duration-300 cursor-pointer group relative"
-                        :class="{ 'ring-2 ring-emerald-400/50 bg-emerald-500/10': selectedTokenId === card.tokenId }"
-                      >
-                        <!-- 選中指示器 -->
-                        <div v-if="selectedTokenId === card.tokenId" class="absolute top-3 right-3 w-6 h-6 bg-emerald-500 rounded-full flex items-center justify-center">
-                          <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                          </svg>
-                        </div>
-                        
-                        <div class="inline-flex items-center gap-2 px-4 py-2 bg-emerald-500/20 border border-emerald-400/30 rounded-full text-emerald-300 font-semibold mb-4 backdrop-blur-sm">
-                          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
-                          </svg>
-                          GasPass #{{ card.tokenId }}
-                        </div>
-                        <div class="text-3xl font-bold text-white mb-2">{{ card.balance }} USDC</div>
-                        <div class="text-emerald-300 font-medium mb-2">Current Balance</div>
-                        <div class="text-sm text-gray-300">Last updated: {{ card.lastUpdate }}</div>
-                        
-                        <!-- 點擊提示 -->
-                        <div class="mt-4 text-xs text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                          Click to manage Gas exchange
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <!-- Gas Jar 組件（條件顯示） -->
-                  <div v-if="showGasJar" class="mt-8 flex justify-center">
-                    <div class="w-full max-w-md">
-                      <CuteGasJar 
-                        :isFirstTime="false"
-                        :existingCard="userCards[0]"
-                        @success="handleDepositSuccess"
-                        @error="handleError"
-                      />
-                    </div>
-                  </div>
-                </div>
+                 <!-- 卡片信息 - 左上角 -->
+                 <div v-if="selectedTokenId" class="absolute top-6 left-6 z-20">
+                   <div class="card-info-top-left">
+                     <div class="flex items-center gap-3">
+                       <div class="card-badge">
+                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
+                         </svg>
+                         <span>GasPass #{{ selectedTokenId }}</span>
+                       </div>
+                       <div class="balance-display">
+                         <span class="amount">{{ getSelectedCardBalance() }}</span>
+                         <span class="currency">USDC</span>
+                       </div>
+                       <div class="status-indicator">
+                         <div class="status-dot"></div>
+                         <span class="status-text">Active</span>
+                       </div>
+                     </div>
+                   </div>
+                 </div>
+
+                 <div class="relative z-10 flex items-center gap-12">
+                   <!-- 左側文字內容 -->
+                   <div class="flex-1 -mt-8">
+                     <div class="flex items-center gap-3 mb-6">
+                       <h3 class="text-4xl font-black text-gray-600">Welcome back!</h3>
+                     </div>
+                     
+                     <!-- 專業化的狀態信息 -->
+                     <div class="status-info-container mb-8">
+                       <div class="status-description">
+                         <p class="primary-text">Your GasPass infrastructure is ready</p>
+                         <p class="secondary-text">Deposit USDC to maintain optimal gas reserves across chains</p>
+                       </div>
+                     </div>
+                   </div>
+                   
+                   <!-- 右側 Cute Gas Jar Component -->
+                   <div class="flex-shrink-0">
+                     <CuteGasJar 
+                       :isFirstTime="false"
+                       :existingCard="getSelectedCard()"
+                       @success="handleDepositSuccess"
+                       @error="handleError"
+                     />
+                   </div>
+                 </div>
               </div>
             </div>
           </div>
@@ -388,7 +402,11 @@
                       </div>
                       <div class="flex justify-between items-center py-2">
                         <span class="text-emerald-200">Actual Amount:</span>
-                        <span class="font-bold text-emerald-400">{{ calculateActualAmount(manualRefuel.amount) }} USDC</span>
+                        <div class="flex items-center gap-2">
+                          <span v-if="isLoadingQuote" class="text-yellow-300 text-sm">Loading...</span>
+                          <span v-else-if="quoteError" class="text-red-300 text-sm">{{ quoteError }}</span>
+                          <span v-else class="font-bold text-emerald-400">{{ actualAmount }} {{ getChainNativeSymbol(manualRefuel.chainId) }}</span>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -547,6 +565,7 @@
                      :alt="chain.name"
                      class="w-10 h-10 rounded-full object-cover"
                      @error="handleImageError"
+                     @load="handleImageLoad"
                 />
                 <span v-if="chain.icon" 
                       class="text-2xl emoji-fallback" 
@@ -597,6 +616,7 @@
                      :alt="chain.name"
                      class="w-10 h-10 rounded-full object-cover"
                      @error="handleImageError"
+                     @load="handleImageLoad"
                 />
                 <span v-if="chain.icon" 
                       class="text-2xl emoji-fallback" 
@@ -638,6 +658,7 @@ import { useVincentAuth } from '../composables/useVincentAuth.js'
 import { getStoredPkpEthAddress } from '../services/vincentAuthService.js'
 import { parseUnits, formatUnits } from 'ethers'
 import { SUPPORTED_CHAINS } from '../config/BungeeConfig.js'
+import quoteService from '../services/quoteService.js'
 import Layout from '../components/Layout.vue'
 import CuteGasJar from '../components/CuteGasJar.vue'
 import ManualRefuelModal from '../components/ManualRefuelModal.vue'
@@ -696,6 +717,11 @@ const showAgentChainModal = ref(false)
 const manualChainSearch = ref('')
 const agentChainSearch = ref('')
 
+// 新增：報價相關狀態
+const actualAmount = ref('0.000000')
+const isLoadingQuote = ref(false)
+const quoteError = ref('')
+
 // Computed
 const hasCard = computed(() => userCards.value.length > 0)
 
@@ -746,9 +772,18 @@ const loadUserData = async () => {
       // 載入用戶卡片
       userCards.value = await contractService.getUserCards(account.value)
       console.log('🔍 載入的卡片:', userCards.value)
+      
+      // 如果沒有選中的卡片，默認選中第一張並顯示 Gas Exchange Management
+      if (!selectedTokenId.value && userCards.value.length > 0) {
+        selectedTokenId.value = userCards.value[0].tokenId
+        showGasExchange.value = true
+        console.log('🔍 默認選中卡片:', selectedTokenId.value, '並顯示 Gas Exchange Management')
+      }
     } else {
       console.log('🔍 用戶沒有卡片')
       userCards.value = []
+      selectedTokenId.value = null
+      showGasExchange.value = false
     }
     
     // Load transaction history (暫時使用模擬數據)
@@ -772,8 +807,42 @@ const refreshCards = async () => {
 
 const handleMintSuccess = async () => {
   console.log('🎉 Mint 成功，刷新用戶數據...')
+  
+  // 添加延遲確保區塊鏈狀態更新
+  await new Promise(resolve => setTimeout(resolve, 2000))
+  
+  // 重試機制：最多重試 3 次
+  let retryCount = 0
+  const maxRetries = 3
+  
+  while (retryCount < maxRetries) {
+    try {
   await loadUserData()
+      
+      // 檢查是否成功載入卡片
+      if (userCards.value.length > 0) {
   console.log('✅ 用戶數據已刷新，現在應該顯示卡片視圖')
+        break
+      } else {
+        console.log(`⏳ 第 ${retryCount + 1} 次重試，等待區塊鏈確認...`)
+        retryCount++
+        if (retryCount < maxRetries) {
+          await new Promise(resolve => setTimeout(resolve, 3000))
+        }
+      }
+    } catch (error) {
+      console.error('❌ 載入用戶數據失敗:', error)
+      retryCount++
+      if (retryCount < maxRetries) {
+        await new Promise(resolve => setTimeout(resolve, 3000))
+      }
+    }
+  }
+  
+  if (retryCount >= maxRetries && userCards.value.length === 0) {
+    console.warn('⚠️ 多次重試後仍無法載入卡片，可能需要手動重新整理')
+    // 可以在這裡顯示一個提示給用戶
+  }
 }
 
 const handleDepositSuccess = () => {
@@ -797,13 +866,21 @@ const handleError = (error) => {
 const selectCard = (tokenId) => {
   selectedTokenId.value = tokenId
   showGasExchange.value = true
-  // 滾動到 Gas Exchange 區域
-  setTimeout(() => {
-    const element = document.querySelector('.premium-card-exchange')
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth', block: 'start' })
-    }
-  }, 100)
+  console.log('🎯 選擇卡片:', tokenId, '顯示 Gas Exchange Management')
+  
+  // 移除自動滾動效果
+}
+
+// 新增：獲取選中的卡片
+const getSelectedCard = () => {
+  if (!selectedTokenId.value) return null
+  return userCards.value.find(card => card.tokenId === selectedTokenId.value)
+}
+
+// 新增：獲取選中卡片的餘額
+const getSelectedCardBalance = () => {
+  const card = getSelectedCard()
+  return card ? card.balance : '0'
 }
 
 // 新增：鏈名稱映射
@@ -811,11 +888,41 @@ const getChainName = (chainId) => {
   return SUPPORTED_CHAINS[chainId]?.name || 'Unknown Chain'
 }
 
-// 新增：計算實際到賬金額
-const calculateActualAmount = (amount) => {
-  if (!amount) return '0.00'
-  const fee = parseFloat(amount) * 0.005 // 0.5% 手續費
-  return (parseFloat(amount) - fee).toFixed(2)
+// 新增：獲取目標鏈的原生代幣符號
+const getChainNativeSymbol = (chainId) => {
+  return SUPPORTED_CHAINS[chainId]?.nativeSymbol || 'ETH'
+}
+
+// 新增：計算實際到賬金額（使用真實報價）
+const calculateActualAmount = async (amount) => {
+  if (!amount || !manualRefuel.value.chainId || !account.value) {
+    return '0.000000'
+  }
+  
+  try {
+    isLoadingQuote.value = true
+    quoteError.value = ''
+    
+    const result = await quoteService.calculateActualAmount({
+      destinationChainId: manualRefuel.value.chainId,
+      amount: amount,
+      userAddress: account.value
+    })
+    
+    actualAmount.value = result.actualAmount
+    return result.actualAmount
+    
+  } catch (error) {
+    console.error('❌ 計算實際金額失敗:', error)
+    quoteError.value = error.message
+    // 返回預設計算（扣除 0.5% 手續費）
+    const fee = parseFloat(amount) * 0.005
+    const fallbackAmount = (parseFloat(amount) - fee).toFixed(6)
+    actualAmount.value = fallbackAmount
+    return fallbackAmount
+  } finally {
+    isLoadingQuote.value = false
+  }
 }
 
 // 新增：過濾鏈列表
@@ -855,13 +962,39 @@ const selectAgentChain = (chainId) => {
 // 新增：圖片錯誤處理
 const handleImageError = (event) => {
   console.log('圖片載入失敗:', event.target.src)
-  // 當圖片載入失敗時，隱藏圖片並顯示 fallback
+  
+  // 嘗試使用備用圖片源
+  const currentSrc = event.target.src
+  if (currentSrc.includes('cryptologos.cc')) {
+    // 如果 cryptologos.cc 失敗，嘗試使用 CoinGecko
+    const coinGeckoUrl = currentSrc.replace('cryptologos.cc/logos/', 'assets.coingecko.com/coins/images/')
+    event.target.src = coinGeckoUrl
+    return
+  }
+  
+  // 如果所有圖片都失敗，隱藏圖片並顯示 emoji fallback
   event.target.style.display = 'none'
+  
   // 找到父元素並顯示 emoji 圖標
   const parent = event.target.parentElement
-  const emojiSpan = parent.querySelector('.emoji-fallback')
-  if (emojiSpan) {
-    emojiSpan.style.display = 'block'
+  if (parent) {
+    const emojiSpan = parent.querySelector('.emoji-fallback')
+    if (emojiSpan) {
+      emojiSpan.style.display = 'block'
+      emojiSpan.style.fontSize = '20px'
+    }
+  }
+}
+
+// 新增：圖片載入成功處理
+const handleImageLoad = (event) => {
+  // 圖片載入成功時，隱藏 emoji fallback
+  const parent = event.target.parentElement
+  if (parent) {
+    const emojiSpan = parent.querySelector('.emoji-fallback')
+    if (emojiSpan) {
+      emojiSpan.style.display = 'none'
+    }
   }
 }
 
@@ -1199,6 +1332,14 @@ watch(account, async (newAccount, oldAccount) => {
   }
 })
 
+// 監聽手動兌換參數變化，自動更新報價
+watch([() => manualRefuel.value.amount, () => manualRefuel.value.chainId], async ([amount, chainId]) => {
+  if (amount && chainId && account.value) {
+    console.log('🔄 參數變化，更新報價:', { amount, chainId })
+    await calculateActualAmount(amount)
+  }
+}, { deep: true })
+
 // 供 UI 觸發 Vincent 登入（導轉）
 const handleVincentConnect = async () => {
   try {
@@ -1380,6 +1521,177 @@ const confirmVincentProceed = () => {
   position: relative;
   overflow: hidden;
   transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card-selector-elegant {
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(16, 185, 129, 0.15);
+  border-radius: 20px;
+  padding: 8px 16px;
+  box-shadow: 
+    0 4px 20px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card-chip {
+  padding: 6px 12px;
+  background: rgba(30, 41, 59, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 13px;
+  font-weight: 500;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+}
+
+.card-chip:hover {
+  background: rgba(30, 41, 59, 0.6);
+  border-color: rgba(16, 185, 129, 0.2);
+  color: rgba(255, 255, 255, 0.8);
+  transform: translateY(-1px);
+}
+
+.card-chip.active {
+  background: rgba(16, 185, 129, 0.12);
+  border-color: rgba(16, 185, 129, 0.4);
+  color: #10b981;
+  box-shadow: 
+    0 2px 8px rgba(16, 185, 129, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.card-info-top-left {
+  background: rgba(30, 41, 59, 0.3);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  border-radius: 16px;
+  padding: 12px 16px;
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.2),
+    0 0 0 1px rgba(16, 185, 129, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card-info-top-left:hover {
+  border-color: rgba(16, 185, 129, 0.3);
+  box-shadow: 
+    0 12px 40px rgba(0, 0, 0, 0.25),
+    0 0 0 1px rgba(16, 185, 129, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+
+.card-badge {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 10px;
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  border-radius: 10px;
+  color: #10b981;
+  font-size: 12px;
+  font-weight: 600;
+  box-shadow: 
+    0 2px 6px rgba(16, 185, 129, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.balance-display {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.balance-display .amount {
+  font-size: 16px;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.balance-display .currency {
+  font-size: 11px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.status-indicator {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.status-dot {
+  width: 6px;
+  height: 6px;
+  background: #10b981;
+  border-radius: 50%;
+  animation: pulse 2s infinite;
+}
+
+.status-text {
+  font-size: 11px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.5);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* Responsive Design for Card Selector */
+@media (max-width: 768px) {
+  .card-selector-elegant {
+    padding: 6px 12px;
+  }
+  
+  .card-chip {
+    padding: 5px 10px;
+    font-size: 12px;
+  }
+  
+  .card-info-top-left {
+    padding: 10px 14px;
+  }
+  
+  .card-badge {
+    padding: 4px 8px;
+    font-size: 11px;
+  }
+  
+  .balance-display .amount {
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .card-selector-elegant {
+    padding: 5px 10px;
+  }
+  
+  .card-chip {
+    padding: 4px 8px;
+    font-size: 11px;
+  }
+  
+  .card-info-top-left {
+    padding: 8px 12px;
+  }
+  
+  .card-badge {
+    padding: 3px 6px;
+    font-size: 10px;
+  }
+  
+  .balance-display .amount {
+    font-size: 13px;
+  }
 }
 
 .premium-card-main {
@@ -1880,5 +2192,24 @@ input[type="number"] {
     opacity: 1;
     transform: scale(1);
   }
+}
+
+/* 專業化狀態信息樣式 */
+.status-info-container {
+  @apply space-y-4;
+}
+
+.status-description {
+  @apply space-y-2;
+}
+
+.primary-text {
+  @apply text-lg font-medium text-white/90 leading-relaxed;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.secondary-text {
+  @apply text-base text-emerald-200/80 leading-relaxed;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 </style>

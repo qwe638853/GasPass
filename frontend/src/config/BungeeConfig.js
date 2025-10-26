@@ -2,9 +2,12 @@ export const BUNGEE_CONFIG = {
   baseUrl: 'https://public-backend.bungee.exchange',
   inboxAddress: '0xA3BF43451CdEb6DEC588B8833838fC419CE4F54c',
   gatewayAddress: '0xCdEa28Ee7BD5bf7710B294d9391e1b6A318d809a',
+  gasPassAddress: '0x88eab1ba9bE26F2d3B30d83869642132702Dd2Dd',
   gasPassAbi: [
     'function autoRefuel(uint256 tokenId, address inbox, bytes request, bytes32 sorHash, uint256 destinationChainId) external'
-  ]
+  ],
+  // Token List API
+  tokenListApi: 'https://public-backend.bungee.exchange/api/v1/tokens/list'
 };
 
 // 支援的鏈配置
@@ -15,7 +18,7 @@ export const SUPPORTED_CHAINS = {
     nativeSymbol: 'ETH',
     nativeName: 'Ether',
     icon: '⟠',
-    logo: 'https://assets.coingecko.com/coins/images/279/large/ethereum.png'
+    logo: 'https://media.socket.tech/networks/ethereum.svg'
   },
   42161: {
     rpc: 'https://arb1.arbitrum.io/rpc',
@@ -23,7 +26,7 @@ export const SUPPORTED_CHAINS = {
     nativeSymbol: 'ETH',
     nativeName: 'Ether',
     icon: '🔷',
-    logo: 'https://assets.coingecko.com/coins/images/16547/large/photo_2023-03-29_21.47.00.jpeg'
+    logo: 'https://media.socket.tech/networks/arbitrum.svg'
   },
   8453: {
     rpc: 'https://mainnet.base.org',
@@ -31,7 +34,7 @@ export const SUPPORTED_CHAINS = {
     nativeSymbol: 'ETH',
     nativeName: 'Ether',
     icon: '🔵',
-    logo: 'https://assets.coingecko.com/coins/images/27500/large/loken.png'
+    logo: 'https://media.socket.tech/networks/base.svg'
   },
   43114: {
     rpc: 'https://api.avax.network/ext/bc/C/rpc',
@@ -39,7 +42,7 @@ export const SUPPORTED_CHAINS = {
     nativeSymbol: 'AVAX',
     nativeName: 'Avalanche',
     icon: '🔺',
-    logo: 'https://assets.coingecko.com/coins/images/12559/large/Avalanche_Circle_RedWhite_Trans.png'
+    logo: 'https://media.socket.tech/networks/avalanche.svg'
   },
   56: {
     rpc: 'https://bsc-dataseed.binance.org/',
@@ -47,7 +50,7 @@ export const SUPPORTED_CHAINS = {
     nativeSymbol: 'BNB',
     nativeName: 'Binance Coin',
     icon: '🟡',
-    logo: 'https://assets.coingecko.com/coins/images/825/large/bnb-icon2_2x.png'
+    logo: 'https://media.socket.tech/networks/bsc.svg'
   },
   100: {
     rpc: 'https://rpc.gnosischain.com',
@@ -55,7 +58,7 @@ export const SUPPORTED_CHAINS = {
     nativeSymbol: 'xDAI',
     nativeName: 'Gnosis',
     icon: '🟣',
-    logo: 'https://assets.coingecko.com/coins/images/11062/large/gnosis.png'
+    logo: 'https://media.socket.tech/networks/gnosis.svg'
   },
   5000: {
     rpc: 'https://rpc.mantle.xyz/',
@@ -63,7 +66,7 @@ export const SUPPORTED_CHAINS = {
     nativeSymbol: 'MNT',
     nativeName: 'Mantle',
     icon: '🟤',
-    logo: 'https://assets.coingecko.com/coins/images/30980/large/mantle.jpg'
+    logo: 'https://media.socket.tech/networks/mantle.svg'
   },
   34443: {
     rpc: 'https://mainnet.mode.network/',
@@ -71,7 +74,7 @@ export const SUPPORTED_CHAINS = {
     nativeSymbol: 'ETH',
     nativeName: 'Ether',
     icon: '🟠',
-    logo: 'https://assets.coingecko.com/coins/images/34443/large/mode.png'
+    logo: 'https://media.socket.tech/networks/mode.svg'
   },
   130: {
     rpc: 'https://mainnet.unichain.org',
@@ -79,7 +82,7 @@ export const SUPPORTED_CHAINS = {
     nativeSymbol: 'UNIETH',
     nativeName: 'Uni Ether',
     icon: '🔗',
-    logo: 'https://assets.coingecko.com/coins/images/12559/large/Avalanche_Circle_RedWhite_Trans.png'
+    logo: 'https://media.socket.tech/networks/unichain.png'
   },
   1868: {
     rpc: 'https://rpc.soneium.org/',
@@ -87,7 +90,7 @@ export const SUPPORTED_CHAINS = {
     nativeSymbol: 'Soneium',
     nativeName: 'Soneium',
     icon: '🎵',
-    logo: 'https://assets.coingecko.com/coins/images/146/large/sonic.png'
+    logo: 'https://media.socket.tech/networks/soneium.png'
   },
   57073: {
     rpc: 'https://rpc-qnd.inkonchain.com',
@@ -95,7 +98,7 @@ export const SUPPORTED_CHAINS = {
     nativeSymbol: 'INK',
     nativeName: 'Ink',
     icon: '🖋️',
-    logo: 'https://assets.coingecko.com/coins/images/57073/large/ink.png'
+    logo: 'https://media.socket.tech/networks/ink.svg'
   },
   81457: {
     rpc: 'https://rpc.ankr.com/blast',
@@ -103,7 +106,7 @@ export const SUPPORTED_CHAINS = {
     nativeSymbol: 'BLAST',
     nativeName: 'Blast',
     icon: '💥',
-    logo: 'https://assets.coingecko.com/coins/images/81457/large/blast.png'
+    logo: 'https://media.socket.tech/networks/blast.svg'
   },
   59144: {
     rpc: 'https://linea-rpc.publicnode.com',
@@ -111,7 +114,7 @@ export const SUPPORTED_CHAINS = {
     nativeSymbol: 'ETH',
     nativeName: 'Ether',
     icon: '📏',
-    logo: 'https://assets.coingecko.com/coins/images/59144/large/linea.png'
+    logo: 'https://media.socket.tech/networks/linea.svg'
   },
   137: {
     rpc: 'https://polygon-rpc.com',
@@ -119,7 +122,7 @@ export const SUPPORTED_CHAINS = {
     nativeSymbol: 'MATIC',
     nativeName: 'Polygon',
     icon: '🔷',
-    logo: 'https://assets.coingecko.com/coins/images/4713/large/matic-token-icon.png'
+    logo: 'https://media.socket.tech/networks/polygon.svg'
   },
   534352: {
     rpc: 'https://scroll-rpc.publicnode.com',
@@ -127,7 +130,7 @@ export const SUPPORTED_CHAINS = {
     nativeSymbol: 'ETH',
     nativeName: 'Ether',
     icon: '📜',
-    logo: 'https://assets.coingecko.com/coins/images/534352/large/scroll.png'
+    logo: 'https://media.socket.tech/networks/scroll.svg'
   },
   146: {
     rpc: 'https://rpc.soniclabs.com',
@@ -135,7 +138,7 @@ export const SUPPORTED_CHAINS = {
     nativeSymbol: 'S',
     nativeName: 'Sonic',
     icon: '🎵',
-    logo: 'https://assets.coingecko.com/coins/images/146/large/sonic.png'
+    logo: 'https://media.socket.tech/networks/sonic.svg'
   },
   10: {
     rpc: 'https://mainnet.optimism.io',
@@ -143,7 +146,7 @@ export const SUPPORTED_CHAINS = {
     nativeSymbol: 'ETH',
     nativeName: 'Ether',
     icon: '🔴',
-    logo: 'https://assets.coingecko.com/coins/images/25244/large/Optimism.png'
+    logo: 'https://media.socket.tech/networks/optimism.svg'
   },
   80094: {
     rpc: 'https://rpc.berachain.com',
@@ -151,6 +154,6 @@ export const SUPPORTED_CHAINS = {
     nativeSymbol: 'BERA',
     nativeName: 'Berachain',
     icon: '🐻',
-    logo: 'https://assets.coingecko.com/coins/images/80094/large/berachain.png'
+    logo: 'https://media.socket.tech/networks/berachain.svg'
   }
 };

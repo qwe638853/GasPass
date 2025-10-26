@@ -329,9 +329,12 @@ function generateNonce(timestamp, blockNumber, contractAddress, inputAmount, cha
 
 
 
-async function getQuote(quoteParams) {
+export async function getQuote(quoteParams) {
   const BUNGEE_API_BASE_URL = BUNGEE_CONFIG.baseUrl;
   console.log('Bungee API Base URL:', BUNGEE_API_BASE_URL);
+  
+  // 將 USDC 金額轉換為最小單位 (USDC 有 6 位小數)
+  const inputAmountInWei = Math.floor(parseFloat(quoteParams.amount) * Math.pow(10, 6));
   
   const apiParams = {
     userAddress: BUNGEE_CONFIG.inboxAddress,
@@ -340,7 +343,7 @@ async function getQuote(quoteParams) {
     destinationChainId: quoteParams.destinationChainId,
     inputToken: quoteParams.fromToken,
     outputToken: '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE',
-    inputAmount: quoteParams.amount,
+    inputAmount: inputAmountInWei.toString(),
     slippage: 0.5
   };
   

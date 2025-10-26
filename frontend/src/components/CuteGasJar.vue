@@ -64,12 +64,12 @@
     <!-- Title and Description -->
     <div class="jar-content">
       <h2 class="jar-title">
-        {{ isFirstTime ? 'Create Your First GasPass!' : 'Refill Your Gas Jar' }}
+        {{ isFirstTime ? 'Create Your First GasPass!' : 'Refill Your GasPass' }}
       </h2>
       <p class="jar-description">
         {{ isFirstTime 
           ? '' 
-          : 'Refill your cute Gas jar with more USDC to keep your Gas topped up!' 
+          : 'Refill your GasPass with more USDC to keep your Gas topped up!' 
         }}
       </p>
       
@@ -117,15 +117,6 @@
         <span v-else>
           {{ isFirstTime ? 'Create GasPass' : 'Refill Now' }}
         </span>
-      </button>
-
-      <!-- Test Button for Development -->
-      <button 
-        @click="handleTestMode"
-        class="test-btn"
-        v-if="isFirstTime"
-      >
-        🧪 Test: Go to Card View
       </button>
 
       <!-- Success Modal -->
@@ -338,18 +329,9 @@ const handleContinue = () => {
   showSuccess.value = false
   // 如果是第一次創建，發送 success 事件讓父組件切換視圖
   if (props.isFirstTime) {
+    console.log('🎉 用戶點擊繼續，發送 success 事件...')
     emit('success')
   }
-}
-
-// 測試模式：模擬成功創建 GasPass
-const handleTestMode = () => {
-  console.log('🧪 Test mode: Simulating successful GasPass creation')
-  // 模擬成功消息
-  successMessage.value = 'Test mode: Successfully created GasPass card #123 with 50 USDC!'
-  showSuccess.value = true
-  // 觸發慶祝動畫
-  celebrateSuccess()
 }
 
 
@@ -454,9 +436,9 @@ watch(amount, (newValue) => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  max-width: 600px;
+  max-width: 900px;
   margin: 0 auto;
-  padding: 1rem;
+  padding: 1.5rem;
   margin-top: 0;
 }
 
@@ -465,9 +447,9 @@ watch(amount, (newValue) => {
   position: relative;
   margin-bottom: 1.5rem;
   transition: transform 0.3s ease;
-  width: 180px;
-  height: 220px;
-  margin: -1rem auto 0;
+  width: 150px;
+  height: 190px;
+  margin: -0.5rem auto 0;
 }
 
 .grenade.wiggle {
@@ -532,7 +514,7 @@ watch(amount, (newValue) => {
 .grenade-body {
   position: relative;
   width: 100%;
-  height: 200px;
+  height: 170px;
   background: 
     linear-gradient(145deg, #6b7280, #4b5563, #374151),
     radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
@@ -742,15 +724,17 @@ watch(amount, (newValue) => {
 .jar-content {
   text-align: center;
   width: 100%;
+  padding: 0 2rem;
 }
 
 .jar-title {
-  font-size: 1.1rem;
+  font-size: 1.4rem;
   font-weight: 700;
   color: #ffffff;
   margin-bottom: 0.5rem;
-  margin-top: 0.5rem;
+  margin-top: 2.5rem;
   text-shadow: 0 0 10px rgba(16, 185, 129, 0.3);
+  line-height: 1.3;
 }
 
 .jar-description {
@@ -895,26 +879,6 @@ watch(amount, (newValue) => {
   box-shadow: none;
 }
 
-.test-btn {
-  width: 100%;
-  padding: 0.75rem 1.5rem;
-  background: linear-gradient(145deg, #f59e0b, #d97706);
-  color: white;
-  border: none;
-  border-radius: 10px;
-  font-size: 0.9rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);
-  margin-top: 0.5rem;
-}
-
-.test-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(245, 158, 11, 0.4);
-  background: linear-gradient(145deg, #d97706, #b45309);
-}
 
 .loading-content {
   display: flex;
@@ -1302,6 +1266,73 @@ watch(amount, (newValue) => {
   }
   60% {
     transform: translateY(-10px);
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .cute-gas-jar-container {
+    max-width: 100%;
+    padding: 1rem;
+  }
+  
+  .grenade {
+    width: 130px;
+    height: 170px;
+    margin-bottom: 1rem;
+  }
+  
+  .grenade-body {
+    height: 150px;
+  }
+  
+  .jar-title {
+    font-size: 1.2rem;
+    margin-top: 1.5rem;
+  }
+  
+  .jar-content {
+    padding: 0 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .cute-gas-jar-container {
+    padding: 0.5rem;
+  }
+  
+  .grenade {
+    width: 110px;
+    height: 150px;
+    margin-bottom: 0.5rem;
+  }
+  
+  .grenade-body {
+    height: 130px;
+  }
+  
+  .jar-title {
+    font-size: 1.1rem;
+    margin-top: 1.2rem;
+  }
+  
+  .jar-content {
+    padding: 0 0.5rem;
+  }
+  
+  .amount-input {
+    font-size: 0.8rem;
+    padding: 0.5rem 2rem 0.5rem 0.5rem;
+  }
+  
+  .quick-amount-btn {
+    padding: 0.3rem;
+    font-size: 0.8rem;
+  }
+  
+  .submit-btn {
+    padding: 0.5rem 1rem;
+    font-size: 0.8rem;
   }
 }
 </style>
