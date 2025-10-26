@@ -163,6 +163,95 @@ Even if the backend or the Vincent service is compromised, any out-of-scope call
 
 - **Contract enforcement**  
   GasPass validates the executor address before allowing any operation.
+  
+---
+### How GasPass Integrates with Avail
+
+###  [Process Overview]
+
+1. User selects “Avail Manual Refill”
+
+From the GasPass frontend, the user chooses Use Avail for Manual Refill and specifies
+
+2. Generate Avail Intent
+
+The frontend builds a verifiable cross-chain intent using nexus-core / nexus-widgets:
+
+Includes guardrails such as minOut, maxSlippage, deadline, gasCeiling.
+
+The intent is encapsulated and signed as a cryptographic hash.
+
+3. Wallet Sign & Submit
+
+The user’s wallet signs and submits the intent to the Avail Network.
+Avail automatically selects the optimal route and executes Bridge & Execute.
+
+4. Cross-Chain Execution & Gas Top-Up
+
+Through its built-in Nexus Router + XCS Layer,
+Avail performs the bridge and swap, then credits the converted native gas to the target-chain wallet.
+
+5. Status Tracking
+
+Each intent has a unique Intent ID.
+The GasPass frontend can query the execution progress, status, and final result via the SDK.
+
+###  [Why Avail]
+
+In GasPass, Avail is the only SDK that satisfies all three critical requirements for manual refueling:
+cross-chain execution, verifiable intent, and an open, chain-agnostic interface.
+
+1. Supports “Bridge & Execute”
+
+Other bridge protocols (e.g., Bungee, Axelar) can only transfer assets,
+while Avail’s Bridge & Execute allows post-bridge execution in a single flow —
+for example, converting bridged USDC directly into native gas.
+This enables GasPass to offer a true one-click refill experience.
+
+2. Intent-Based Verification Layer
+
+Avail’s Intent System transforms every cross-chain operation into a verifiable execution intent.
+Unlike traditional bridges that simply relay funds, each intent includes:
+
+- Signature verification
+
+- Execution guardrails (slippage, gas ceiling)
+
+- Replay protection (nonce, expiry)
+
+These security primitives align perfectly with GasPass’s safety requirements.
+
+3. Neutral and Open Execution Layer
+
+Avail is chain- and framework-agnostic, integrating seamlessly with the existing
+Vue + Node + ERC-3525 architecture of GasPass.
+It supports any destination chain — Arbitrum, Base, Polygon, Optimism, and more —
+allowing users to refuel from anywhere, to anywhere.
+
+4. Complements the GasPass Automation Layer
+
+Vincent Agent and Avail are complementary, not competing components.
+
+Mode	Execution Path	Description
+Auto Mode	Vincent Agent (backend-triggered)	Automated monitoring and refueling with stored USDC
+Manual Mode	Avail Nexus SDK (user-initiated)	Direct cross-chain refuel from the user’s wallet
+
+Both share the same policy logic and tracking structure, ensuring consistent system behavior across modes.
+
+### [Key Properties]
+
+- Decentralized, Verifiable Cross-Chain Intents
+Each intent is individually signed, auditable, and traceable.
+
+- Bridge & Execute
+Instant post-bridge execution without manual relay or backend triggers.
+
+- Anti-Replay & Guardrail Controls
+Uses nonce, expiry, and minOut to prevent replay attacks or malicious routing.
+
+- Security + Flexibility
+Users can freely choose between automated (Vincent) or self-custodial (Avail) refueling.
+
 
 ---
 ## Use Cases
