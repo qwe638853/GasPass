@@ -136,6 +136,7 @@ async function triggerMonitorScan() {
     const { checkAllPolicies } = await import('./routes/monitor.js');
     
     const defaultRpcUrl = process.env.RPC_URL || GAS_PASS_CONFIG.network.rpc;
+    console.log('🔍 使用 RPC 端點:', defaultRpcUrl);
     const result = await checkAllPolicies(contract, defaultRpcUrl, wallet);
     console.log('✅ 監控掃描完成:', result);
   } catch (error) {

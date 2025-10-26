@@ -1,24 +1,25 @@
 import { Router } from 'express';
-import { getAuthenticateUserExpressHandler } from '../middleware/vincentAuth.mjs';
+import { createVincentAuth } from '../middleware/vincentAuth.mjs';
 import { executeCompleteAutoRefuel, executeManualRefuelByAgent } from '../vincent/bridge.js';
 import { ethers } from 'ethers';
-import { GAS_PASS_CONFIG } from '../config/gasPassConfig.js';
+import { GAS_PASS_CONFIG, GAS_PASS_ABI } from '../config/gasPassConfig.js';
 
 const router = Router();
 
-// 建立 Vincent 驗證中間件
-const vincentAuth = getAuthenticateUserExpressHandler({
-  allowedAudience: process.env.VITE_VINCENT_APP_ID ? 
-    `https://${process.env.VITE_VINCENT_APP_ID}.vincent.app` : 
-    'http://localhost:5173',
-  requiredAppId: parseInt(process.env.VITE_VINCENT_APP_ID) || undefined,
-  userKey: 'vincentUser'
+// 建立 Vincent 驗證中間件（與 testScript 一致）
+const allowedAudience = 'http://127.0.0.1:5173/';
+const requiredAppId = parseInt(process.env.VITE_VINCENT_APP_ID) || undefined;
+
+const { middleware: vincentAuth, handler: withVincentAuth } = createVincentAuth({
+  allowedAudience,
+  requiredAppId,
+  userKey: 'vincentUser',
 });
 
 
 
 // Vincent 狀態檢查
-router.get('/status', vincentAuth, async (req, res) => {
+router.get('/status', vincentAuth, withVincentAuth(async (req, res) => {
   try {
     const delegatorPkpEthAddress = req.vincentUser.decodedJWT?.payload?.pkpInfo?.ethAddress ?? 
                                   req.vincentUser.decodedJWT?.pkp?.ethAddress;
@@ -37,10 +38,10 @@ router.get('/status', vincentAuth, async (req, res) => {
       error: error.message || String(error)
     });
   }
-});
+}));
 
 
-router.post('/triggerManualRefuel', vincentAuth, async (req, res) => {
+router.post('/triggerManualRefuel', vincentAuth, withVincentAuth(async (req, res) => {
   try {
     const { tokenId, chainId, gasAmount } = req.body;
     
@@ -65,11 +66,12 @@ router.post('/triggerManualRefuel', vincentAuth, async (req, res) => {
       });
     }
 
-    // 創建合約實例
-    const provider = new ethers.JsonRpcProvider(GAS_PASS_CONFIG.rpcUrl);
+    // 創建合約實例 - 使用環境變數或備用 RPC
+    const rpcUrl = 'https://1rpc.io/arb';
+    const provider = new ethers.JsonRpcProvider(rpcUrl);
     const contract = new ethers.Contract(
       GAS_PASS_CONFIG.contractAddress,
-      GAS_PASS_CONFIG.abi,
+      GAS_PASS_ABI,
       provider
     );
 
@@ -84,6 +86,10 @@ router.post('/triggerManualRefuel', vincentAuth, async (req, res) => {
     // 獲取當前區塊信息
     const blockNumber = await contract.runner.provider.getBlockNumber();
     console.log('📦 當前區塊號:', blockNumber);
+
+    // 關閉 provider 釋放資源
+    provider.destroy();
+    console.log('🔌 Provider 已關閉');
 
     // 調用 executeManualRefuelByAgent (手動補油，不需要 policy)
     const result = await executeManualRefuelByAgent({
@@ -121,6 +127,6 @@ router.post('/triggerManualRefuel', vincentAuth, async (req, res) => {
       error: error.message || String(error)
     });
   }
-});
+}));
 
-export default {router, vincentAuth};
+export default router;

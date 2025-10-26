@@ -66,7 +66,7 @@ async function executeSponsorAutoRefuel(sponsorParams, { delegatorPkpEthAddress 
 export async function executeCompleteAutoRefuel(params, { delegatorPkpEthAddress } = {}) {
     // 確保 Vincent 已初始化
     await ensureInitialized();
-    
+    console.log('executeCompleteAutoRefuel params:', params);
     // 正規化請求參數，將數字轉換為字符串
     const normalizedParams = normalizeRequest(params);
     

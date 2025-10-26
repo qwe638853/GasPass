@@ -21,7 +21,7 @@ router.get('/', (req, res) => {
 });
 
 // 整合所有子路由
-router.use('/vincent', vincentModule.router);
+router.use('/vincent', vincentModule);
 router.use('/gaspass', gaspassRouter);
 router.use('/relayer', relayerRouter);
 router.use('/monitor', monitorRouter);

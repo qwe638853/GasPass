@@ -143,12 +143,25 @@ class GasPassService {
       
       console.log('📤 發送請求到後端:', requestData)
       
+      // 檢查 JWT token
+      const jwtToken = localStorage.getItem('VINCENT_AUTH_JWT')
+      console.log('🔍 JWT Token 檢查:', {
+        hasToken: !!jwtToken,
+        tokenLength: jwtToken ? jwtToken.length : 0,
+        tokenStart: jwtToken ? jwtToken.substring(0, 20) + '...' : 'null',
+        tokenEnd: jwtToken ? '...' + jwtToken.substring(jwtToken.length - 20) : 'null'
+      })
+      
+      if (!jwtToken) {
+        throw new Error('沒有找到 JWT token，請先登入 Vincent')
+      }
+      
       // 調用後端 API
       const response = await fetch('/api/vincent/triggerManualRefuel', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('vincentToken')}`
+          'Authorization': `Bearer ${localStorage.getItem('VINCENT_AUTH_JWT')}`
         },
         body: JSON.stringify(requestData)
       })
