@@ -170,6 +170,12 @@ class ContractService {
       const totalSupply = await gaspassRead.totalSupply()
       console.log('🔍 總供應量:', totalSupply.toString())
       
+      // 如果總供應量為 0，直接返回 false
+      if (totalSupply === 0n) {
+        console.log('❌ 總供應量為 0，沒有卡片')
+        return false
+      }
+      
       // 遍歷所有 token 檢查擁有者
       for (let i = 0; i < totalSupply; i++) {
         const tokenId = await gaspassRead.tokenByIndex(i)

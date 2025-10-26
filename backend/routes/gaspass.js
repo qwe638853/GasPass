@@ -401,6 +401,46 @@ router.get('/config', (req, res) => {
   });
 });
 
+// 獲取跨鏈兌換報價
+router.post('/quote', async (req, res) => {
+  try {
+    const { destinationChainId, amount, userAddress } = req.body;
+    
+    console.log('📊 獲取跨鏈兌換報價...');
+    console.log(`⛓️ 目標鏈: ${destinationChainId}`);
+    console.log(`💰 金額: ${amount} USDC`);
+    console.log(`👤 用戶地址: ${userAddress}`);
+    
+    // 導入 bridge.js 中的 getQuote 函數
+    const { getQuote } = await import('../vincent/bridge.js');
+    
+    const quoteParams = {
+      userAddress: userAddress,
+      destinationChainId: destinationChainId,
+      fromToken: GAS_PASS_CONFIG.usdc.address, // USDC 合約地址
+      amount: amount // 以 USDC 為單位的金額
+    };
+    
+    const minOutputAmount = await getQuote(quoteParams);
+    console.log('✅ 報價獲取成功:', minOutputAmount);
+    
+    res.json({
+      success: true,
+      minOutputAmount: minOutputAmount,
+      inputAmount: amount,
+      destinationChainId: destinationChainId,
+      fromToken: GAS_PASS_CONFIG.usdc.address
+    });
+    
+  } catch (error) {
+    console.error('❌ 獲取報價失敗:', error.message);
+    res.status(400).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
 router.get('/relayer', (req, res) => {
   res.json({
     message: 'Relayer info endpoint - implementation in main server',

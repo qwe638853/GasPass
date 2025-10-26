@@ -6,36 +6,37 @@
         <div class="flex items-center justify-between mb-12">
           <div class="flex-1">
             <h1 class="text-4xl font-bold text-white mb-4">
-            <span class="bg-gradient-to-r from-emerald-400 to-teal-500 bg-clip-text text-transparent">
-                Gift Cards
-            </span>
-          </h1>
+              <span class="bg-gradient-to-r from-emerald-400 to-teal-500 bg-clip-text text-transparent">
+                Digital Asset Distribution
+              </span>
+            </h1>
             <p class="text-xl text-emerald-200 max-w-3xl">
               Mint GasPass gift cards in bulk and send them to yourself or others, enjoying ERC-3525 transfer capabilities
             </p>
           </div>
           <div class="flex-shrink-0 flex items-center gap-4">
             <!-- Wallet Balance -->
-            <div class="metallic-card-secondary rounded-xl shadow-lg border border-white/20 px-4 py-3">
-              <div class="flex items-center gap-3">
-                <div class="w-8 h-8 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-lg flex items-center justify-center">
-                  <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div class="balance-display-premium">
+              <div class="balance-header">
+                <div class="balance-icon">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
                   </svg>
                 </div>
-                <div class="text-left">
-                  <div class="text-xs text-emerald-300">USDC Balance</div>
-                  <div class="text-lg font-bold text-white">{{ usdcBalance }} USDC</div>
-                </div>
+                <span class="balance-label">USDC Balance</span>
                 <button 
                   @click="refreshBalance"
-                  class="p-1.5 bg-emerald-500/20 hover:bg-emerald-500/30 rounded-lg transition-colors duration-200"
+                  class="refresh-btn"
                   :disabled="isRefreshingBalance"
                 >
-                  <svg class="w-3 h-3 text-emerald-300" :class="{ 'animate-spin': isRefreshingBalance }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg class="w-3 h-3" :class="{ 'animate-spin': isRefreshingBalance }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
                   </svg>
                 </button>
+              </div>
+              <div class="balance-amount">
+                <span class="balance-value">{{ parseFloat(usdcBalance).toFixed(2) }}</span>
+                <span class="balance-currency">USDC</span>
               </div>
             </div>
             
@@ -1422,5 +1423,142 @@ tbody:hover .add-recipient-row {
 
 .btn-primary {
   @apply px-4 py-2 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white rounded-lg transition-all duration-200 font-medium shadow-lg hover:shadow-xl;
+}
+
+/* Premium Balance Display */
+.balance-display-premium {
+  background: linear-gradient(145deg, 
+    rgba(15, 23, 42, 0.95) 0%, 
+    rgba(30, 41, 59, 0.8) 50%, 
+    rgba(15, 23, 42, 0.95) 100%);
+  backdrop-filter: blur(24px);
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  border-radius: 18px;
+  padding: 18px 22px;
+  box-shadow: 
+    0 12px 40px rgba(0, 0, 0, 0.4),
+    0 0 0 1px rgba(16, 185, 129, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+  position: relative;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  min-width: 220px;
+  overflow: hidden;
+}
+
+.balance-display-premium:hover {
+  border-color: rgba(16, 185, 129, 0.4);
+  box-shadow: 
+    0 16px 48px rgba(0, 0, 0, 0.5),
+    0 0 0 1px rgba(16, 185, 129, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.15);
+  transform: translateY(-3px);
+}
+
+.balance-display-premium::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(45deg, 
+    transparent 30%, 
+    rgba(16, 185, 129, 0.08) 50%, 
+    transparent 70%);
+  border-radius: inherit;
+  animation: premium-shine 4s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.balance-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.balance-icon {
+  width: 18px;
+  height: 18px;
+  background: linear-gradient(135deg, #10b981, #059669);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  box-shadow: 0 3px 10px rgba(16, 185, 129, 0.4);
+  flex-shrink: 0;
+}
+
+.balance-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: rgba(16, 185, 129, 0.9);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  flex: 1;
+}
+
+.refresh-btn {
+  width: 20px;
+  height: 20px;
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(16, 185, 129, 0.8);
+  transition: all 0.2s ease;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.refresh-btn:hover {
+  background: rgba(16, 185, 129, 0.25);
+  border-color: rgba(16, 185, 129, 0.4);
+  color: rgba(16, 185, 129, 1);
+  transform: scale(1.05);
+}
+
+.refresh-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.balance-amount {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.balance-value {
+  font-size: 20px;
+  font-weight: 800;
+  color: #ffffff;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+  letter-spacing: -0.5px;
+  font-variant-numeric: tabular-nums;
+}
+
+.balance-currency {
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(16, 185, 129, 0.8);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-top: 2px;
+}
+
+@keyframes premium-shine {
+  0%, 100% { 
+    transform: translateX(-100%); 
+  }
+  50% { 
+    transform: translateX(100%); 
+  }
 }
 </style>

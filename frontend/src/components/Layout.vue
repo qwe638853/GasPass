@@ -145,19 +145,6 @@
               </div>
             </div>
             
-            <!-- USDC Balance -->
-            <div v-if="isConnected && isArbitrum" class="balance-display">
-              <div class="nav-link group relative overflow-hidden">
-                <div class="absolute inset-0 bg-gradient-to-r from-emerald-100/50 to-teal-100/50 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                <span class="relative flex items-center gap-3 z-10">
-                  <div class="text-lg">💰</div>
-                  <div class="balance-info text-right">
-                    <div class="balance-amount text-sm font-bold">${{ usdcBalance }}</div>
-                    <div class="balance-label text-xs text-emerald-600">USDC</div>
-                  </div>
-                </span>
-              </div>
-            </div>
             
             <!-- Web3Modal Button -->
             <div v-if="!isConnected" class="web3modal-container">
@@ -251,18 +238,6 @@
                   </div>
                 </div>
                 
-                <div v-if="isArbitrum" class="mobile-balance">
-                  <div class="mobile-balance-label">USDC Balance</div>
-                  <div class="mobile-balance-amount">${{ usdcBalance }}</div>
-                </div>
-                
-                <div v-else class="mobile-network-warning">
-                  <div class="warning-text">Please switch to Arbitrum network</div>
-                  <button @click="switchToArbitrum" class="mobile-switch-btn">
-                    Switch Network
-                  </button>
-                </div>
-                
                 <button @click="disconnectWallet" class="mobile-disconnect-btn">
                   Disconnect Wallet
                 </button>
@@ -285,9 +260,8 @@ import { ref, onMounted, watch } from 'vue'
 import { useWeb3 } from '../composables/useWeb3'
 
 const showMobileMenu = ref(false)
-const usdcBalance = ref('0.00')
 
-const { account, chainId, isConnected, isArbitrum, connectWallet, disconnectWallet, switchToArbitrum, formatAddress, getUSDCBalance } = useWeb3()
+const { account, chainId, isConnected, isArbitrum, connectWallet, disconnectWallet, switchToArbitrum, formatAddress } = useWeb3()
 
 // Metallic particle system
 const getParticleStyle = (index) => {
@@ -398,19 +372,8 @@ const getDataStreamStyle = (index) => {
   }
 }
 
-// Load USDC balance
-const loadBalance = async () => {
-  if (isConnected.value && isArbitrum.value) {
-    try {
-      usdcBalance.value = await getUSDCBalance()
-    } catch (error) {
-      console.error('Failed to load USDC balance:', error)
-    }
-  }
-}
-
 onMounted(() => {
-  loadBalance()
+  // Component mounted
 })
 
 // Watch for connection changes
@@ -421,7 +384,6 @@ watch([isConnected, isArbitrum], (newValues, oldValues) => {
     account: account.value,
     chainId: chainId.value
   })
-  loadBalance()
 })
 
 // Watch account changes
@@ -561,17 +523,6 @@ watch(isConnected, (newConnected, oldConnected) => {
   @apply text-sm text-emerald-300;
 }
 
-.mobile-balance {
-  @apply flex justify-between items-center;
-}
-
-.mobile-balance-label {
-  @apply text-sm text-emerald-300;
-}
-
-.mobile-balance-amount {
-  @apply font-bold text-white/90;
-}
 
 .mobile-network-warning {
   @apply space-y-2;
