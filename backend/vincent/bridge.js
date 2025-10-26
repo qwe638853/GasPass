@@ -4,11 +4,11 @@ import { GAS_PASS_CONFIG, AUTO_REFUEL_ABI, MANUAL_REFUEL_ABI } from '../config/g
 import { ethers } from 'ethers';
 import crypto from 'crypto';
 
-// 正規化請求參數，將數字轉換為字符串
+// Normalize request parameters, convert numbers to strings
 function normalizeRequest(params) {
   const normalized = { ...params };
   
-  // 將數字欄位轉換為字符串
+  // Convert number fields to strings
   if (normalized.tokenId !== undefined) {
     normalized.tokenId = String(normalized.tokenId);
   }
@@ -28,7 +28,7 @@ function normalizeRequest(params) {
     normalized.deadlineDelta = String(normalized.deadlineDelta);
   }
   
-  // 確保地址欄位是字符串
+  // Ensure address fields are strings
   if (normalized.receiver !== undefined) {
     normalized.receiver = String(normalized.receiver);
   }
@@ -42,7 +42,7 @@ function normalizeRequest(params) {
   return normalized;
 }
 
-// 傳入贊助參數，執行贊助自動補油
+// Pass sponsor parameters and execute sponsored auto refuel
 async function executeSponsorAutoRefuel(sponsorParams, { delegatorPkpEthAddress } = {}) {
     console.log('GAS_PASS_CONFIG.contractAddress:', GAS_PASS_CONFIG.contractAddress);
     console.log('sponsorParams:', sponsorParams);
@@ -64,10 +64,10 @@ async function executeSponsorAutoRefuel(sponsorParams, { delegatorPkpEthAddress 
 
 // 完整的 autoRefuel 流程函數
 export async function executeCompleteAutoRefuel(params, { delegatorPkpEthAddress } = {}) {
-    // 確保 Vincent 已初始化
+    // Ensure Vincent is initialized
     await ensureInitialized();
     console.log('executeCompleteAutoRefuel params:', params);
-    // 正規化請求參數，將數字轉換為字符串
+    // Normalize request parameters, convert numbers to strings
     const normalizedParams = normalizeRequest(params);
     
     const {
@@ -83,7 +83,7 @@ export async function executeCompleteAutoRefuel(params, { delegatorPkpEthAddress
     } = normalizedParams;
     console.log('delegatorPkpEthAddress:', delegatorPkpEthAddress);
     try {
-        // 1. 獲取報價
+        // 1. Get quote
         console.log('Getting quote...');
         const quoteParams = {
             userAddress: receiver,
@@ -95,7 +95,7 @@ export async function executeCompleteAutoRefuel(params, { delegatorPkpEthAddress
         const minOutputAmount = await getQuote(quoteParams);
         console.log('Quote received, minOutputAmount:', minOutputAmount);
 
-        // 2. 建構完整的請求
+        // 2. Build complete request
         console.log('Building complete request...');
         const requestData = buildCompleteRequest({
             destinationChainId,
@@ -110,7 +110,7 @@ export async function executeCompleteAutoRefuel(params, { delegatorPkpEthAddress
         });
 
         const expectedSorHash = await getExpectedSorHash(requestData.request);
-        // 3. 執行 autoRefuel
+        // 3. Execute autoRefuel
         console.log('Executing autoRefuel...');
         const sponsorAutoRefuelParams = {
             functionName: 'autoRefuel',
@@ -136,10 +136,10 @@ export async function executeCompleteAutoRefuel(params, { delegatorPkpEthAddress
 
 // 手動補油流程函數 (使用 manualRefuelByAgent)
 export async function executeManualRefuelByAgent(params, { delegatorPkpEthAddress } = {}) {
-    // 確保 Vincent 已初始化
+    // Ensure Vincent is initialized
     await ensureInitialized();
     
-    // 正規化請求參數，將數字轉換為字符串
+    // Normalize request parameters, convert numbers to strings
     const normalizedParams = normalizeRequest(params);
     
     const {
@@ -154,11 +154,11 @@ export async function executeManualRefuelByAgent(params, { delegatorPkpEthAddres
         deadlineDelta = 600
     } = normalizedParams;
     
-    console.log('🚀 執行手動補油:', { tokenId, destinationChainId, inputAmount });
+    console.log('🚀 Execute manual refuel:', { tokenId, destinationChainId, inputAmount });
     console.log('delegatorPkpEthAddress:', delegatorPkpEthAddress);
     
     try {
-        // 1. 獲取報價
+        // 1. Get quote
         console.log('Getting quote for manual refuel...');
         const quoteParams = {
             userAddress: receiver,
@@ -170,7 +170,7 @@ export async function executeManualRefuelByAgent(params, { delegatorPkpEthAddres
         const minOutputAmount = await getQuote(quoteParams);
         console.log('Quote received, minOutputAmount:', minOutputAmount);
 
-        // 2. 建構完整的請求
+        // 2. Build complete request
         console.log('Building complete request for manual refuel...');
         const requestData = buildCompleteRequest({
             destinationChainId,
@@ -186,7 +186,7 @@ export async function executeManualRefuelByAgent(params, { delegatorPkpEthAddres
 
         const expectedSorHash = await getExpectedSorHash(requestData.request);
         
-        // 3. 執行 manualRefuelByAgent
+        // 3. Execute manualRefuelByAgent
         console.log('Executing manualRefuelByAgent...');
         const sponsorManualRefuelParams = {
             functionName: 'manualRefuelByAgent',
@@ -211,9 +211,9 @@ export async function executeManualRefuelByAgent(params, { delegatorPkpEthAddres
     }
 }
 
-// 完整的建構範例函數
+// Complete construction example function
 function buildCompleteRequest(params) {
-    // 正規化參數，確保數字轉換為字符串
+    // Normalize parameters, ensure numbers converted to strings
     const normalizedParams = normalizeRequest(params);
     
     const {
@@ -222,16 +222,16 @@ function buildCompleteRequest(params) {
         inputToken,
         inputAmount,
         minOutputAmount,
-        deadlineDelta = 600, // 10 分鐘預設
+        deadlineDelta = 600, // 10 minutes default
         contractAddress,
         blockNumber,
-        gasLeft = 1000000 // 預設值
+        gasLeft = 1000000 // default value
     } = normalizedParams;
   
     const currentTimestamp = Math.floor(Date.now() / 1000);
     const deadline = currentTimestamp + deadlineDelta;
     
-    // 生成 nonce
+    // Generate nonce
     const nonce = generateNonce(
         currentTimestamp,
         blockNumber,
@@ -266,7 +266,7 @@ function buildCompleteRequest(params) {
 }
   
 
-// 建構 BasicRequest 結構
+// Build BasicRequest structure
 function buildBasicRequest(params) {
   const {
     destinationChainId,
@@ -279,7 +279,7 @@ function buildBasicRequest(params) {
   } = params;
 
   return {
-    originChainId: 42161, // Arbitrum 主網
+    originChainId: 42161, // Arbitrum mainnet
     destinationChainId,
     deadline,
     nonce,
@@ -296,7 +296,7 @@ function buildBasicRequest(params) {
   };
 }
 
-// 建構完整的 Request 結構
+// Build complete Request structure
 function buildRequest(params) {
   const {
     basicReq
@@ -314,12 +314,12 @@ function buildRequest(params) {
   };
 }
 
-// 生成 nonce 的輔助函數
+// Generate nonce 的輔助函數
 function generateNonce(timestamp, blockNumber, contractAddress, inputAmount, chainId, gasLeft) {
-  // 模擬 Solidity 的 keccak256 和 bytes4 操作
+  // Simulate Solidity keccak256 and bytes4 operations
   const data = `${timestamp}${blockNumber}${contractAddress}${inputAmount}${chainId}${gasLeft}`;
   const hash = crypto.createHash('sha256').update(data).digest('hex');
-  // 取前 8 個字符作為 nonce (32位)
+  // Use first 8 characters as nonce (32位)
   return parseInt(hash.substring(0, 8), 16);
 }
 
@@ -353,6 +353,8 @@ export async function getQuote(quoteParams) {
     inputAmountInWei = Math.floor(amountValue);
     console.log('Already in min unit:', inputAmountInWei);
   }
+  // Convert USDC amount to minimum unit (USDC has 6 decimals)
+  //const inputAmountInWei = Math.floor(parseFloat(quoteParams.amount) * Math.pow(10, 6));
   
   const apiParams = {
     userAddress: BUNGEE_CONFIG.inboxAddress,
@@ -368,7 +370,7 @@ export async function getQuote(quoteParams) {
   try {
     const url = `${BUNGEE_API_BASE_URL}/api/v1/bungee/quote`;
     
-    // 將參數轉換為查詢字串
+    // Convert parameters to query string
     const queryParams = new URLSearchParams();
     Object.entries(apiParams).forEach(([key, value]) => {
       queryParams.append(key, value.toString());
@@ -396,31 +398,31 @@ export async function getQuote(quoteParams) {
 }
 
 function getExpectedSorHash(request) {
-    // 1. 定義 BASIC_REQUEST_TYPE (對應 Solidity 中的 BASIC_REQUEST_TYPE)
+    // 1. Define BASIC_REQUEST_TYPE (corresponds to BASIC_REQUEST_TYPE in Solidity)
     const BASIC_REQUEST_TYPE = ethers.solidityPacked(
         ["string"],
         ["BasicRequest(uint256 originChainId,uint256 destinationChainId,uint256 deadline,uint256 nonce,address sender,address receiver,address delegate,address bungeeGateway,uint32 switchboardId,address inputToken,uint256 inputAmount,address outputToken,uint256 minOutputAmount,uint256 refuelAmount)"]
     );
     
-    // 2. 計算 BASIC_REQUEST_TYPE_HASH
+    // 2. Calculate BASIC_REQUEST_TYPE_HASH
     const BASIC_REQUEST_TYPE_HASH = ethers.keccak256(BASIC_REQUEST_TYPE);
     
-    // 3. 定義 REQUEST_TYPE
+    // 3. Define REQUEST_TYPE
     const REQUEST_TYPE = ethers.solidityPacked(
         ["string"],
         ["Request(BasicRequest basicReq,address swapOutputToken,uint256 minSwapOutput,bytes32 metadata,bytes affiliateFees,uint256 minDestGas,bytes destinationPayload,address exclusiveTransmitter)"]
     );
     
-    // 4. 定義 BUNGEE_REQUEST_TYPE (REQUEST_TYPE + BASIC_REQUEST_TYPE)
+    // 4. Define BUNGEE_REQUEST_TYPE (REQUEST_TYPE + BASIC_REQUEST_TYPE)
     const BUNGEE_REQUEST_TYPE = ethers.solidityPacked(
         ["bytes", "bytes"],
         [REQUEST_TYPE, BASIC_REQUEST_TYPE]
     );
     
-    // 5. 計算 BUNGEE_REQUEST_TYPE_HASH
+    // 5. Calculate BUNGEE_REQUEST_TYPE_HASH
     const BUNGEE_REQUEST_TYPE_HASH = ethers.keccak256(BUNGEE_REQUEST_TYPE);
 
-    // 6. 計算 basicReq.originHash() (對應 Solidity 中的 originHash 函數)
+    // 6. Calculate basicReq.originHash() (corresponds to originHash function in Solidity)
     const basicReq = request.basicReq;
     const originHash = ethers.keccak256(
         ethers.solidityPacked(
@@ -429,7 +431,7 @@ function getExpectedSorHash(request) {
                 BASIC_REQUEST_TYPE_HASH,
                 ethers.AbiCoder.defaultAbiCoder().encode(
                     [
-                        "uint256", // originChainId (使用當前鏈 ID)
+                        "uint256", // originChainId (使用Current chain ID)
                         "uint256", // destinationChainId
                         "uint256", // deadline
                         "uint256", // nonce
@@ -437,7 +439,7 @@ function getExpectedSorHash(request) {
                         "address", // receiver
                         "address", // delegate
                         "address", // bungeeGateway
-                        "uint32",  // switchboardId (注意是 uint32)
+                        "uint32",  // switchboardId (Note: this is uint32)
                         "address", // inputToken
                         "uint256", // inputAmount
                         "address", // outputToken
@@ -445,7 +447,7 @@ function getExpectedSorHash(request) {
                         "uint256"  // refuelAmount
                     ],
                     [
-                        basicReq.originChainId, // 當前鏈 ID
+                        basicReq.originChainId, // Current chain ID
                         basicReq.destinationChainId,
                         basicReq.deadline,
                         basicReq.nonce,
@@ -465,18 +467,18 @@ function getExpectedSorHash(request) {
         )
     );
 
-    // 7. 計算 affiliateFees 的 hash
+    // 7. Calculate affiliateFees hash
     const affiliateFeesHash = ethers.keccak256(request.affiliateFees);
     
-    // 8. 計算 destinationPayload 的 hash
+    // 8. Calculate destinationPayload hash
     const destinationPayloadHash = ethers.keccak256(request.destinationPayload);
 
-    // 9. 計算最終的 SOR Hash (對應 Solidity 中的 createSORHash)
+    // 9. Calculate final SOR Hash (corresponds to createSORHash in Solidity)
     const sorHash = ethers.keccak256(
         ethers.AbiCoder.defaultAbiCoder().encode(
             [
                 "bytes32", // BUNGEE_REQUEST_TYPE_HASH
-                "bytes32", // originHash (注意是 bytes32，不是 uint128)
+                "bytes32", // originHash (Note: this is bytes32, not uint128)
                 "address", // swapOutputToken
                 "uint256", // minSwapOutput
                 "bytes32", // metadata

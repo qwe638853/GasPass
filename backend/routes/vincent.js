@@ -6,7 +6,7 @@ import { GAS_PASS_CONFIG, GAS_PASS_ABI } from '../config/gasPassConfig.js';
 
 const router = Router();
 
-// 建立 Vincent 驗證中間件（與 testScript 一致）
+// Create Vincent authentication middleware (consistent with testScript)
 const allowedAudience = 'http://127.0.0.1:5173/';
 const requiredAppId = parseInt(process.env.VITE_VINCENT_APP_ID) || undefined;
 
@@ -18,7 +18,7 @@ const { middleware: vincentAuth, handler: withVincentAuth } = createVincentAuth(
 
 
 
-// Vincent 狀態檢查
+// Vincent status check
 router.get('/status', vincentAuth, withVincentAuth(async (req, res) => {
   try {
     const delegatorPkpEthAddress = req.vincentUser.decodedJWT?.payload?.pkpInfo?.ethAddress ?? 
@@ -32,7 +32,7 @@ router.get('/status', vincentAuth, withVincentAuth(async (req, res) => {
       }
     });
   } catch (error) {
-    console.error('Vincent Status 失敗:', error);
+    console.error('Vincent Status failed:', error);
     res.status(400).json({
       success: false,
       error: error.message || String(error)
@@ -45,28 +45,28 @@ router.post('/triggerManualRefuel', vincentAuth, withVincentAuth(async (req, res
   try {
     const { tokenId, chainId, gasAmount } = req.body;
     
-    // 驗證必要參數
+    // Validate required parameters
     if (!tokenId || !chainId || !gasAmount) {
       return res.status(400).json({
         success: false,
-        error: '缺少必要參數: tokenId, chainId, gasAmount'
+        error: 'Missing required parameters: tokenId, chainId, gasAmount'
       });
     }
 
-    console.log('🚀 前端觸發手動補油:', { tokenId, chainId, gasAmount });
+    console.log('🚀 Frontend triggered manual refuel:', { tokenId, chainId, gasAmount });
 
-    // 獲取 PKP 地址
+    // Get PKP address
     const delegatorPkpEthAddress = req.vincentUser.decodedJWT?.payload?.pkpInfo?.ethAddress ?? 
                                   req.vincentUser.decodedJWT?.pkp?.ethAddress;
 
     if (!delegatorPkpEthAddress) {
       return res.status(400).json({
         success: false,
-        error: '無法獲取 PKP 地址'
+        error: 'Unable to get PKP address'
       });
     }
 
-    // 創建合約實例 - 使用環境變數或備用 RPC
+    // Create contract instance - use environment variable or fallback RPC
     const rpcUrl = 'https://1rpc.io/arb';
     const provider = new ethers.JsonRpcProvider(rpcUrl);
     const contract = new ethers.Contract(
@@ -75,46 +75,46 @@ router.post('/triggerManualRefuel', vincentAuth, withVincentAuth(async (req, res
       provider
     );
 
-    // 獲取 token 擁有者
+    // Get token owner
     const owner = await contract.ownerOf(tokenId);
-    console.log('👤 Token 擁有者:', owner);
+    console.log('👤 Token owner:', owner);
 
-    // 獲取 USDC 合約地址
+    // Get USDC contract address
     const usdcAddress = await contract.stablecoin();
-    console.log('💰 USDC 合約地址:', usdcAddress);
+    console.log('💰 USDC contract address:', usdcAddress);
     
-    // 獲取 USDC decimals
+    // Get USDC decimals
     const usdcContract = new ethers.Contract(usdcAddress, ['function decimals() view returns (uint8)'], provider);
     const usdcDecimals = await usdcContract.decimals();
     console.log('📏 USDC decimals:', usdcDecimals);
 
-    // 將 gasAmount (實際金額) 轉換為最小單位 (wei)
-    // 例如: 3 USDC -> 3 * 10^6 = 3000000
+    // Convert gasAmount (actual amount) to minimum unit (wei)
+    // Example: 3 USDC -> 3 * 10^6 = 3000000
     const inputAmountWei = ethers.parseUnits(gasAmount.toString(), usdcDecimals).toString();
-    console.log('💵 金額轉換:', { original: gasAmount, decimals: usdcDecimals, wei: inputAmountWei });
+    console.log('💵 Amount conversion:', { original: gasAmount, decimals: usdcDecimals, wei: inputAmountWei });
 
-    // 獲取當前區塊信息
+    // Get current block information
     const blockNumber = await contract.runner.provider.getBlockNumber();
-    console.log('📦 當前區塊號:', blockNumber);
+    console.log('📦 Current block number:', blockNumber);
 
-    // 關閉 provider 釋放資源
+    // Close provider to release resources
     provider.destroy();
-    console.log('🔌 Provider 已關閉');
+    console.log('🔌 Provider closed');
 
-    // 調用 executeManualRefuelByAgent (手動補油，不需要 policy)
+    // Call executeManualRefuelByAgent (manual refuel, no policy required)
     const result = await executeManualRefuelByAgent({
       tokenId: parseInt(tokenId),
       destinationChainId: parseInt(chainId),
       receiver: owner,
       inputToken: usdcAddress,
-      inputAmount: inputAmountWei, // 使用轉換後的 wei 格式
+      inputAmount: inputAmountWei, // Use converted wei format
       contractAddress: contract.target,
       blockNumber,
       gasLeft: 1000000,
       deadlineDelta: 600
     }, { delegatorPkpEthAddress });
 
-    console.log('✅ 手動補油成功:', result);
+    console.log('✅ Manual refuel successful:', result);
 
     res.json({
       success: true,
@@ -131,7 +131,7 @@ router.post('/triggerManualRefuel', vincentAuth, withVincentAuth(async (req, res
     });
 
   } catch (error) {
-    console.error('❌ 觸發手動補油失敗:', error);
+    console.error('❌ Trigger manual refuel failed:', error);
     res.status(500).json({
       success: false,
       error: error.message || String(error)
