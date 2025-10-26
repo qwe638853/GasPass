@@ -45,11 +45,11 @@ It uses the stored USDC to create a cross-chain refill request, which is execute
 
 4. Manual Mode
 
--[Contract-Based]
+ - [Contract-Based]
 Both users and the Vincent Agent can initiate manualRefill() from the frontend or backend.
 This function still interacts with the GasPass contract, using deposited USDC to execute a one-time cross-chain transfer (through Bungee).
 
--[Direct via Avail Nexus SDK]
+ - [Direct via Avail Nexus SDK]
 Alternatively, users can directly bridge funds using Avail Nexus SDK, performing a one-time cross-chain gas transfer from their own wallet, bypassing the GasPass contract entirely.
 
 6. Gas Top-Up
