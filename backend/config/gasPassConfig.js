@@ -5,7 +5,7 @@
 
 export const GAS_PASS_CONFIG = {
   // 合約地址
-  contractAddress: '0xF0f26bAfEf9D969a5A1660959C886907D6312cF7',
+  contractAddress: '0x283558ceff90f1420C1Ee3c9A9B79f36501576Aa',
   
   // 網絡配置
   network: {
@@ -100,12 +100,12 @@ export const GAS_PASS_ABI = [
 
 // Auto Refuel ABI - 用於自動補氣功能
 export const AUTO_REFUEL_ABI = [
-  'function autoRefuel(uint256 tokenId, address inbox, ( (uint256 originChainId,uint256 destinationChainId,uint256 deadline,uint256 nonce,address sender,address receiver,address delegate,address bungeeGateway,uint256 switchboardId,address inputToken,uint256 inputAmount,address outputToken,uint256 minOutputAmount,uint256 refuelAmount) basicReq, address swapOutputToken, uint256 minSwapOutput, bytes extraData ) req, bytes32 expectedSorHash, uint256 targetChainId) external'
+  'function autoRefuel(uint256 tokenId, address inbox, ( (uint256 originChainId,uint256 destinationChainId,uint256 deadline,uint256 nonce,address sender,address receiver,address delegate,address bungeeGateway,uint32 switchboardId,address inputToken,uint256 inputAmount,address outputToken,uint256 minOutputAmount,uint256 refuelAmount) basicReq, address swapOutputToken, uint256 minSwapOutput, bytes32 metadata, bytes affiliateFees, uint256 minDestGas, bytes destinationPayload, address exclusiveTransmitter ) req, bytes32 expectedSorHash, uint256 targetChainId) external'
 ];
 
 // Manual Refuel ABI - 用於手動補氣功能
 export const MANUAL_REFUEL_ABI = [
-  'function withdrawAllUSDC(uint256 tokenId, address to) external'
+  'function manualRefuelByAgent(uint256 tokenId, address inbox, ( (uint256 originChainId,uint256 destinationChainId,uint256 deadline,uint256 nonce,address sender,address receiver,address delegate,address bungeeGateway,uint32 switchboardId,address inputToken,uint256 inputAmount,address outputToken,uint256 minOutputAmount,uint256 refuelAmount) basicReq, address swapOutputToken, uint256 minSwapOutput, bytes32 metadata, bytes affiliateFees, uint256 minDestGas, bytes destinationPayload, address exclusiveTransmitter ) req, bytes32 expectedSorHash, uint256 targetChainId) external'
 ];
 
 export default GAS_PASS_CONFIG;
