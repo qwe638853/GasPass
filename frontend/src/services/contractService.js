@@ -360,7 +360,7 @@ class ContractService {
       const { gaspassRead, usdcRead } = this.getContracts()
 
       // ===== 讀鏈上 nonce（不要再 fallback 0）=====
-      const gaspassNonce = await gaspassRead.ownerNonces(owner)
+      const gaspassNonce = await gaspassRead.ownerNonces(owner) ;
       const usdcNonce = await usdcRead.nonces(owner)
       
       console.log('🔍 GasPass nonce:', gaspassNonce.toString())
@@ -646,7 +646,7 @@ class ContractService {
         throw new Error(`合約調用失敗: ${error.message}`)
       }
 
-      // 獲取 nonce - 添加重試機制和備用方案
+      // 獲取 Token nonce（合約使用 nonces[tokenId]，不是 ownerNonces[wallet]）
       console.log('🔍 獲取 Token nonce...')
       let nonce
       let retryCount = 0
@@ -659,10 +659,10 @@ class ContractService {
           break
         } catch (error) {
           retryCount++
-          console.warn(`⚠️ 獲取 nonce 失敗 (嘗試 ${retryCount}/${maxRetries}):`, error.message)
+          console.warn(`⚠️ 獲取 Token nonce 失敗 (嘗試 ${retryCount}/${maxRetries}):`, error.message)
           
           if (retryCount >= maxRetries) {
-            console.warn('⚠️ 無法獲取 nonce，使用默認值 0')
+            console.warn('⚠️ 無法獲取 Token nonce，使用默認值 0')
             nonce = 0 // 使用默認值
             break
           }
@@ -680,13 +680,13 @@ class ContractService {
       const thresholdUint128 = BigInt(threshold) & BigInt('0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF') // 確保在 uint128 範圍內
       
       const typedDataForSigning = {
-        tokenId: BigInt(tokenId),
-        targetChainId: BigInt(targetChainId),
-        gasAmount: gasAmountUint128,
-        threshold: thresholdUint128,
+        tokenId: tokenId.toString(),
+        targetChainId: targetChainId.toString(),
+        gasAmount: gasAmountUint128.toString(),
+        threshold: thresholdUint128.toString(),
         agent: agent,
-        nonce: BigInt(nonce.toString()),
-        deadline: BigInt(deadline)
+        nonce: nonce.toString(),
+        deadline: deadline.toString()
       }
 
       console.log('📋 TypedData for signing:', typedDataForSigning)
@@ -721,6 +721,11 @@ class ContractService {
       console.log('🔍 Token 擁有者:', owner)
       console.log('🔍 簽名者是否為 Token 擁有者:', signerAddress.toLowerCase() === owner.toLowerCase())
       
+      // 驗證簽名者必須是 Token 擁有者
+      if (signerAddress.toLowerCase() !== owner.toLowerCase()) {
+        throw new Error(`簽名者 (${signerAddress}) 必須是 Token ${tokenId} 的擁有者 (${owner})`)
+      }
+      
       // 檢查 Agent 綁定狀態
       try {
         const agentToWallet = await gaspassRead.agentToWallet(agent)
@@ -735,6 +740,30 @@ class ContractService {
       console.log('🔍 EIP712 Types:', types)
       console.log('🔍 合約地址:', CONTRACT_CONFIG.address)
       
+      // 驗證 Domain Separator
+      try {
+        const domainSeparator = ethers.TypedDataEncoder.hashDomain(domain)
+        console.log('🔍 前端 Domain Separator:', domainSeparator)
+        
+        // 手動計算 Domain Separator 進行對比
+        const manualDomainSeparator = ethers.keccak256(
+          ethers.AbiCoder.defaultAbiCoder().encode(
+            ['bytes32', 'bytes32', 'bytes32', 'uint256', 'address'],
+            [
+              ethers.keccak256(ethers.toUtf8Bytes('EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)')),
+              ethers.keccak256(ethers.toUtf8Bytes('GasPass')),
+              ethers.keccak256(ethers.toUtf8Bytes('1')),
+              BigInt(42161),
+              CONTRACT_CONFIG.address
+            ]
+          )
+        )
+        console.log('🔍 手動計算 Domain Separator:', manualDomainSeparator)
+        console.log('🔍 Domain Separator 是否匹配:', domainSeparator === manualDomainSeparator)
+      } catch (error) {
+        console.error('❌ Domain Separator 計算失敗:', error)
+      }
+      
       // 調試：檢查簽名格式
       console.log('🔍 簽名長度:', sig.length)
       console.log('🔍 簽名前綴:', sig.slice(0, 2))
@@ -746,12 +775,13 @@ class ContractService {
         console.log('🔍 手動驗證簽名者地址:', recoveredAddress)
         console.log('🔍 手動驗證是否正確:', recoveredAddress.toLowerCase() === signerAddress.toLowerCase())
       
-      // 四雜湊比對法 - 用於調試
+      // 四雜湊比對法 - 用於調試 (ethers v6 兼容)
       try {
-        // 使用 ethers 的 TypedDataEncoder
-        const typeHash = ethers.TypedDataEncoder.hashType('SetRefuelPolicy', types)
-        const structHash = ethers.TypedDataEncoder.from(types).hash(typedDataForSigning)
-        const domainSeparator = ethers.TypedDataEncoder.hashDomain(domain)
+        // 使用 ethers v6 的 TypedDataEncoder
+        const encoder = ethers.TypedDataEncoder.from(types)
+        const typeHash = encoder.hashType('SetRefuelPolicy')
+        const structHash = encoder.hash(typedDataForSigning)
+        const domainSeparator = encoder.hashDomain(domain)
         const digest = ethers.TypedDataEncoder.hash(domain, types, typedDataForSigning)
         
         console.log('🔍 四雜湊比對法:')
@@ -768,6 +798,10 @@ class ContractService {
 
       // 創建可序列化的 typedData (用於發送給 relayer)
       // 使用字符串傳輸，避免 JSON BigInt 問題，並確保 uint128 範圍
+      
+
+
+      // 創建可序列化的 typedData (用於發送給 relayer)
       const typedDataForRelayer = {
         tokenId: BigInt(tokenId).toString(),
         targetChainId: BigInt(targetChainId).toString(),

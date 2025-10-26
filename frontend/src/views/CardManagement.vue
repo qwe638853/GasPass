@@ -141,29 +141,62 @@
                 <div class="absolute bottom-0 left-0 w-48 h-48 bg-gradient-to-tr from-teal-200/20 to-emerald-200/20 rounded-full translate-y-24 -translate-x-24"></div>
                 
                 <div class="relative z-10">
-                  <!-- 左側：卡片信息 -->
-                  <div class="flex flex-col lg:flex-row items-center lg:items-start gap-8 lg:gap-12">
-                    <!-- 卡片信息區域 -->
-                    <div class="flex-1 text-center lg:text-left">
-                      <h2 class="text-4xl lg:text-5xl font-bold text-slate-800 mb-4">Welcome back!</h2>
-                      <p class="text-lg text-emerald-600 mb-8">Your GasPass card is ready for more deposits!</p>
-                      
-                      <!-- 卡片信息 -->
-                      <div v-for="card in userCards" :key="card.tokenId" class="mb-8">
-                        <div class="inline-flex items-center gap-2 px-4 py-2 bg-emerald-100 rounded-full text-emerald-800 font-semibold mb-4">
+                  <!-- 卡片信息區域 -->
+                  <div class="text-center lg:text-left">
+                    <div class="flex items-center justify-between mb-6">
+                      <div>
+                        <h2 class="text-4xl lg:text-5xl font-bold text-white mb-4">Welcome back!</h2>
+                        <p class="text-lg text-emerald-300">Your GasPass card is ready for more deposits!</p>
+                      </div>
+                      <!-- 切換按鈕 -->
+                      <button 
+                        @click="showGasJar = !showGasJar"
+                        class="flex items-center gap-2 px-4 py-2 bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-400/30 hover:border-emerald-400/50 text-emerald-300 hover:text-emerald-200 rounded-xl transition-all duration-300 font-medium backdrop-blur-sm"
+                      >
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"></path>
+                        </svg>
+                        {{ showGasJar ? 'Hide Refill' : 'Show Refill' }}
+                      </button>
+                    </div>
+                    
+                    <!-- 卡片信息 -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                      <div 
+                        v-for="card in userCards" 
+                        :key="card.tokenId" 
+                        @click="selectCard(card.tokenId)"
+                        class="p-6 bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl hover:bg-white/10 transition-all duration-300 cursor-pointer group relative"
+                        :class="{ 'ring-2 ring-emerald-400/50 bg-emerald-500/10': selectedTokenId === card.tokenId }"
+                      >
+                        <!-- 選中指示器 -->
+                        <div v-if="selectedTokenId === card.tokenId" class="absolute top-3 right-3 w-6 h-6 bg-emerald-500 rounded-full flex items-center justify-center">
+                          <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                          </svg>
+                        </div>
+                        
+                        <div class="inline-flex items-center gap-2 px-4 py-2 bg-emerald-500/20 border border-emerald-400/30 rounded-full text-emerald-300 font-semibold mb-4 backdrop-blur-sm">
                           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
                           </svg>
                           GasPass #{{ card.tokenId }}
                         </div>
-                        <div class="text-3xl font-bold text-slate-800 mb-2">{{ card.balance }} USDC</div>
-                        <div class="text-emerald-600">Current Balance</div>
-                        <div class="text-sm text-slate-500 mt-2">Last updated: {{ card.lastUpdate }}</div>
+                        <div class="text-3xl font-bold text-white mb-2">{{ card.balance }} USDC</div>
+                        <div class="text-emerald-300 font-medium mb-2">Current Balance</div>
+                        <div class="text-sm text-gray-300">Last updated: {{ card.lastUpdate }}</div>
+                        
+                        <!-- 點擊提示 -->
+                        <div class="mt-4 text-xs text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                          Click to manage Gas exchange
+                        </div>
                       </div>
                     </div>
-                    
-                    <!-- 右側：Gas Jar 組件 -->
-                    <div class="flex-shrink-0">
+                  </div>
+                  
+                  <!-- Gas Jar 組件（條件顯示） -->
+                  <div v-if="showGasJar" class="mt-8 flex justify-center">
+                    <div class="w-full max-w-md">
                       <CuteGasJar 
                         :isFirstTime="false"
                         :existingCard="userCards[0]"
@@ -178,7 +211,7 @@
           </div>
 
           <!-- 下半部分：Gas 兌換管理 -->
-          <div v-if="hasCard" class="premium-card-exchange p-8 relative overflow-hidden">
+          <div v-if="hasCard && showGasExchange && selectedTokenId" class="premium-card-exchange p-8 relative overflow-hidden">
             <!-- 背景裝飾 -->
             <div class="absolute inset-0 bg-gradient-to-br from-emerald-50/5 to-teal-50/5"></div>
             <div class="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-emerald-200/20 to-teal-200/20 rounded-full -translate-y-16 translate-x-16"></div>
@@ -191,7 +224,13 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
                   </svg>
                 </div>
-                <h3 class="text-2xl font-bold text-white">Gas Exchange Management</h3>
+                <h3 class="text-2xl font-bold text-white">Gas Exchange Management - GasPass #{{ selectedTokenId }}</h3>
+                <button 
+                  @click="showGasExchange = false; selectedTokenId = null"
+                  class="ml-auto px-3 py-1 bg-slate-600/50 hover:bg-slate-600/70 text-gray-300 hover:text-white rounded-lg transition-all duration-300 text-sm"
+                >
+                  Close
+                </button>
               </div>
               
               <!-- 切換標籤 -->
@@ -257,15 +296,50 @@
                       </div>
                       
                       <div>
-                        <label class="block text-sm font-semibold text-emerald-200 mb-2">Exchange Amount (USDC)</label>
-                        <input 
-                          v-model="manualRefuel.amount"
-                          type="number"
-                          step="0.01"
-                          min="1"
-                          placeholder="Enter exchange amount"
-                          class="w-full p-3 bg-slate-600/50 border border-emerald-400/30 rounded-xl focus:border-emerald-400 focus:outline-none transition-colors text-white placeholder-emerald-300"
-                        />
+                        <label class="block text-sm font-semibold text-emerald-200 mb-2">
+                          Amount to Exchange (USDC)
+                          <span class="text-xs text-yellow-300 ml-2">⚠️ This will deduct from your card balance</span>
+                        </label>
+                        
+                        
+                        
+                         <input 
+                           v-model="manualRefuel.amount"
+                           type="number"
+                           step="0.01"
+                           min="0.01"
+                           :max="currentCardBalance"
+                           placeholder="Enter exchange amount"
+                           class="w-full p-3 bg-slate-600/50 border border-emerald-400/30 rounded-xl focus:border-emerald-400 focus:outline-none transition-colors text-white placeholder-emerald-300 mb-4"
+                         />
+
+                         <!-- 快捷按鈕 -->
+                         <div class="flex gap-2 mb-3">
+                          <button 
+                            @click="setExchangeAmount(25)"
+                            :disabled="currentCardBalance === 0"
+                            class="px-3 py-1.5 bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-400/30 hover:border-emerald-400/50 text-emerald-300 hover:text-emerald-200 rounded-lg transition-all duration-300 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            25%
+                          </button>
+                          <button 
+                            @click="setExchangeAmount(50)"
+                            :disabled="currentCardBalance === 0"
+                            class="px-3 py-1.5 bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-400/30 hover:border-emerald-400/50 text-emerald-300 hover:text-emerald-200 rounded-lg transition-all duration-300 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            50%
+                          </button>
+                          <button 
+                            @click="setExchangeAmount(100)"
+                            :disabled="currentCardBalance === 0"
+                            class="px-3 py-1.5 bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-400/30 hover:border-emerald-400/50 text-emerald-300 hover:text-emerald-200 rounded-lg transition-all duration-300 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            100%
+                          </button>
+                          <div class="flex-1 text-right text-xs text-gray-400 self-center">
+                            Balance: {{ currentCardBalance.toFixed(2) }} USDC
+                          </div>
+                        </div>
                       </div>
                       
                       <div>
@@ -589,6 +663,9 @@ const transactionHistory = ref([])
 const usdcBalance = ref('0.00')
 const showManualRefuel = ref(false)
 const showAutoRefuel = ref(false)
+const showGasJar = ref(false) // 新增：控制 Gas Jar 顯示
+const selectedTokenId = ref(null) // 新增：選中的 Token ID
+const showGasExchange = ref(false) // 新增：控制 Gas Exchange 顯示
 
 // 新增：Tab 切換
 const activeTab = ref('manual')
@@ -716,6 +793,19 @@ const handleError = (error) => {
   // You can add toast notification here
 }
 
+// 新增：點擊卡片選擇
+const selectCard = (tokenId) => {
+  selectedTokenId.value = tokenId
+  showGasExchange.value = true
+  // 滾動到 Gas Exchange 區域
+  setTimeout(() => {
+    const element = document.querySelector('.premium-card-exchange')
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }
+  }, 100)
+}
+
 // 新增：鏈名稱映射
 const getChainName = (chainId) => {
   return SUPPORTED_CHAINS[chainId]?.name || 'Unknown Chain'
@@ -775,10 +865,23 @@ const handleImageError = (event) => {
   }
 }
 
-// 新增：當前 Token ID (從用戶的卡片中獲取)
+// 新增：當前 Token ID (使用選中的 Token ID)
 const currentTokenId = computed(() => {
-  return userCards.value.length > 0 ? userCards.value[0].tokenId : null
+  return selectedTokenId.value || (userCards.value.length > 0 ? userCards.value[0].tokenId : null)
 })
+
+// 新增：當前卡片餘額
+const currentCardBalance = computed(() => {
+  if (!currentTokenId.value) return 0
+  const card = userCards.value.find(card => card.tokenId === currentTokenId.value)
+  return card ? parseFloat(card.balance) : 0
+})
+
+// 新增：快捷按鈕函數
+const setExchangeAmount = (percentage) => {
+  const amount = (currentCardBalance.value * percentage / 100).toFixed(2)
+  manualRefuel.value.amount = amount
+}
 
 // 新增：分割錢包地址為四段
 const getAddressSegment = (index) => {
@@ -803,24 +906,48 @@ const executeManualRefuel = async () => {
   if (!canExecuteManualRefuel.value) return
   
   try {
-    // 這裡會串接 Bounce swap 工具
-    console.log('執行手動兌換:', manualRefuel.value)
+    console.log('🚀 執行手動兌換:', manualRefuel.value)
     
-    // 模擬 API 調用
-    await new Promise(resolve => setTimeout(resolve, 2000))
+    // 檢查是否有選中的 Token ID
+    if (!currentTokenId.value) {
+      throw new Error('請先選擇一張 GasPass 卡片')
+    }
+    
+    // 檢查餘額是否足夠
+    const exchangeAmount = parseFloat(manualRefuel.value.amount)
+    if (exchangeAmount > currentCardBalance.value) {
+      throw new Error(`餘額不足！當前餘額: ${currentCardBalance.value.toFixed(2)} USDC`)
+    }
+    
+    // 使用 gasPassService 執行手動兌換
+    const result = await gasPassService.manualRefuel({
+      tokenId: currentTokenId.value,
+      targetChainId: manualRefuel.value.chainId,
+      gasAmount: exchangeAmount,
+      recipientAddress: manualRefuel.value.recipient
+    })
+    
+    if (!result.success) {
+      throw new Error(result.error)
+    }
+    
+    console.log('✅ 兌換成功:', result)
     
     // 成功後重置表單
     manualRefuel.value = {
       chainId: '42161',
       amount: '',
-      recipient: ''
+      recipient: account.value || ''
     }
     
+    // 重新載入用戶數據以更新餘額
+    await loadUserData()
+    
     // 顯示成功訊息
-    alert('Gas 兌換成功！')
+    alert(`Gas 兌換成功！\n交易哈希: ${result.txHash}\n兌換金額: ${exchangeAmount} USDC`)
     
   } catch (error) {
-    console.error('Manual refuel failed:', error)
+    console.error('❌ Manual refuel failed:', error)
     alert('兌換失敗: ' + error.message)
   }
 }
@@ -1063,6 +1190,8 @@ watch(account, async (newAccount, oldAccount) => {
   console.log('🔍 account 變化:', { newAccount, oldAccount, isConnected: isConnected.value })
   if (newAccount && isConnected.value) {
     console.log('🔍 檢測到新帳戶，嘗試載入用戶數據...')
+    // 更新 Manual Exchange 的預設地址
+    manualRefuel.value.recipient = newAccount
     // 延遲一點時間確保 provider 和 signer 都已更新
     setTimeout(async () => {
       await loadUserData()

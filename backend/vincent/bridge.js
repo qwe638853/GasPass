@@ -1,6 +1,6 @@
 import { sponsorAbilityClient, alchemyGasSponsorApiKey, alchemyGasSponsorPolicyId ,ensureInitialized} from './vincentEnv.js';
 import { BUNGEE_CONFIG } from '../config/BungeeConfig.js';
-import { GAS_PASS_CONFIG, AUTO_REFUEL_ABI } from '../config/gasPassConfig.js';
+import { GAS_PASS_CONFIG, AUTO_REFUEL_ABI, MANUAL_REFUEL_ABI } from '../config/gasPassConfig.js';
 import { ethers } from 'ethers';
 import crypto from 'crypto';
 
@@ -130,6 +130,83 @@ export async function executeCompleteAutoRefuel(params, { delegatorPkpEthAddress
 
     } catch (error) {
         console.error('Error in complete autoRefuel flow:', error);
+        throw error;
+    }
+}
+
+// 手動補油流程函數 (使用 manualRefuelByAgent)
+export async function executeManualRefuelByAgent(params, { delegatorPkpEthAddress } = {}) {
+    // 確保 Vincent 已初始化
+    await ensureInitialized();
+    
+    // 正規化請求參數，將數字轉換為字符串
+    const normalizedParams = normalizeRequest(params);
+    
+    const {
+        tokenId,
+        destinationChainId,
+        receiver,
+        inputToken,
+        inputAmount,
+        contractAddress,
+        blockNumber,
+        gasLeft = 1000000,
+        deadlineDelta = 600
+    } = normalizedParams;
+    
+    console.log('🚀 執行手動補油:', { tokenId, destinationChainId, inputAmount });
+    console.log('delegatorPkpEthAddress:', delegatorPkpEthAddress);
+    
+    try {
+        // 1. 獲取報價
+        console.log('Getting quote for manual refuel...');
+        const quoteParams = {
+            userAddress: receiver,
+            destinationChainId,
+            fromToken: inputToken,
+            amount: inputAmount
+        };
+        
+        const minOutputAmount = await getQuote(quoteParams);
+        console.log('Quote received, minOutputAmount:', minOutputAmount);
+
+        // 2. 建構完整的請求
+        console.log('Building complete request for manual refuel...');
+        const requestData = buildCompleteRequest({
+            destinationChainId,
+            receiver,
+            inputToken,
+            inputAmount,
+            minOutputAmount,
+            deadlineDelta,
+            contractAddress,
+            blockNumber,
+            gasLeft
+        });
+
+        const expectedSorHash = await getExpectedSorHash(requestData.request);
+        
+        // 3. 執行 manualRefuelByAgent
+        console.log('Executing manualRefuelByAgent...');
+        const sponsorManualRefuelParams = {
+            functionName: 'manualRefuelByAgent',
+            args: [tokenId, BUNGEE_CONFIG.inboxAddress, requestData.request, expectedSorHash, destinationChainId],
+            abi: MANUAL_REFUEL_ABI,
+            value: 0
+        };
+
+        const result = await executeSponsorAutoRefuel(sponsorManualRefuelParams, { delegatorPkpEthAddress });
+    
+        return {
+            success: true,
+            result,
+            requestData,
+            minOutputAmount,
+            txHash: result?.txHash || result?.hash
+        };
+
+    } catch (error) {
+        console.error('Error in manual refuel flow:', error);
         throw error;
     }
 }

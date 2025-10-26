@@ -132,9 +132,36 @@ class GasPassService {
     const { tokenId, targetChainId, gasAmount, recipientAddress } = params
     
     try {
-      await this.simulateDelay(3000)
+      console.log('🚀 執行手動兌換:', params)
       
-      // 計算費用
+      // 準備 API 請求參數
+      const requestData = {
+        tokenId: tokenId,
+        chainId: targetChainId,
+        gasAmount: gasAmount.toString()
+      }
+      
+      console.log('📤 發送請求到後端:', requestData)
+      
+      // 調用後端 API
+      const response = await fetch('/api/vincent/triggerManualRefuel', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('vincentToken')}`
+        },
+        body: JSON.stringify(requestData)
+      })
+      
+      const result = await response.json()
+      
+      if (!response.ok || !result.success) {
+        throw new Error(result.error || '兌換失敗')
+      }
+      
+      console.log('✅ 兌換成功:', result)
+      
+      // 計算費用（用於本地記錄）
       const gasCost = this.calculateGasCost(gasAmount, targetChainId)
       const bridgeFee = this.calculateBridgeFee(gasCost)
       const totalCost = gasCost + bridgeFee + 0.5 // 基礎費用
@@ -154,7 +181,7 @@ class GasPassService {
       // 記錄交易
       const transaction = {
         id: Date.now(),
-        hash: '0x' + Math.random().toString(16).substr(2, 64),
+        hash: result.result?.txHash || '0x' + Math.random().toString(16).substr(2, 64),
         type: '手動補 Gas',
         chainId: targetChainId,
         gasAmount: gasAmount,
@@ -168,12 +195,13 @@ class GasPassService {
       
       return {
         success: true,
-        txHash: transaction.hash,
+        txHash: result.result?.txHash,
         cost: totalCost,
-        transaction
+        transaction,
+        result: result.result // 包含後端返回的完整結果
       }
     } catch (error) {
-      console.error('Manual refuel failed:', error)
+      console.error('❌ Manual refuel failed:', error)
       return {
         success: false,
         error: error.message
