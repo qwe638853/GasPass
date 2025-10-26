@@ -1,4 +1,4 @@
-# 🪙 GasPass — Cross-Chain Programmable Gas Card
+#  GasPass — Cross-Chain Programmable Gas Card
 
 ### Overview
 **GasPass** is a semi-fungible ERC-3525 token that allows users to pre-deposit stablecoins (e.g., USDC) and automatically refuel native gas on multiple blockchains according to programmable policies.  
@@ -25,19 +25,39 @@ It combines **EIP-712 typed data signatures**, **EIP-2612 stablecoin permits**, 
 
 ```mermaid
 flowchart TD
-    A[Frontend / User Wallet] -->|EIP712 Signature| B[Relayer];
-    B -->|mintWithSig / depositWithSig| C[GasPass Contract (ERC-3525)];
+    %% === User & Relayer Flow ===
+    A[Frontend / User Wallet] -->|EIP712 Signature: Mint / Deposit / Policy| B[Relayer]
+    B -->|relayUserOp| C[GasPass Contract - ERC3525]
 
-    subgraph Payment Process
-        C -->|permit transferFrom| D[Stablecoin (USDC)];
+    %% === Minting & Deposit ===
+    subgraph Mint_Deposit_Process [Mint & Deposit Process]
+        C -->|mintWithSig / depositWithSig| D[Store Stablecoin and Update Token Balance]
+        D -->|permit - EIP2612| E[Stablecoin - USDC]
     end
 
-    subgraph Refuel Process
-        C -->|autoRefuel| E[Bungee Inbox];
-        E --> F[Bungee Gateway];
-        F --> G[Destination Wallet\n(Native Gas Top-up)];
+    %% === Refuel Policy Setup ===
+    subgraph Policy_Setup [Policy Setup]
+        A -->|EIP712 Signature| B2[setRefuelPolicyWithSig]
+        B2 --> C
+        C -->|Store policy params| F1[chainPolicies[tokenId][chainId]]
+        F1 -->|agent = authorized| F2[AgentToWallet Mapping]
+    end
+
+    %% === Auto Refuel Execution ===
+    subgraph Auto_Refuel [Auto Refuel Process]
+        F2 -->|Monitor gas threshold| G1[Backend Monitor / Vincent Agent]
+        G1 -->|Trigger autoRefuel| C
+        C -->|approve(stablecoin, BungeeInbox, gasAmount)| H1[Bungee Inbox]
+        H1 -->|createRequest(req)| H2[Bungee Gateway]
+        H2 -->|bridge and swap| H3[Target Chain Wallet - Receive Native Gas]
+    end
+
+    %% === Withdraw / Admin ===
+    subgraph Admin_Actions [Withdraw & Fee Management]
+        C -->|withdrawFees / withdrawAllUSDC| I[Owner / Admin]
     end
 ```
+
 
 ## Slot Design — Future Expansion
 
