@@ -40,18 +40,19 @@ A Backend Monitor periodically checks the native gas balance of each target-chai
 When the balance falls below a defined threshold, it triggers a refill task.
 
 3. Auto Mode (Vincent Agent)
-The Vincent Agent (Lit PKP) automatically calls autoRefill() on the GasPass contract, which creates a refill request using the stored USDC balance.
-The request specifies parameters like destination chain, receiver, and gas amount.
+The Vincent Agent (Lit PKP) autonomously calls autoRefill() on the GasPass contract.
+It uses the stored USDC to create a cross-chain refill request, which is executed through Bungee to bridge and convert stablecoins into native gas.
 
-4. Manual Mode (Avail Nexus SDK)
-When users prefer direct control, they initiate manualRefill() from the frontend, which leverages Avail Nexus SDK to perform a one-time cross-chain execution directly from the user’s wallet.
+4. Manual Mode
+-[Contract-Based]
+Both users and the Vincent Agent can initiate manualRefill() from the frontend or backend.
+This function still interacts with the GasPass contract, using deposited USDC to execute a one-time cross-chain transfer (through Bungee).
+-[Direct via Avail Nexus SDK]
+Alternatively, users can directly bridge funds using Avail Nexus SDK, performing a one-time cross-chain gas transfer from their own wallet, bypassing the GasPass contract entirely.
 
-6. Cross-Chain Execution
--In Auto Mode, the refill request is routed through the Bungee protocol, which handles bridging and swapping of stablecoins into native gas on the destination chain.
--In Manual Mode, Avail Nexus SDK performs the bridging itself, using the intent-based transaction flow to deliver gas to the target wallet.
+5. Gas Top-Up
+On the destination chain, bridged stablecoins are swapped into native gas (via relayer or Alchemy Gas Manager) and credited to the Target Wallet.
 
-7. Gas Top-Up
-On the destination chain, the received tokens are converted into native gas (via relayer or Alchemy Gas Manager) and credited to the Target Chain Wallet.
 ---
 ##  Features
 
