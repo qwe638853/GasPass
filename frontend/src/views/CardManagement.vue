@@ -648,78 +648,63 @@
     />
     
     <!-- Manual Refuel Success Modal -->
-    <div v-if="showManualRefuelSuccess" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50 backdrop-blur-sm" @click="showManualRefuelSuccess = false">
-      <div class="relative bg-gradient-to-br from-emerald-900 to-teal-900 rounded-2xl shadow-2xl max-w-lg w-full mx-4 overflow-hidden transform transition-all duration-300 scale-100" @click.stop>
-        <!-- Header -->
-        <div class="bg-gradient-to-r from-emerald-600 to-teal-600 p-6">
-          <div class="flex items-center justify-between">
-            <div>
-              <h3 class="text-2xl font-bold text-white flex items-center gap-2">
-                <span class="text-3xl">✅</span>
-                Gas 兌換成功！
-              </h3>
-              <p class="text-emerald-100 mt-1">您的 Gas 已成功兌換</p>
+    <div v-if="showManualRefuelSuccess" class="success-modal-overlay" @click="showManualRefuelSuccess = false">
+      <div class="success-modal" @click.stop>
+        <div class="success-modal-content">
+          <div class="success-icon">🎉</div>
+          <h3 class="success-title">手動兌換成功！</h3>
+          <p class="success-message">您的 Gas 已成功兌換並轉移到目標鏈</p>
+          <div class="success-details">
+            <div class="detail-item">
+              <span class="detail-label">交易哈希:</span>
+              <a v-if="manualRefuelSuccessData.txHash && manualRefuelSuccessData.txHash !== 'Pending...'" 
+                 :href="`https://arbiscan.io/tx/${manualRefuelSuccessData.txHash}`" 
+                 target="_blank" 
+                 class="detail-value text-green-800 hover:text-green-900">
+                {{ manualRefuelSuccessData.txHash.slice(0, 10) }}...{{ manualRefuelSuccessData.txHash.slice(-8) }}
+              </a>
+              <span v-else class="detail-value">Pending...</span>
             </div>
-            <button @click="showManualRefuelSuccess = false" class="text-white/80 hover:text-white transition-colors duration-200 p-2 hover:bg-white/10 rounded-lg">
-              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-              </svg>
-            </button>
+            <div class="detail-item">
+              <span class="detail-label">兌換金額:</span>
+              <span class="detail-value">{{ manualRefuelSuccessData.amount }} USDC</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">目標鏈:</span>
+              <span class="detail-value">{{ manualRefuelSuccessData.chainName }}</span>
+            </div>
           </div>
+          <button @click="showManualRefuelSuccess = false" class="continue-btn">
+            繼續使用 GasPass
+          </button>
         </div>
-        
-        <!-- Content -->
-        <div class="p-6 space-y-4">
-          <!-- Transaction Details -->
-          <div class="bg-slate-800/50 rounded-xl p-4 border border-emerald-400/20">
-            <div class="space-y-3">
-              <div class="flex justify-between items-center">
-                <span class="text-gray-300">交易哈希</span>
-                <a v-if="manualRefuelSuccessData.txHash && manualRefuelSuccessData.txHash !== 'Pending...'" 
-                   :href="`https://arbiscan.io/tx/${manualRefuelSuccessData.txHash}`" 
-                   target="_blank" 
-                   class="text-emerald-400 hover:text-emerald-300 font-mono text-sm flex items-center gap-1">
-                  {{ manualRefuelSuccessData.txHash.slice(0, 10) }}...{{ manualRefuelSuccessData.txHash.slice(-8) }}
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
-                  </svg>
-                </a>
-                <span v-else class="text-gray-500 font-mono text-sm">Pending...</span>
-              </div>
-              
-              <div class="flex justify-between items-center">
-                <span class="text-gray-300">兌換金額</span>
-                <span class="text-white font-bold text-lg">{{ manualRefuelSuccessData.amount }} USDC</span>
-              </div>
-              
-              <div class="flex justify-between items-center">
-                <span class="text-gray-300">目標鏈</span>
-                <span class="text-emerald-400 font-semibold">{{ manualRefuelSuccessData.chainName }}</span>
-              </div>
+      </div>
+    </div>
+
+    <!-- Agent Set Success Modal -->
+    <div v-if="showAgentSetSuccess" class="success-modal-overlay" @click="showAgentSetSuccess = false">
+      <div class="success-modal" @click.stop>
+        <div class="success-modal-content">
+          <div class="success-icon">🎉</div>
+          <h3 class="success-title">Agent 監測設定成功！</h3>
+          <p class="success-message">Agent 已成功設定並開始自動監測您的錢包餘額</p>
+          <div class="success-details">
+            <div class="detail-item">
+              <span class="detail-label">監測鏈:</span>
+              <span class="detail-value">{{ agentSetSuccessData.chainName }}</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">觸發閾值:</span>
+              <span class="detail-value">{{ agentSetSuccessData.threshold }} USDC</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">補氣金額:</span>
+              <span class="detail-value">{{ agentSetSuccessData.amount }} USDC</span>
             </div>
           </div>
-          
-          <!-- Info Box -->
-          <div class="bg-blue-900/30 border border-blue-400/30 rounded-xl p-4">
-            <p class="text-blue-200 text-sm">
-              <span class="font-semibold">💡 提示：</span>
-              您的 Gas 已經成功兌換並轉移到目標鏈。交易可能需要幾分鐘時間確認。
-            </p>
-          </div>
-          
-          <!-- Actions -->
-          <div class="flex gap-3 pt-2">
-            <button @click="showManualRefuelSuccess = false" 
-                    class="flex-1 bg-slate-700 hover:bg-slate-600 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-300">
-              關閉
-            </button>
-            <a v-if="manualRefuelSuccessData.txHash && manualRefuelSuccessData.txHash !== 'Pending...'"
-               :href="`https://arbiscan.io/tx/${manualRefuelSuccessData.txHash}`" 
-               target="_blank"
-               class="flex-1 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-300 text-center">
-              查看交易
-            </a>
-          </div>
+          <button @click="showAgentSetSuccess = false" class="continue-btn">
+            繼續使用 GasPass
+          </button>
         </div>
       </div>
     </div>
@@ -772,6 +757,14 @@ const manualRefuelSuccessData = ref({
   amount: '',
   chainId: '',
   chainName: ''
+})
+
+// 新增：Agent Set 成功視窗
+const showAgentSetSuccess = ref(false)
+const agentSetSuccessData = ref({
+  chainName: '',
+  threshold: '',
+  amount: ''
 })
 
 // 新增：Tab 切換
@@ -858,6 +851,10 @@ const loadUserData = async () => {
       // 載入用戶卡片
       userCards.value = await contractService.getUserCards(account.value)
       console.log('🔍 載入的卡片:', userCards.value)
+      console.log('📊 卡片詳細信息:')
+      userCards.value.forEach((card, index) => {
+        console.log(`  卡片 ${index + 1}: ID=${card.tokenId}, 餘額=${card.balance} USDC`)
+      })
       
       // 如果沒有選中的卡片，默認選中第一張並顯示 Gas Exchange Management
       if (!selectedTokenId.value && userCards.value.length > 0) {
@@ -931,16 +928,52 @@ const handleMintSuccess = async () => {
   }
 }
 
-const handleDepositSuccess = () => {
-  loadUserData()
+const handleDepositSuccess = async (data) => {
+  console.log('💰 充值成功事件觸發，接收到的數據:', data)
+  console.log('💰 開始刷新餘額...')
+  
+  try {
+    // 立即刷新一次，嘗試獲取最新數據
+    console.log('🔄 立即嘗試刷新餘額...')
+    await loadUserData()
+    
+    // 打印當前卡片餘額供調試
+    const currentCard = userCards.value.find(card => card.tokenId === selectedTokenId.value?.toString())
+    if (currentCard) {
+      console.log('📊 當前卡片餘額:', currentCard.balance)
+    }
+    
+    // 添加延遲確保區塊鏈狀態更新
+    await new Promise(resolve => setTimeout(resolve, 3000))
+    
+    // 再次刷新
+    console.log('🔄 第二次刷新餘額...')
+    await loadUserData()
+    
+    // 再次打印當前卡片餘額供調試
+    const updatedCard = userCards.value.find(card => card.tokenId === selectedTokenId.value?.toString())
+    if (updatedCard) {
+      console.log('📊 更新後卡片餘額:', updatedCard.balance)
+    }
+    
+    console.log('✅ 餘額刷新完成')
+  } catch (error) {
+    console.error('❌ 刷新餘額失敗:', error)
+  }
 }
 
-const handleManualRefuelSuccess = () => {
-  loadUserData()
+const handleManualRefuelSuccess = async () => {
+  console.log('⚡️ 手動加註成功，開始刷新餘額...')
+  await new Promise(resolve => setTimeout(resolve, 2000))
+  await loadUserData()
+  console.log('✅ 餘額已更新')
 }
 
-const handleAutoRefuelSuccess = () => {
-  loadUserData()
+const handleAutoRefuelSuccess = async () => {
+  console.log('🔥 自動加註成功，開始刷新餘額...')
+  await new Promise(resolve => setTimeout(resolve, 2000))
+  await loadUserData()
+  console.log('✅ 餘額已更新')
 }
 
 const handleError = (error) => {
@@ -1306,8 +1339,14 @@ const setupAgentRefuel = async () => {
       lastCheck: new Date().toLocaleString('zh-TW')
     }
     
-    // 顯示成功訊息
-    alert('Agent 監測設定成功！')
+    // 顯示成功視窗
+    const chainName = getChainName(agentRefuel.value.chainId)
+    agentSetSuccessData.value = {
+      chainName: chainName,
+      threshold: agentRefuel.value.threshold,
+      amount: agentRefuel.value.amount
+    }
+    showAgentSetSuccess.value = true
     
   } catch (error) {
     console.error('Agent setup failed:', error)
@@ -2303,5 +2342,50 @@ input[type="number"] {
 .secondary-text {
   @apply text-base text-emerald-200/80 leading-relaxed;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+/* Success Modal Styles */
+.success-modal-overlay {
+  @apply fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4;
+}
+
+.success-modal {
+  @apply bg-white rounded-xl shadow-xl max-w-md w-full;
+}
+
+.success-modal-content {
+  @apply p-6 text-center;
+}
+
+.success-icon {
+  @apply text-4xl mb-4;
+}
+
+.success-title {
+  @apply text-2xl font-bold text-green-800 mb-2;
+}
+
+.success-message {
+  @apply text-green-700 mb-4;
+}
+
+.success-details {
+  @apply space-y-2 mb-6 p-4 bg-green-50 rounded-lg;
+}
+
+.detail-item {
+  @apply flex justify-between text-sm;
+}
+
+.detail-label {
+  @apply text-green-700 font-medium;
+}
+
+.detail-value {
+  @apply text-green-800 font-mono text-xs;
+}
+
+.continue-btn {
+  @apply w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-300;
 }
 </style>
