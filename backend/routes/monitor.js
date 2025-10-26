@@ -125,8 +125,14 @@ async function triggerAutoRefuel(tokenId, chainId, contract) {
     
     // Get policy info
     const policy = await contract.chainPolicies(tokenId, chainId);
+    console.log(`📋 Policy full data:`, policy);
+    
     const gasAmount = policy.gasAmount;
-    const policyAgent = policy.policyAgent;
+    const policyAgent = policy.agent; // 使用正確的字段名 'agent'
+    
+    console.log(`📋 Policy Agent: ${policyAgent}`);
+    console.log(`📋 Policy Agent type: ${typeof policyAgent}`);
+    console.log(`📋 Policy Agent is zero: ${policyAgent === ethers.getAddress('0x0000000000000000000000000000000000000000')}`);
     
     // Get token owner
     const owner = await contract.ownerOf(tokenId);
@@ -136,6 +142,8 @@ async function triggerAutoRefuel(tokenId, chainId, contract) {
     
     // Get current block info
     const blockNumber = await contract.runner.provider.getBlockNumber();
+    
+    console.log(`🔐 About to call executeCompleteAutoRefuel with delegatorPkpEthAddress: ${policyAgent}`);
     
     // Call executeCompleteAutoRefuel
     const result = await executeCompleteAutoRefuel({

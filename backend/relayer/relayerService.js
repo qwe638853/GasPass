@@ -141,9 +141,9 @@ export class RelayerService {
     try {
       console.log(`📤 Relay setRefuelPolicyWithSig transaction...`);
       console.log(`🎫 Token ID: ${typedData.tokenId}`);
-      console.log(`⛓️ 目標鏈: ${typedData.targetChainId}`);
+      console.log(`⛓️ Goal Chain: ${typedData.targetChainId}`);
       console.log(`💰 Gas Amount: ${ethers.formatUnits(typedData.gasAmount, 6)} USDC`);
-      console.log(`⚠️ 觸發閾值: ${ethers.formatUnits(typedData.threshold, 6)} USDC`);
+      console.log(`⚠️ Trigger Threshold: ${ethers.formatUnits(typedData.threshold, 6)} USDC`);
       console.log(`typedData: ${JSON.stringify(typedData)}`);
       console.log(`signature: ${signature}`);
       const tx = await this.contract.setRefuelPolicyWithSig(typedData, signature);
