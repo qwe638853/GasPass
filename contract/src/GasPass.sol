@@ -24,8 +24,8 @@ import {BungeeInboxRequest} from "./bungee/BasicRequestLib.sol";
 contract GasPass is ERC3525, Ownable, EIP712 {
     using SafeERC20 for IERC20;
     /** @dev EIP-712 型別雜湊常數，用於鏈下簽章結構。 */
-    bytes32 public constant SET_REFUEL_POLICY_TYPEHASH = keccak256("SetRefuelPolicy(uint256 tokenId, uint256 targetChainId, uint128 gasAmount, uint128 threshold, address agent, uint256 nonce, uint256 deadline)");
-    bytes32 public constant CANCEL_REFUEL_POLICY_TYPEHASH = keccak256("CancelRefuelPolicy(uint256 tokenId, uint256 targetChainId, uint256 nonce, uint256 deadline)");
+    bytes32 public constant SET_REFUEL_POLICY_TYPEHASH = keccak256("SetRefuelPolicy(uint256 tokenId,uint256 targetChainId,uint128 gasAmount,uint128 threshold,address agent,uint256 nonce,uint256 deadline)");
+    bytes32 public constant CANCEL_REFUEL_POLICY_TYPEHASH = keccak256("CancelRefuelPolicy(uint256 tokenId,uint256 targetChainId,uint256 nonce,uint256 deadline)");
     bytes32 public constant STABLECOIN_PERMIT_TYPEHASH = keccak256("StablecoinPermitData(address owner,address spender,uint256 value,uint256 deadline,uint8 v,bytes32 r,bytes32 s)");
     bytes32 public constant MINT_WITH_SIG_TYPEHASH = keccak256("MintWithSig(address to,uint256 value,bytes32 permitDataHash,address agent,uint256 nonce,uint256 deadline)");
     bytes32 public constant DEPOSIT_WITH_SIG_TYPEHASH = keccak256("DepositWithSig(uint256 tokenId,uint256 amount,bytes32 permitDataHash,uint256 nonce,uint256 deadline)");
@@ -40,6 +40,7 @@ contract GasPass is ERC3525, Ownable, EIP712 {
     event RefuelPolicySet(uint256 indexed tokenId, uint256 indexed targetChainId, uint128 gasAmount, uint128 threshold, address indexed agent);
     event RefuelPolicyCancelled(uint256 indexed tokenId, uint256 indexed targetChainId);
     event AutoRefueled(uint256 indexed tokenId, uint256 indexed targetChainId, uint256 gasAmount);
+    event ManualRefueled(uint256 indexed tokenId, uint256 indexed targetChainId, uint256 amount, address indexed owner);
     event RelayerChanged(address indexed oldRelayer, address indexed newRelayer);
     event FeesWithdrawn(address indexed to, uint256 amount);
     event USDCWithdrawn(address indexed owner, uint256 indexed tokenId, uint256 amount, address indexed to); //測試用，我要提
@@ -308,7 +309,7 @@ contract GasPass is ERC3525, Ownable, EIP712 {
         require(policy.deadline >= block.timestamp, "Signature expired");
         require(policy.nonce == nonces[policy.tokenId], "Nonce already used");
         require(policy.gasAmount > 0, "Gas amount must be greater than 0");
-        require(balanceOf(policy.tokenId) > policy.gasAmount, "Insufficient balance");
+        require(balanceOf(policy.tokenId) >= policy.gasAmount, "Insufficient balance");
         require(policy.threshold > 0, "Threshold must be greater than 0");
         require(agentToWallet[policy.agent] == ownerOf(policy.tokenId), "Invalid agent");
         bytes32 structHash = keccak256(
@@ -408,6 +409,43 @@ contract GasPass is ERC3525, Ownable, EIP712 {
         policy.lastRefueled = block.timestamp;
         emit BungeeForwarded(tokenId, inbox, gasAmount, sorHash);
         emit AutoRefueled(tokenId, targetChainId, gasAmount); // 延用你原本事件
+    }
+    
+    // 只允許 agent 觸發的「手動補氣」，不需要 policy
+    function manualRefuelByAgent(uint256 tokenId,address inbox,IBungeeInbox.Request calldata req,bytes32 expectedSorHash,uint256 targetChainId) public onlyAgent(tokenId) {
+        // === 0) 基本檢查（與 autoRefuel 對齊） ===
+        require(inbox != address(0), "inbox=0");
+        require(inbox == bungeeInbox, "inbox mismatch");
+        require(req.basicReq.sender == inbox, "sender!=inbox");
+        require(req.basicReq.bungeeGateway == bungeeGateway, "gateway mismatch");
+
+        require(req.basicReq.originChainId == block.chainid, "wrong origin");
+        require(req.basicReq.destinationChainId == targetChainId, "dest mismatch");
+        require(req.basicReq.inputToken == address(stablecoin), "token!=stablecoin");
+
+        require(req.basicReq.receiver != address(0), "receiver=0");
+        
+
+        address owner = ownerOf(tokenId);
+        require(req.basicReq.receiver == owner, "receiver!=owner");
+
+        // 金額檢查與卡片餘額
+        uint256 amount = req.basicReq.inputAmount;
+        require(amount > 0, "inputAmount=0");
+        require(balanceOf(tokenId) >= amount, "insufficient card balance");
+        
+        // SOR 防篡改檢查
+        bytes32 sorHash = BungeeInboxRequest.createSORHash(req);
+        require(sorHash == expectedSorHash, "SOR hash mismatch");
+
+        // === 1) 扣卡、授權、送出 ===
+        _burnValue(tokenId, amount);
+        IERC20(address(stablecoin)).approve(inbox, amount);
+        IBungeeInbox(inbox).createRequest(req);
+
+        // === 2) 事件 ===
+        emit BungeeForwarded(tokenId, inbox, amount, sorHash);
+        emit ManualRefueled(tokenId, targetChainId, amount, owner);
     }
     
     /**

@@ -197,7 +197,6 @@ async function checkAllPolicies(contract, defaultRpcUrl, wallet) {
       const tokenId = await contract.tokenByIndex(i);
       
       const tokenIdNum = Number(tokenId);
-      if (tokenIdNum !== 4) continue;
       console.log(`\n🎫 檢查 TokenId #${tokenIdNum}`);
       
       // 獲取 token 擁有者

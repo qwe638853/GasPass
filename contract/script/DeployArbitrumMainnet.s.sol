@@ -19,7 +19,7 @@ contract DeployArbitrumMainnet is Script {
         
         // 部署參數 - 請填入真實地址
         address stablecoin = 0xaf88d065e77c8cC2239327C5EDb3A432268e5831; // USDC on Arbitrum
-        address relayer = 0x4aA5d60cb4d5C02C8ae0e83fc0Ec8e30e4a76a7d; // TODO: 填入真實 relayer 地址
+        address relayer = 0xc4660f40BA6Fe89b3BA7Ded44Cf1DB73D731c95e; // TODO: 填入真實 relayer 地址
         address bungeeGateway = 0xCdEa28Ee7BD5bf7710B294d9391e1b6A318d809a; // Bungee Gateway on Arbitrum
         address bungeeInbox = 0xA3BF43451CdEb6DEC588B8833838fC419CE4F54c; // TODO: 填入真實 bungee inbox 地址
         

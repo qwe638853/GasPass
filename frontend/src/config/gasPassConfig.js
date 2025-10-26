@@ -5,7 +5,7 @@
 
 export const GAS_PASS_CONFIG = {
   // 合約地址
-  contractAddress: '0x846c13CE9bF27bF05AaA95c8f3e184456C4D895c',
+  contractAddress: '0x283558ceff90f1420C1Ee3c9A9B79f36501576Aa',
   
   // 網絡配置
   network: {
@@ -38,6 +38,8 @@ export const GAS_PASS_ABI = [
   'function tokenByIndex(uint256) view returns (uint256)',
   'function ownerOf(uint256) view returns (address)',
   'function balanceOf(uint256 tokenId) view returns (uint256)',
+  'function ownerNonces(address) view returns (uint256)',
+  'function nonces(uint256) view returns (uint256)',
   'function chainPolicies(uint256, uint256) view returns (uint128 gasAmount, uint128 threshold, address agent)',
   'function totalFeesCollected() view returns (uint256)',
   'function getWithdrawableFees() view returns (uint256)',

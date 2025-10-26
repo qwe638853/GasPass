@@ -5,7 +5,7 @@
 
 export const GAS_PASS_CONFIG = {
   // 合約地址
-  contractAddress: '0x846c13CE9bF27bF05AaA95c8f3e184456C4D895c',
+  contractAddress: '0x283558ceff90f1420C1Ee3c9A9B79f36501576Aa',
   
   // 網絡配置
   network: {
@@ -98,6 +98,136 @@ export const GAS_PASS_ABI = [
   'function withdrawUSDC() external'
 ];
 
+export const AUTO_REFUEL_ABI = [
+  {
+    "type": "function",
+    "name": "autoRefuel",
+    "stateMutability": "nonpayable",
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "tokenId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "inbox",
+        "type": "address"
+      },
+      {
+        "internalType": "struct IBungeeInbox.Request",
+        "name": "req",
+        "type": "tuple",
+        "components": [
+          {
+            "internalType": "struct IBungeeInbox.BasicRequest",
+            "name": "basicReq",
+            "type": "tuple",
+            "components": [
+              { "internalType": "uint256", "name": "originChainId", "type": "uint256" },
+              { "internalType": "uint256", "name": "destinationChainId", "type": "uint256" },
+              { "internalType": "uint256", "name": "deadline", "type": "uint256" },
+              { "internalType": "uint256", "name": "nonce", "type": "uint256" },
+              { "internalType": "address", "name": "sender", "type": "address" },
+              { "internalType": "address", "name": "receiver", "type": "address" },
+              { "internalType": "address", "name": "delegate", "type": "address" },
+              { "internalType": "address", "name": "bungeeGateway", "type": "address" },
+              { "internalType": "uint32", "name": "switchboardId", "type": "uint32" },
+              { "internalType": "address", "name": "inputToken", "type": "address" },
+              { "internalType": "uint256", "name": "inputAmount", "type": "uint256" },
+              { "internalType": "address", "name": "outputToken", "type": "address" },
+              { "internalType": "uint256", "name": "minOutputAmount", "type": "uint256" },
+              { "internalType": "uint256", "name": "refuelAmount", "type": "uint256" }
+            ]
+          },
+          { "internalType": "address", "name": "swapOutputToken", "type": "address" },
+          { "internalType": "uint256", "name": "minSwapOutput", "type": "uint256" },
+          { "internalType": "bytes32", "name": "metadata", "type": "bytes32" },
+          { "internalType": "bytes", "name": "affiliateFees", "type": "bytes" },
+          { "internalType": "uint256", "name": "minDestGas", "type": "uint256" },
+          { "internalType": "bytes", "name": "destinationPayload", "type": "bytes" },
+          { "internalType": "address", "name": "exclusiveTransmitter", "type": "address" }
+        ]
+      },
+      {
+        "internalType": "bytes32",
+        "name": "expectedSorHash",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "uint256",
+        "name": "targetChainId",
+        "type": "uint256"
+      }
+    ],
+    "outputs": []
+  }
+]
 
+export const MANUAL_REFUEL_ABI = [
+  {
+    "type": "function",
+    "name": "manualRefuelByAgent",
+    "stateMutability": "nonpayable",
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "tokenId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "inbox",
+        "type": "address"
+      },
+      {
+        "internalType": "struct IBungeeInbox.Request",
+        "name": "req",
+        "type": "tuple",
+        "components": [
+          {
+            "internalType": "struct IBungeeInbox.BasicRequest",
+            "name": "basicReq",
+            "type": "tuple",
+            "components": [
+              { "internalType": "uint256", "name": "originChainId", "type": "uint256" },
+              { "internalType": "uint256", "name": "destinationChainId", "type": "uint256" },
+              { "internalType": "uint256", "name": "deadline", "type": "uint256" },
+              { "internalType": "uint256", "name": "nonce", "type": "uint256" },
+              { "internalType": "address", "name": "sender", "type": "address" },
+              { "internalType": "address", "name": "receiver", "type": "address" },
+              { "internalType": "address", "name": "delegate", "type": "address" },
+              { "internalType": "address", "name": "bungeeGateway", "type": "address" },
+              { "internalType": "uint32", "name": "switchboardId", "type": "uint32" },
+              { "internalType": "address", "name": "inputToken", "type": "address" },
+              { "internalType": "uint256", "name": "inputAmount", "type": "uint256" },
+              { "internalType": "address", "name": "outputToken", "type": "address" },
+              { "internalType": "uint256", "name": "minOutputAmount", "type": "uint256" },
+              { "internalType": "uint256", "name": "refuelAmount", "type": "uint256" }
+            ]
+          },
+          { "internalType": "address", "name": "swapOutputToken", "type": "address" },
+          { "internalType": "uint256", "name": "minSwapOutput", "type": "uint256" },
+          { "internalType": "bytes32", "name": "metadata", "type": "bytes32" },
+          { "internalType": "bytes", "name": "affiliateFees", "type": "bytes" },
+          { "internalType": "uint256", "name": "minDestGas", "type": "uint256" },
+          { "internalType": "bytes", "name": "destinationPayload", "type": "bytes" },
+          { "internalType": "address", "name": "exclusiveTransmitter", "type": "address" }
+        ]
+      },
+      {
+        "internalType": "bytes32",
+        "name": "expectedSorHash",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "uint256",
+        "name": "targetChainId",
+        "type": "uint256"
+      }
+    ],
+    "outputs": []
+  }
+]
 
 export default GAS_PASS_CONFIG;

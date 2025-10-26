@@ -144,7 +144,8 @@ export class RelayerService {
       console.log(`⛓️ 目標鏈: ${typedData.targetChainId}`);
       console.log(`💰 Gas 金額: ${ethers.formatUnits(typedData.gasAmount, 6)} USDC`);
       console.log(`⚠️ 觸發閾值: ${ethers.formatUnits(typedData.threshold, 6)} USDC`);
-      
+      console.log(`typedData: ${JSON.stringify(typedData)}`);
+      console.log(`signature: ${signature}`);
       const tx = await this.contract.setRefuelPolicyWithSig(typedData, signature);
       console.log(`📝 交易哈希: ${tx.hash}`);
       

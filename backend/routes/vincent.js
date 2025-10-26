@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { getAuthenticateUserExpressHandler } from '../middleware/vincentAuth.mjs';
-import { executeCompleteAutoRefuel } from '../vincent/bridge.js';
+import { executeCompleteAutoRefuel, executeManualRefuelByAgent } from '../vincent/bridge.js';
 import { ethers } from 'ethers';
 import { GAS_PASS_CONFIG } from '../config/gasPassConfig.js';
 
@@ -39,8 +39,8 @@ router.get('/status', vincentAuth, async (req, res) => {
   }
 });
 
-// 觸發自動補油 API
-router.post('/triggerAutoRefuel', vincentAuth, async (req, res) => {
+
+router.post('/triggerManualRefuel', vincentAuth, async (req, res) => {
   try {
     const { tokenId, chainId, gasAmount } = req.body;
     
@@ -52,7 +52,7 @@ router.post('/triggerAutoRefuel', vincentAuth, async (req, res) => {
       });
     }
 
-    console.log('🚀 前端觸發自動補油:', { tokenId, chainId, gasAmount });
+    console.log('🚀 前端觸發手動補油:', { tokenId, chainId, gasAmount });
 
     // 獲取 PKP 地址
     const delegatorPkpEthAddress = req.vincentUser.decodedJWT?.payload?.pkpInfo?.ethAddress ?? 
@@ -85,20 +85,20 @@ router.post('/triggerAutoRefuel', vincentAuth, async (req, res) => {
     const blockNumber = await contract.runner.provider.getBlockNumber();
     console.log('📦 當前區塊號:', blockNumber);
 
-    // 調用 executeCompleteAutoRefuel
-    const result = await executeCompleteAutoRefuel({
+    // 調用 executeManualRefuelByAgent (手動補油，不需要 policy)
+    const result = await executeManualRefuelByAgent({
       tokenId: parseInt(tokenId),
       destinationChainId: parseInt(chainId),
       receiver: owner,
       inputToken: usdcAddress,
-      inputAmount: gasAmount,
+      inputAmount: gasAmount.toString(), // 確保轉換為字符串
       contractAddress: contract.target,
       blockNumber,
       gasLeft: 1000000,
       deadlineDelta: 600
     }, { delegatorPkpEthAddress });
 
-    console.log('✅ 自動補油成功:', result);
+    console.log('✅ 手動補油成功:', result);
 
     res.json({
       success: true,
@@ -115,7 +115,7 @@ router.post('/triggerAutoRefuel', vincentAuth, async (req, res) => {
     });
 
   } catch (error) {
-    console.error('❌ 觸發自動補油失敗:', error);
+    console.error('❌ 觸發手動補油失敗:', error);
     res.status(500).json({
       success: false,
       error: error.message || String(error)

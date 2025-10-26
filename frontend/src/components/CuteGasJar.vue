@@ -456,18 +456,18 @@ watch(amount, (newValue) => {
   align-items: center;
   max-width: 600px;
   margin: 0 auto;
-  padding: 2rem;
-  margin-top: 2rem;
+  padding: 1rem;
+  margin-top: 0;
 }
 
 
 .grenade {
   position: relative;
-  margin-bottom: 2rem;
+  margin-bottom: 1.5rem;
   transition: transform 0.3s ease;
-  width: 200px;
-  height: 250px;
-  margin: -3rem auto 0;
+  width: 180px;
+  height: 220px;
+  margin: -1rem auto 0;
 }
 
 .grenade.wiggle {
@@ -745,36 +745,36 @@ watch(amount, (newValue) => {
 }
 
 .jar-title {
-  font-size: 1.25rem;
+  font-size: 1.1rem;
   font-weight: 700;
   color: #ffffff;
   margin-bottom: 0.5rem;
-  margin-top: 1rem;
+  margin-top: 0.5rem;
   text-shadow: 0 0 10px rgba(16, 185, 129, 0.3);
 }
 
 .jar-description {
   color: #a7f3d0;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
   line-height: 1.5;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
 }
 
 .amount-input-container {
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
 }
 
 .amount-input-wrapper {
   position: relative;
-  margin-bottom: 1rem;
+  margin-bottom: 0.75rem;
 }
 
 .amount-input {
   width: 100%;
-  padding: 0.75rem 3rem 0.75rem 0.75rem;
+  padding: 0.6rem 2.5rem 0.6rem 0.6rem;
   border: 2px solid #10b981;
-  border-radius: 10px;
-  font-size: 1rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
   font-weight: 600;
   text-align: center;
   background: rgba(30, 41, 59, 0.8);
@@ -871,12 +871,12 @@ watch(amount, (newValue) => {
 
 .submit-btn {
   width: 100%;
-  padding: 0.75rem 1.5rem;
+  padding: 0.6rem 1.25rem;
   background: linear-gradient(145deg, #10b981, #059669);
   color: white;
   border: none;
-  border-radius: 10px;
-  font-size: 1rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
