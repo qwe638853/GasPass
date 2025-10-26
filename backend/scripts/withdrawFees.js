@@ -2,24 +2,24 @@ import 'dotenv/config';
 import { ethers } from 'ethers';
 
 /*
-手續費提領腳本
+Fee withdrawal script
 
-使用方法：
-1. 設定環境變量：
-   - GASPASS_ADDRESS: GasPass 合約地址
-   - PRIVATE_KEY: 合約 owner 的私鑰
-   - RPC_URL: RPC 端點 URL
-   - WITHDRAW_TO: 接收手續費的地址（可選，預設為 owner 地址）
+Usage:
+1. Set environment variables:
+   - GASPASS_ADDRESS: GasPass contract address
+   - PRIVATE_KEY: Contract owner's private key
+   - RPC_URL: RPC endpoint URL
+   - WITHDRAW_TO: Address to receive fees (optional, defaults to owner address)
 
-2. 執行：
+2. Execute:
    node withdrawFees.js
 
-3. 範例：
+3. Example:
    GASPASS_ADDRESS=0x... PRIVATE_KEY=0x... node withdrawFees.js
    GASPASS_ADDRESS=0x... PRIVATE_KEY=0x... WITHDRAW_TO=0x... node withdrawFees.js
 */
 
-// GasPass ABI（僅包含需要的函數）
+// GasPass ABI (only required functions)
 const GAS_PASS_ABI = [
   'function getWithdrawableFees() view returns (uint256)',
   'function withdrawFees(address to) external',
@@ -28,37 +28,37 @@ const GAS_PASS_ABI = [
 
 async function withdrawFees() {
   try {
-    // 環境變量驗證
+    // Environment variable validation
     const required = ['GASPASS_ADDRESS', 'PRIVATE_KEY', 'RPC_URL'];
     const missing = required.filter(key => !process.env[key]);
     
     if (missing.length > 0) {
-      throw new Error(`缺少必要的環境變量: ${missing.join(', ')}`);
+      throw new Error(`Missing required environment variables: ${missing.join(', ')}`);
     }
 
-    // 設定參數
+    // Set parameters
     const contractAddress = process.env.GASPASS_ADDRESS;
     const privateKey = process.env.PRIVATE_KEY;
     const rpcUrl = process.env.RPC_URL;
-    const withdrawTo = process.env.WITHDRAW_TO || null; // 如果未設定，將使用 owner 地址
+    const withdrawTo = process.env.WITHDRAW_TO || null; // If not set, will use owner address
 
-    console.log('🚀 開始提領手續費...');
-    console.log(`📋 合約地址: ${contractAddress}`);
-    console.log(`🌐 RPC 端點: ${rpcUrl}`);
+    console.log('🚀 Starting fee withdrawal...');
+    console.log(`📋 Contract address: ${contractAddress}`);
+    console.log(`🌐 RPC endpoint: ${rpcUrl}`);
 
-    // 創建 provider 和 wallet
+    // Create provider and wallet
     const provider = new ethers.JsonRpcProvider(rpcUrl);
     const wallet = new ethers.Wallet(privateKey, provider);
     
-    console.log(`👤 錢包地址: ${wallet.address}`);
+    console.log(`👤 Wallet address: ${wallet.address}`);
 
-    // 創建合約實例
+    // Create contract instance
     const contract = new ethers.Contract(contractAddress, GAS_PASS_ABI, wallet);
 
-    // 檢查合約 owner
+    // Check contract owner
     const contractOwner = await contract.owner();
     if (contractOwner.toLowerCase() !== wallet.address.toLowerCase()) {
-      throw new Error(`錢包地址 ${wallet.address} 不是合約 owner (${contractOwner})`);
+      throw new Error(`Wallet address ${wallet.address} 不是合約 owner (${contractOwner})`);
     }
     console.log(`✅ 確認是合約 owner`);
 
@@ -83,41 +83,41 @@ async function withdrawFees() {
     console.log(`💳 錢包 ETH 餘額: ${balanceEth} ETH`);
 
     if (balance < ethers.parseEther('0.001')) {
-      console.warn('⚠️  ETH 餘額可能不足以支付 gas 費用');
+      console.warn('⚠️  ETH balance may be insufficient to pay gas fees');
     }
 
     // 執行提領
-    console.log('📤 正在提領手續費...');
+    console.log('📤 Withdrawing fees...');
     const tx = await contract.withdrawFees(finalWithdrawTo);
-    console.log(`📝 交易哈希: ${tx.hash}`);
-    console.log('⏳ 等待交易確認...');
+    console.log(`📝 Transaction hash: ${tx.hash}`);
+    console.log('⏳ Waiting for transaction confirmation...');
 
     const receipt = await tx.wait();
-    console.log(`✅ 交易確認！Gas 使用量: ${receipt.gasUsed.toString()}`);
+    console.log(`✅ Transaction confirmed! Gas used: ${receipt.gasUsed.toString()}`);
 
-    // 驗證提領結果
+    // Verify withdrawal result
     const remainingFees = await contract.getWithdrawableFees();
-    console.log(`💰 剩餘手續費: ${ethers.formatUnits(remainingFees, 6)} USDC`);
+    console.log(`💰 Remaining fees: ${ethers.formatUnits(remainingFees, 6)} USDC`);
 
     if (remainingFees === 0n) {
-      console.log('🎉 手續費提領完成！');
+      console.log('🎉 Fee withdrawal completed！');
     } else {
-      console.log('⚠️  仍有手續費未提領，請檢查交易是否成功');
+      console.log('⚠️  Some fees remain unwithdrawn，Please check if transaction succeeded');
     }
 
   } catch (error) {
-    console.error('❌ 提領失敗:', error.message);
+    console.error('❌ Withdrawal failed:', error.message);
     if (error.code) {
-      console.error(`錯誤代碼: ${error.code}`);
+      console.error(`Error code: ${error.code}`);
     }
     if (error.reason) {
-      console.error(`錯誤原因: ${error.reason}`);
+      console.error(`Error reason: ${error.reason}`);
     }
     process.exit(1);
   }
 }
 
-// 如果直接執行此文件
+// If this file is executed directly
 if (import.meta.url === `file://${process.argv[1]}`) {
   withdrawFees();
 }

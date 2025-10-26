@@ -6,7 +6,7 @@ import monitorRouter from './monitor.js';
 
 const router = Router();
 
-// 基本 API 端點
+// Basic API endpoints
 router.get('/', (req, res) => {
   res.json({ 
     message: 'GasPass API is reachable',
@@ -20,7 +20,7 @@ router.get('/', (req, res) => {
   });
 });
 
-// 整合所有子路由
+// Integrate all sub-routes
 router.use('/vincent', vincentModule);
 router.use('/gaspass', gaspassRouter);
 router.use('/relayer', relayerRouter);

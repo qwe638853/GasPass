@@ -5,29 +5,29 @@ import { SUPPORTED_CHAINS } from '../config/BungeeConfig.js';
 
 const router = Router();
 
-// 創建合約實例的輔助函數
+// Helper function to create contract instance
 function createContractInstance(wallet) {
   return new ethers.Contract(GAS_PASS_CONFIG.contractAddress, GAS_PASS_ABI, wallet);
 }
 
-// GasPass Relayer 相關端點
+// GasPass Relayer related endpoints
 router.post('/relay/mint', async (req, res) => {
   try {
     const { typedData, signature } = req.body;
     
-    console.log(`📤 代送 mintWithSig 交易...`);
-    console.log(`👤 用戶: ${typedData.to}`);
-    console.log(`💰 金額: ${ethers.formatUnits(typedData.value, 6)} USDC`);
-    console.log(`🔍 簽名: ${signature}`);
+    console.log(`📤 Relaying mintWithSig transaction...`);
+    console.log(`👤 User: ${typedData.to}`);
+    console.log(`💰 Amount: ${ethers.formatUnits(typedData.value, 6)} USDC`);
+    console.log(`🔍 Signature: ${signature}`);
     
-    // 從主服務器獲取 wallet 和 contract
+    // Get wallet and contract from main server
     const { wallet, contract } = req.app.locals;
     
     if (!wallet || !contract) {
-      throw new Error('Relayer 服務未初始化');
+      throw new Error('Relayer service not initialized');
     }
     
-    // 準備合約調用的數據
+    // Prepare contract call data
     const mintData = {
       to: typedData.to,
       value: typedData.value,
@@ -39,23 +39,23 @@ router.post('/relay/mint', async (req, res) => {
     
     console.log(`🔍 mintData:`, mintData);
     
-    // 調用合約的 mintWithSig 函數
+    // Call contract's mintWithSig function
     const tx = await contract.mintWithSig(mintData, signature);
-    console.log(`📝 交易已提交: ${tx.hash}`);
+    console.log(`📝 Transaction submitted: ${tx.hash}`);
     
-    // 等待交易確認（等待 1 個確認）
+    // Wait for transaction confirmation (wait for 1 confirmation)
     const receipt = await tx.wait(1);
-    console.log(`✅ 交易已確認: ${receipt.hash}`);
-    console.log(`📊 確認數: ${receipt.confirmations}`);
-    console.log(`📊 狀態: ${receipt.status === 1 ? '成功' : '失敗'}`);
-    console.log(`⛽ Gas 使用: ${receipt.gasUsed.toString()}`);
+    console.log(`✅ Transaction confirmed: ${receipt.hash}`);
+    console.log(`📊 Confirmations: ${receipt.confirmations}`);
+    console.log(`📊 Status: ${receipt.status === 1 ? 'Success' : 'Failed'}`);
+    console.log(`⛽ Gas used: ${receipt.gasUsed.toString()}`);
     
-    // 檢查交易狀態
+    // Check transaction status
     if (receipt.status !== 1) {
-      throw new Error(`交易失敗，狀態碼: ${receipt.status}`);
+      throw new Error(`Transaction failed, status code: ${receipt.status}`);
     }
     
-    // 從事件中獲取 tokenId
+    // Extract tokenId from events
     const mintEvent = receipt.logs.find(log => {
       try {
         const parsed = contract.interface.parseLog(log);
@@ -69,9 +69,9 @@ router.post('/relay/mint', async (req, res) => {
     if (mintEvent) {
       const parsed = contract.interface.parseLog(mintEvent);
       tokenId = parsed.args.value.toString();
-      console.log(`🎫 鑄造的 Token ID: ${tokenId}`);
+      console.log(`🎫 Minted Token ID: ${tokenId}`);
     } else {
-      console.warn('⚠️ 未找到 Minted 事件，可能合約 ABI 不匹配');
+      console.warn('⚠️ Minted event not found, contract ABI may not match');
     }
     
     res.json({
@@ -92,7 +92,7 @@ router.post('/relay/mint', async (req, res) => {
     });
     
   } catch (error) {
-    console.error('❌ mintWithSig 失敗:', error.message);
+    console.error('❌ mintWithSig Failed:', error.message);
     res.status(400).json({
       success: false,
       error: error.message
@@ -104,10 +104,10 @@ router.post('/relay/mint-batch', async (req, res) => {
   try {
     const { typedData, signature } = req.body;
     
-    console.log(`📤 代送 mintBatchWithSig 交易...`);
-    console.log(`👤 用戶: ${typedData.to}`);
-    console.log(`📦 數量: ${typedData.amount}`);
-    console.log(`💰 單價: ${ethers.formatUnits(typedData.singleValue, 6)} USDC`);
+    console.log(`📤 Relaying mintBatchWithSig transaction...`);
+    console.log(`👤 User: ${typedData.to}`);
+    console.log(`📦 Amount: ${typedData.amount}`);
+    console.log(`💰 Single price: ${ethers.formatUnits(typedData.singleValue, 6)} USDC`);
     
     res.json({
       success: true,
@@ -115,7 +115,7 @@ router.post('/relay/mint-batch', async (req, res) => {
     });
     
   } catch (error) {
-    console.error('❌ mintBatchWithSig 失敗:', error.message);
+    console.error('❌ mintBatchWithSig Failed:', error.message);
     res.status(400).json({
       success: false,
       error: error.message
@@ -127,19 +127,19 @@ router.post('/relay/deposit', async (req, res) => {
   try {
     const { typedData, signature } = req.body;
     
-    console.log(`📤 代送 depositWithSig 交易...`);
+    console.log(`📤 Relaying depositWithSig transaction...`);
     console.log(`🎫 Token ID: ${typedData.tokenId}`);
-    console.log(`💰 金額: ${ethers.formatUnits(typedData.amount, 6)} USDC`);
-    console.log(`🔍 簽名: ${signature}`);
+    console.log(`💰 Amount: ${ethers.formatUnits(typedData.amount, 6)} USDC`);
+    console.log(`🔍 Signature: ${signature}`);
     
-    // 從主服務器獲取 wallet 和 contract
+    // Get wallet and contract from main server
     const { wallet, contract } = req.app.locals;
     
     if (!wallet || !contract) {
-      throw new Error('Relayer 服務未初始化');
+      throw new Error('Relayer service not initialized');
     }
     
-    // 準備合約調用的數據（DepositWithSigTypedData 結構）
+    // Prepare contract call data (DepositWithSigTypedData structure)
     const depositData = {
       tokenId: BigInt(typedData.tokenId),
       amount: BigInt(typedData.amount),
@@ -158,20 +158,20 @@ router.post('/relay/deposit', async (req, res) => {
     
     console.log(`🔍 depositData:`, depositData);
     
-    // 調用合約的 depositWithSig 函數
+    // Call contract's depositWithSig function
     const tx = await contract.depositWithSig(depositData, signature);
-    console.log(`📝 交易已提交: ${tx.hash}`);
+    console.log(`📝 Transaction submitted: ${tx.hash}`);
     
-    // 等待交易確認（等待 1 個確認）
+    // Wait for transaction confirmation (wait for 1 confirmation)
     const receipt = await tx.wait(1);
-    console.log(`✅ 交易已確認: ${receipt.hash}`);
-    console.log(`📊 確認數: ${receipt.confirmations}`);
-    console.log(`📊 狀態: ${receipt.status === 1 ? '成功' : '失敗'}`);
-    console.log(`⛽ Gas 使用: ${receipt.gasUsed.toString()}`);
+    console.log(`✅ Transaction confirmed: ${receipt.hash}`);
+    console.log(`📊 Confirmations: ${receipt.confirmations}`);
+    console.log(`📊 Status: ${receipt.status === 1 ? 'Success' : 'Failed'}`);
+    console.log(`⛽ Gas used: ${receipt.gasUsed.toString()}`);
     
-    // 檢查交易狀態
+    // Check transaction status
     if (receipt.status !== 1) {
-      throw new Error(`交易失敗，狀態碼: ${receipt.status}`);
+      throw new Error(`Transaction failed, status code: ${receipt.status}`);
     }
     
     res.json({
@@ -191,7 +191,7 @@ router.post('/relay/deposit', async (req, res) => {
     });
     
   } catch (error) {
-    console.error('❌ depositWithSig 失敗:', error.message);
+    console.error('❌ depositWithSig Failed:', error.message);
     res.status(400).json({
       success: false,
       error: error.message
@@ -203,34 +203,34 @@ router.post('/relay/set-refuel-policy', async (req, res) => {
   try {
     const { typedData, signature } = req.body;
     
-    console.log(`📤 代送 setRefuelPolicyWithSig 交易...`);
+    console.log(`📤 Relaying setRefuelPolicyWithSig transaction...`);
     console.log(`🎫 Token ID: ${typedData.tokenId}`);
-    console.log(`⛓️ 目標鏈: ${typedData.targetChainId}`);
-    console.log(`💰 Gas 金額: ${ethers.formatUnits(typedData.gasAmount, 6)} USDC`);
-    console.log(`⚠️ 觸發閾值: ${ethers.formatUnits(typedData.threshold, 6)} USDC`);
+    console.log(`⛓️ Target chain: ${typedData.targetChainId}`);
+    console.log(`💰 Gas Amount: ${ethers.formatUnits(typedData.gasAmount, 6)} USDC`);
+    console.log(`⚠️ Trigger threshold: ${ethers.formatUnits(typedData.threshold, 6)} USDC`);
     console.log(`🤖 Agent: ${typedData.agent}`);
     
-    // 從主服務器獲取 wallet 和 contract
+    // Get wallet and contract from main server
     const { wallet, contract } = req.app.locals;
     
     if (!wallet || !contract) {
-      throw new Error('Relayer 服務未初始化');
+      throw new Error('Relayer service not initialized');
     }
     
-    // 創建合約實例
+    // Create contract instance
     const gasPassContract = new ethers.Contract(
       GAS_PASS_CONFIG.contractAddress,
       GAS_PASS_CONFIG.abi,
       wallet
     );
     
-    // 創建 tuple 格式的 policy 數據，符合合約 ABI 要求
-    // 確保 uint128 範圍：0 到 2^128 - 1
+    // Create tuple-format policy data, compatible with contract ABI
+    // Ensure uint128 range: 0 to 2^128 - 1
     const uint128Max = BigInt('0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF');
     const gasAmountUint128 = ethers.toBigInt(typedData.gasAmount) & uint128Max;
     const thresholdUint128 = ethers.toBigInt(typedData.threshold) & uint128Max;
     
-    // 按照 ABI 定義的順序創建 tuple
+    // Create tuple in order defined by ABI
     const policyData = [
       ethers.toBigInt(typedData.tokenId),        // tokenId: uint256
       ethers.toBigInt(typedData.targetChainId),  // targetChainId: uint256
@@ -243,21 +243,21 @@ router.post('/relay/set-refuel-policy', async (req, res) => {
     
     console.log(`🔍 Policy Tuple:`, policyData);
     
-    // 四雜湊比對法 - 用於調試
+    // Four-hash comparison method - for debugging
     try {
       const { TypedDataEncoder } = await import('ethers');
       const domain = {
         name: "GasPass",
         version: "1",
         chainId: 42161,
-        verifyingContract: GAS_PASS_CONFIG.contractAddress, // 使用 checksum 格式，不要轉小寫
+        verifyingContract: GAS_PASS_CONFIG.contractAddress, // Use checksum format, do not convert to lowercase
       };
         const types = {
           SetRefuelPolicy: [
             { name: "tokenId", type: "uint256" },
             { name: "targetChainId", type: "uint256" },
-            { name: "gasAmount", type: "uint128" },  // 合約期望 uint128
-            { name: "threshold", type: "uint128" },  // 合約期望 uint128
+            { name: "gasAmount", type: "uint128" },  // Contract expects uint128
+            { name: "threshold", type: "uint128" },  // Contract expects uint128
             { name: "agent", type: "address" },
             { name: "nonce", type: "uint256" },
             { name: "deadline", type: "uint256" },
@@ -278,22 +278,22 @@ router.post('/relay/set-refuel-policy', async (req, res) => {
       const domainSeparator = TypedDataEncoder.hashDomain(domain);
       const digest = TypedDataEncoder.hash(domain, types, message);
       
-      console.log('🔍 後端四雜湊比對法:');
+      console.log('🔍 Backend four-hash comparison method:');
       console.log('  typeHash:', typeHash);
       console.log('  structHash:', structHash);
       console.log('  domainSeparator:', domainSeparator);
       console.log('  digest:', digest);
     } catch (error) {
-      console.error('❌ 後端四雜湊計算失敗:', error);
+      console.error('❌ Backend four-hash calculation failed:', error);
     }
     
-    // 調用 setRefuelPolicyWithSig
+    // Call setRefuelPolicyWithSig
     const tx = await gasPassContract.setRefuelPolicyWithSig(policyData, signature);
-    console.log(`📝 交易已發送: ${tx.hash}`);
+    console.log(`📝 Transaction sent: ${tx.hash}`);
     
-    // 等待確認
+    // Wait for confirmation
     const receipt = await tx.wait();
-    console.log(`✅ 交易已確認: ${receipt.transactionHash}`);
+    console.log(`✅ Transaction confirmed: ${receipt.transactionHash}`);
     
     res.json({
       success: true,
@@ -304,11 +304,11 @@ router.post('/relay/set-refuel-policy', async (req, res) => {
         gasUsed: receipt.gasUsed.toString(),
         status: receipt.status
       },
-      message: 'Refuel policy 設定成功'
+      message: 'Refuel policy set successfully'
     });
     
   } catch (error) {
-    console.error('❌ setRefuelPolicyWithSig 失敗:', error.message);
+    console.error('❌ setRefuelPolicyWithSig Failed:', error.message);
     res.status(400).json({
       success: false,
       error: error.message
@@ -320,9 +320,9 @@ router.post('/relay/cancel-refuel-policy', async (req, res) => {
   try {
     const { typedData, signature } = req.body;
     
-    console.log(`📤 代送 cancelRefuelPolicyWithSig 交易...`);
+    console.log(`📤 Relaying cancelRefuelPolicyWithSig transaction...`);
     console.log(`🎫 Token ID: ${typedData.tokenId}`);
-    console.log(`⛓️ 目標鏈: ${typedData.targetChainId}`);
+    console.log(`⛓️ Target chain: ${typedData.targetChainId}`);
     
     res.json({
       success: true,
@@ -330,7 +330,7 @@ router.post('/relay/cancel-refuel-policy', async (req, res) => {
     });
     
   } catch (error) {
-    console.error('❌ cancelRefuelPolicyWithSig 失敗:', error.message);
+    console.error('❌ cancelRefuelPolicyWithSig Failed:', error.message);
     res.status(400).json({
       success: false,
       error: error.message
@@ -342,7 +342,7 @@ router.post('/relay/set-agent', async (req, res) => {
   try {
     const { typedData, signature } = req.body;
     
-    console.log(`📤 代送 setAgentToWalletWithSig 交易...`);
+    console.log(`📤 Relaying setAgentToWalletWithSig transaction...`);
     console.log(`🤖 Agent: ${typedData.agent}`);
     console.log(`👤 Wallet: ${typedData.wallet}`);
     
@@ -352,7 +352,7 @@ router.post('/relay/set-agent', async (req, res) => {
     });
     
   } catch (error) {
-    console.error('❌ setAgentToWalletWithSig 失敗:', error.message);
+    console.error('❌ setAgentToWalletWithSig Failed:', error.message);
     res.status(400).json({
       success: false,
       error: error.message
@@ -363,13 +363,13 @@ router.post('/relay/set-agent', async (req, res) => {
 // GasPass Monitor 相關端點
 router.post('/monitor/scan', async (req, res) => {
   try {
-    console.log('🔍 手動觸發監控掃描...');
+    console.log('🔍 Manually trigger monitoring scan...');
     res.json({ 
       success: true, 
       message: 'Monitor scan endpoint - implementation in main server' 
     });
   } catch (error) {
-    console.error('❌ 手動掃描失敗:', error.message);
+    console.error('❌ Monitor scanFailed:', error.message);
     res.status(500).json({ success: false, error: error.message });
   }
 });
@@ -382,12 +382,12 @@ router.get('/monitor/status', async (req, res) => {
       timestamp: new Date().toISOString()
     });
   } catch (error) {
-    console.error('❌ 獲取監控狀態失敗:', error.message);
+    console.error('❌ Get monitoring statusFailed:', error.message);
     res.status(500).json({ success: false, error: error.message });
   }
 });
 
-// GasPass 配置相關端點
+// GasPass Configuration endpoints
 router.get('/config', (req, res) => {
   res.json({
     contractAddress: GAS_PASS_CONFIG.contractAddress,
@@ -401,28 +401,28 @@ router.get('/config', (req, res) => {
   });
 });
 
-// 獲取跨鏈兌換報價
+// Get cross-chain exchange quote
 router.post('/quote', async (req, res) => {
   try {
     const { destinationChainId, amount, userAddress } = req.body;
     
-    console.log('📊 獲取跨鏈兌換報價...');
-    console.log(`⛓️ 目標鏈: ${destinationChainId}`);
-    console.log(`💰 金額: ${amount} USDC`);
-    console.log(`👤 用戶地址: ${userAddress}`);
+    console.log('📊 Get cross-chain exchange quote...');
+    console.log(`⛓️ Target chain: ${destinationChainId}`);
+    console.log(`💰 Amount: ${amount} USDC`);
+    console.log(`👤 User address: ${userAddress}`);
     
-    // 導入 bridge.js 中的 getQuote 函數
+    // Import getQuote function from bridge.js
     const { getQuote } = await import('../vincent/bridge.js');
     
     const quoteParams = {
       userAddress: userAddress,
       destinationChainId: destinationChainId,
-      fromToken: GAS_PASS_CONFIG.usdc.address, // USDC 合約地址
-      amount: amount // 以 USDC 為單位的金額
+      fromToken: GAS_PASS_CONFIG.usdc.address, // USDC contract address
+      amount: amount // Amount in USDC
     };
     
     const minOutputAmount = await getQuote(quoteParams);
-    console.log('✅ 報價獲取成功:', minOutputAmount);
+    console.log('✅ Quote fetchedSuccess:', minOutputAmount);
     
     res.json({
       success: true,
@@ -433,7 +433,7 @@ router.post('/quote', async (req, res) => {
     });
     
   } catch (error) {
-    console.error('❌ 獲取報價失敗:', error.message);
+    console.error('❌ Fetch quoteFailed:', error.message);
     res.status(400).json({
       success: false,
       error: error.message

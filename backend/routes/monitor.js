@@ -4,11 +4,11 @@ import { SUPPORTED_CHAINS } from '../config/BungeeConfig.js';
 import { executeCompleteAutoRefuel } from '../vincent/bridge.js';
 import express from 'express';
 
-// ETH 價格緩存
+// ETH price cache
 const priceCache = new Map();
-const PRICE_CACHE_DURATION = 5 * 60 * 1000; // 5 分鐘
+const PRICE_CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 
-// 獲取 ETH 價格（USDC）
+// Get ETH price（USDC）
 async function getETHPrice() {
   const now = Date.now();
   const cached = priceCache.get('ETH_USDC');
@@ -18,36 +18,36 @@ async function getETHPrice() {
   }
   
   try {
-    // 使用 CoinGecko API 獲取 ETH 價格
+    // Use CoinGecko API to get ETH price
     const response = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd');
     const data = await response.json();
     
     if (data.ethereum && data.ethereum.usd) {
       const price = data.ethereum.usd;
       priceCache.set('ETH_USDC', { price, timestamp: now });
-      console.log(`💰 ETH 價格更新: $${price}`);
+      console.log(`💰 ETH Price updated to: $${price}`);
       return price;
     }
     
-    throw new Error('無法獲取 ETH 價格');
+    throw new Error('Failed to get ETH price');
   } catch (error) {
-    console.error('❌ 獲取 ETH 價格失敗:', error.message);
+    console.error('❌ Failed to get ETH price:', error.message);
     
-    // 如果獲取失敗，使用緩存的價格或預設價格
+    // If fetching fails, use cached price or default price
     if (cached) {
-      console.log('🔄 使用緩存的 ETH 價格:', cached.price);
+      console.log('🔄 Using cached ETH price:', cached.price);
       return cached.price;
     }
     
-    // 預設價格 $3000
-    console.log('⚠️  使用預設 ETH 價格: $3000');
+    // Default price $3000
+    console.log('⚠️  Using default ETH price: $3000');
     return 3000;
   }
 }
 
 const router = express.Router();
 
-// 創建多鏈 Provider 緩存
+// Create multi-chain Provider cache
 const providerCache = new Map();
 
 function getProvider(chainId = null, defaultRpcUrl) {
@@ -61,7 +61,7 @@ function getProvider(chainId = null, defaultRpcUrl) {
   return providerCache.get(rpcUrl);
 }
 
-// 檢查特定鏈的錢包餘額（帶重試機制）
+// Check wallet balance for specific chain (with retry mechanism)
 async function checkBalance(walletAddress, chainId, defaultRpcUrl, retries = 3) {
   for (let attempt = 1; attempt <= retries; attempt++) {
     try {
@@ -75,25 +75,25 @@ async function checkBalance(walletAddress, chainId, defaultRpcUrl, retries = 3) 
       const balance = await provider.getBalance(walletAddress);
       const balanceInEth = ethers.formatEther(balance);
       
-      // 如果是 ETH 鏈，需要轉換為 USDC 單位進行比較
+      // If it is ETH chain, need to convert to USDC unit for comparison
       if (config.nativeSymbol === 'ETH') {
         const ethPrice = await getETHPrice();
         const balanceInUsd = parseFloat(balanceInEth) * ethPrice;
-        const balanceInUsdc = Math.floor(balanceInUsd * 1000000); // 轉換為 USDC 最小單位 (6 decimals)
+        const balanceInUsdc = Math.floor(balanceInUsd * 1000000); // USDC minimum unit (6 decimals)
         
         console.log(`💰 ${config.name}: ${walletAddress}`);
-        console.log(`   ETH 餘額: ${balanceInEth} ETH`);
-        console.log(`   ETH 價格: $${ethPrice}`);
-        console.log(`   轉換為: $${balanceInUsd.toFixed(2)} = ${balanceInUsdc} USDC (最小單位)`);
+        console.log(`   ETH balance: ${balanceInEth} ETH`);
+        console.log(`   ETH price: $${ethPrice}`);
+        console.log(`   converted to: $${balanceInUsd.toFixed(2)} = ${balanceInUsdc} USDC (minimum unit)`);
         
         return {
           nativeBalance: parseFloat(balanceInEth),
           nativeSymbol: config.nativeSymbol,
-          usdcBalance: balanceInUsdc, // USDC 最小單位
+          usdcBalance: balanceInUsdc, // USDC minimum unit
           ethPrice: ethPrice
         };
       } else {
-        // 其他鏈直接返回原生餘額
+        // Other chains return native balance directly
         console.log(`💰 ${config.name}: ${walletAddress} balance = ${balanceInEth} ${config.nativeSymbol}`);
         
         return {
@@ -111,33 +111,33 @@ async function checkBalance(walletAddress, chainId, defaultRpcUrl, retries = 3) 
         return null;
       }
       
-      // 等待後重試
+      // wait then retry
       await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
     }
   }
   return null;
 }
 
-// 觸發自動補氣
+// Trigger auto refuel
 async function triggerAutoRefuel(tokenId, chainId, contract) {
   try {
-    console.log(`🚀 觸發 autoRefuel: tokenId=${tokenId}, chainId=${chainId}`);
+    console.log(`🚀 trigger autoRefuel: tokenId=${tokenId}, chainId=${chainId}`);
     
-    // 獲取 policy 信息
+    // Get policy info
     const policy = await contract.chainPolicies(tokenId, chainId);
     const gasAmount = policy.gasAmount;
     const policyAgent = policy.policyAgent;
     
-    // 獲取 token 擁有者
+    // Get token owner
     const owner = await contract.ownerOf(tokenId);
     
-    // 獲取 USDC 合約地址
+    // Get USDC contract address
     const usdcAddress = await contract.stablecoin();
     
-    // 獲取當前區塊信息
+    // Get current block info
     const blockNumber = await contract.runner.provider.getBlockNumber();
     
-    // 調用 executeCompleteAutoRefuel
+    // Call executeCompleteAutoRefuel
     const result = await executeCompleteAutoRefuel({
       tokenId,
       destinationChainId: parseInt(chainId),
@@ -150,34 +150,34 @@ async function triggerAutoRefuel(tokenId, chainId, contract) {
       deadlineDelta: 600
     }, { delegatorPkpEthAddress: policyAgent });
 
-    console.log(`✅ 成功觸發 autoRefuel:`, result);
+    console.log(`✅ AutoRefuel triggered successfully:`, result);
     return { success: true, tokenId, chainId, result };
   } catch (error) {
-    console.error(`❌ 觸發 autoRefuel 失敗:`, error.message);
+    console.error(`❌ Failed to trigger autoRefuel:`, error.message);
     throw error;
   }
 }
 
-// 檢查所有策略
+// Check all policies
 async function checkAllPolicies(contract, defaultRpcUrl, wallet) {
   try {
-    console.log('\n🔍 開始掃描所有策略...');
+    console.log('\n🔍 Start scanning all policies...');
     
     const totalSupply = await contract.totalSupply();
     const totalSupplyNum = Number(totalSupply);
     
-    // 獲取累積手續費
+    // Get accumulated fees
     const totalFees = await contract.totalFeesCollected();
     const withdrawableFees = await contract.getWithdrawableFees();
     const totalFeesFormatted = ethers.formatUnits(totalFees, 6);
     const withdrawableFeesFormatted = ethers.formatUnits(withdrawableFees, 6);
     
-    console.log(`📊 總共發現 ${totalSupplyNum} 個 token`);
-    console.log(`💰 累積手續費收入: ${totalFeesFormatted} USDC`);
-    console.log(`💎 可提領手續費: ${withdrawableFeesFormatted} USDC`);
+    console.log(`📊 found in total ${totalSupplyNum} tokens`);
+    console.log(`💰 Accumulated fee revenue: ${totalFeesFormatted} USDC`);
+    console.log(`💎 Withdrawable fees: ${withdrawableFeesFormatted} USDC`);
     
     if (totalSupplyNum === 0) {
-      console.log('ℹ️  沒有 token，跳過掃描');
+      console.log('ℹ️  No tokens found, skip scan');
       return {
         totalTokens: 0,
         policiesFound: 0,
@@ -192,23 +192,23 @@ async function checkAllPolicies(contract, defaultRpcUrl, wallet) {
     let refuelsTriggered = 0;
     let totalPotentialFees = 0;
 
-    // 遍歷所有 tokenId
+    // iterate all tokenId
     for (let i = 0; i < totalSupplyNum; i++) {
       const tokenId = await contract.tokenByIndex(i);
       
       const tokenIdNum = Number(tokenId);
-      console.log(`\n🎫 檢查 TokenId #${tokenIdNum}`);
+      console.log(`\n🎫 check TokenId #${tokenIdNum}`);
       
-      // 獲取 token 擁有者
+      // Get token owner
       const owner = await contract.ownerOf(tokenId);
-      console.log(`👤 擁有者: ${owner}`);
+      console.log(`👤 owner: ${owner}`);
       
-      // 獲取 token 餘額
+      // get token balance
       const tokenBalance = await contract.balanceOf(tokenIdNum);
       const tokenBalanceFormatted = ethers.formatUnits(tokenBalance, 6);
-      console.log(`💰 Token 餘額: ${tokenBalanceFormatted} USDC`);
+      console.log(`💰 Token balance: ${tokenBalanceFormatted} USDC`);
       
-      // 遍歷所有支援的鏈
+      // iterate allsupportedchain
       for (const [chainId, config] of Object.entries(SUPPORTED_CHAINS)) {
         try {
           const policy = await contract.chainPolicies(tokenIdNum, chainId);
@@ -216,55 +216,55 @@ async function checkAllPolicies(contract, defaultRpcUrl, wallet) {
           
           if (threshold > 0) {
             policiesFound++;
-            console.log(`📋 發現策略: ${config.name} (threshold: ${threshold} ${config.nativeSymbol})`);
+            console.log(`📋 Policy found: ${config.name} (threshold: ${threshold} ${config.nativeSymbol})`);
             
-            // 檢查 Token 餘額（USDC）
+            // check Token balance（USDC）
             const tokenBalance = await contract.balanceOf(tokenIdNum);
             const tokenBalanceInUsdc = parseFloat(ethers.formatUnits(tokenBalance, 6));
             
-            console.log(`💰 Token 餘額: ${tokenBalanceInUsdc} USDC`);
+            console.log(`💰 Token balance: ${tokenBalanceInUsdc} USDC`);
             
-            // 檢查鏈上餘額
+            // checkchainonbalance
             const balanceInfo = await checkBalance(owner, parseInt(chainId), defaultRpcUrl);
             
             if (balanceInfo !== null) {
-              // 統一比較邏輯：所有鏈都轉換為 USDC 最小單位進行比較
+              // unified comparison logic：所有chainbothUSDC minimum unitfor comparison
               let currentBalanceInUsdc;
               let needsRefuel = false;
               let thresholdInUsdc;
               
               if (config.nativeSymbol === 'ETH') {
-                // ETH 鏈：使用價格轉換後的 USDC 值
+                // ETH chain：使用priceconverted USDC 值
                 currentBalanceInUsdc = balanceInfo.usdcBalance;
-                thresholdInUsdc = policy.threshold; // policy.threshold 已經是 USDC 最小單位
+                thresholdInUsdc = policy.threshold; // policy.threshold is already USDC minimum unit
                 needsRefuel = currentBalanceInUsdc < thresholdInUsdc;
                 
-                console.log(`💱 ${config.name} 餘額檢查:`);
-                console.log(`   ETH 餘額: ${balanceInfo.nativeBalance} ETH`);
-                console.log(`   ETH 價格: $${balanceInfo.ethPrice}`);
-                console.log(`   轉換後: ${currentBalanceInUsdc} USDC (最小單位)`);
-                console.log(`   策略閾值: ${thresholdInUsdc} USDC (最小單位)`);
-                console.log(`   比較結果: ${currentBalanceInUsdc} ${needsRefuel ? '<' : '>='} ${thresholdInUsdc}`);
+                console.log(`💱 ${config.name} balancecheck:`);
+                console.log(`   ETH balance: ${balanceInfo.nativeBalance} ETH`);
+                console.log(`   ETH price: $${balanceInfo.ethPrice}`);
+                console.log(`   after conversion: ${currentBalanceInUsdc} USDC (minimum unit)`);
+                console.log(`   threshold: ${thresholdInUsdc} USDC (minimum unit)`);
+                console.log(`   comparison result: ${currentBalanceInUsdc} ${needsRefuel ? '<' : '>='} ${thresholdInUsdc}`);
                 
               } else {
-                // 其他鏈：直接使用原生單位（假設 policy.threshold 是原生單位）
-                // 這裡需要根據實際情況調整，如果其他鏈的 policy.threshold 也是 USDC 單位
+                // Other chains: directly use native unit (assume policy.threshold is native unit)
+                // Need to adjust based on actual situation, if other chains policy.threshold is also USDC unit
                 currentBalanceInUsdc = balanceInfo.nativeBalance;
                 thresholdInUsdc = threshold;
                 needsRefuel = currentBalanceInUsdc < thresholdInUsdc;
                 
-                console.log(`💰 ${config.name} 餘額檢查:`);
-                console.log(`   原生餘額: ${balanceInfo.nativeBalance} ${config.nativeSymbol}`);
-                console.log(`   策略閾值: ${thresholdInUsdc} ${config.nativeSymbol}`);
-                console.log(`   比較結果: ${currentBalanceInUsdc} ${needsRefuel ? '<' : '>='} ${thresholdInUsdc}`);
+                console.log(`💰 ${config.name} balancecheck:`);
+                console.log(`   原生balance: ${balanceInfo.nativeBalance} ${config.nativeSymbol}`);
+                console.log(`   threshold: ${thresholdInUsdc} ${config.nativeSymbol}`);
+                console.log(`   comparison result: ${currentBalanceInUsdc} ${needsRefuel ? '<' : '>='} ${thresholdInUsdc}`);
               }
               
-              // 統一的補油邏輯：需要檢查 Token 餘額和鏈上餘額
+              // Unified refuel logic: need to check Token balance and chain balance
               if (needsRefuel) {
                 if (tokenBalanceInUsdc <= 0) {
-                  console.log(`❌ Token 餘額不足 (${tokenBalanceInUsdc} USDC)，跳過補油`);
+                  console.log(`❌ Token balance insufficient (${tokenBalanceInUsdc} USDC), skip refuel`);
                 } else {
-                  console.log(`⚠️  鏈上餘額不足，但 Token 餘額充足 (${tokenBalanceInUsdc} USDC)，觸發自動補油...`);
+                  console.log(`⚠️  Chain balance insufficient, but Token balance sufficient (${tokenBalanceInUsdc} USDC), trigger auto refuel...`);
                   
                   try {
                     await triggerAutoRefuel(tokenIdNum, chainId, contract, wallet);
@@ -275,22 +275,22 @@ async function checkAllPolicies(contract, defaultRpcUrl, wallet) {
                   }
                 }
               } else {
-                console.log(`✅ 鏈上餘額充足，無需補油`);
+                console.log(`✅ Chain balance sufficient, no refuel needed`);
               }
             }
           }
         } catch (error) {
-          console.error(`❌ 檢查策略失敗 (TokenId: ${tokenIdNum}, Chain: ${chainId}):`, error.message);
+          console.error(`❌ Failed to check policy (TokenId: ${tokenIdNum}, Chain: ${chainId}):`, error.message);
         }
       }
     }
 
-    console.log(`\n📈 掃描完成統計:`);
-    console.log(`  📋 發現策略: ${policiesFound} 個`);
-    console.log(`  🚀 觸發補氣: ${refuelsTriggered} 次`);
-    console.log(`  💰 潛在手續費: ${totalPotentialFees.toFixed(6)} USDC`);
-    console.log(`  💎 累積手續費: ${totalFeesFormatted} USDC`);
-    console.log(`  🏦 可提領手續費: ${withdrawableFeesFormatted} USDC`);
+    console.log(`\n📈 Scan completion statistics:`);
+    console.log(`  📋 Policy found: ${policiesFound} policies`);
+    console.log(`  🚀 Refuels triggered: ${refuelsTriggered} times`);
+    console.log(`  💰 Potential fees: ${totalPotentialFees.toFixed(6)} USDC`);
+    console.log(`  💎 Accumulated fees: ${totalFeesFormatted} USDC`);
+    console.log(`  🏦 Withdrawable fees: ${withdrawableFeesFormatted} USDC`);
     
     return {
       totalTokens: totalSupplyNum,
@@ -302,33 +302,33 @@ async function checkAllPolicies(contract, defaultRpcUrl, wallet) {
     };
     
   } catch (error) {
-    console.error('❌ 掃描策略失敗:', error.message);
+    console.error('❌ Failed to scan policies:', error.message);
     throw error;
   }
 }
 
-// ==================== API 端點 ====================
+// ==================== API Endpoints ====================
 
-// 手動觸發監控掃描
+// Manually trigger monitoring scan
 router.post('/scan', async (req, res) => {
   try {
-    console.log('🔍 手動觸發監控掃描...');
+    console.log('🔍 Manually trigger monitoring scan...');
     const { contract, wallet } = req.app.locals;
     const defaultRpcUrl = process.env.RPC_URL || GAS_PASS_CONFIG.network.rpc;
     
     const result = await checkAllPolicies(contract, defaultRpcUrl, wallet);
     res.json({ 
       success: true, 
-      message: '監控掃描完成',
+      message: 'Monitoring scan completed',
       data: result
     });
   } catch (error) {
-    console.error('❌ 手動掃描失敗:', error.message);
+    console.error('❌ Manual scan failed:', error.message);
     res.status(500).json({ success: false, error: error.message });
   }
 });
 
-// 獲取監控狀態
+// Get monitoring status
 router.get('/status', async (req, res) => {
   try {
     const { contract } = req.app.locals;
@@ -344,12 +344,12 @@ router.get('/status', async (req, res) => {
       timestamp: new Date().toISOString()
     });
   } catch (error) {
-    console.error('❌ 獲取監控狀態失敗:', error.message);
+    console.error('❌ Failed to get monitoring status:', error.message);
     res.status(500).json({ success: false, error: error.message });
   }
 });
 
-// 獲取支援的鏈列表
+// Get supported chains list
 router.get('/chains', (req, res) => {
   try {
     const chains = Object.keys(SUPPORTED_CHAINS).map(chainId => ({
@@ -365,12 +365,12 @@ router.get('/chains', (req, res) => {
       total: chains.length
     });
   } catch (error) {
-    console.error('❌ 獲取支援鏈列表失敗:', error.message);
+    console.error('❌ Failed to get supported chains list:', error.message);
     res.status(500).json({ success: false, error: error.message });
   }
 });
 
-// 檢查特定 token 的策略
+// Check specific token policy
 router.get('/token/:tokenId', async (req, res) => {
   try {
     const { tokenId } = req.params;
@@ -379,27 +379,27 @@ router.get('/token/:tokenId', async (req, res) => {
     
     const tokenIdNum = parseInt(tokenId);
     
-    // 獲取 token 擁有者
+    // Get token owner
     const owner = await contract.ownerOf(tokenIdNum);
     
-    // 獲取 token 餘額
+    // get token balance
     const tokenBalance = await contract.balanceOf(tokenIdNum);
     const tokenBalanceFormatted = ethers.formatUnits(tokenBalance, 6);
     
     const policies = [];
     
-    // 遍歷所有支援的鏈
+    // iterate allsupportedchain
     for (const [chainId, config] of Object.entries(SUPPORTED_CHAINS)) {
       try {
         const policy = await contract.chainPolicies(tokenIdNum, chainId);
         const threshold = parseFloat(ethers.formatEther(policy.threshold));
         
         if (threshold > 0) {
-          // 檢查 Token 餘額
+          // check Token balance
           const tokenBalance = await contract.balanceOf(tokenIdNum);
           const tokenBalanceInUsdc = parseFloat(ethers.formatUnits(tokenBalance, 6));
           
-          // 檢查鏈上餘額
+          // checkchainonbalance
           const balanceInfo = await checkBalance(owner, parseInt(chainId), defaultRpcUrl);
           
           let needsRefuel = false;
@@ -408,19 +408,19 @@ router.get('/token/:tokenId', async (req, res) => {
           
           if (balanceInfo !== null) {
             if (config.nativeSymbol === 'ETH') {
-              // ETH 鏈：使用 USDC 單位比較
+              // ETH chain: use USDC unit for comparison
               currentBalanceInUsdc = balanceInfo.usdcBalance;
               thresholdInUsdc = policy.threshold;
               needsRefuel = balanceInfo.usdcBalance < thresholdInUsdc;
             } else {
-              // 其他鏈：使用原生單位比較
+              // Other chains: use native unit for comparison
               currentBalanceInUsdc = balanceInfo.nativeBalance;
               thresholdInUsdc = threshold;
               needsRefuel = balanceInfo.nativeBalance < threshold;
             }
           }
           
-          // 檢查是否可以補油（需要 Token 餘額充足）
+          // Check if refuel is possible (require Token balance sufficient)
           const canRefuel = tokenBalanceInUsdc > 0;
           
           policies.push({
@@ -442,9 +442,9 @@ router.get('/token/:tokenId', async (req, res) => {
             lastRefuel: policy.lastRefuel
           });
         }
-      } catch (error) {
-        console.error(`❌ 檢查策略失敗 (TokenId: ${tokenIdNum}, Chain: ${chainId}):`, error.message);
-      }
+        } catch (error) {
+          console.error(`❌ Failed to check policy (TokenId: ${tokenIdNum}, Chain: ${chainId}):`, error.message);
+        }
     }
     
     res.json({
@@ -456,12 +456,12 @@ router.get('/token/:tokenId', async (req, res) => {
       totalPolicies: policies.length
     });
   } catch (error) {
-    console.error('❌ 獲取 token 策略失敗:', error.message);
+    console.error('❌ Failed to get token policy:', error.message);
     res.status(500).json({ success: false, error: error.message });
   }
 });
 
-// 導出函數供 server.js 使用
+// Export function for use by server.js
 export { checkAllPolicies };
 
 export default router;

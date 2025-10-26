@@ -2,8 +2,8 @@ import { ethers } from 'ethers';
 import { GAS_PASS_CONFIG, GAS_PASS_ABI } from '../config/gasPassConfig.js';
 
 /**
- * Relayer 服務模組
- * 處理所有 GasPass 合約的 Relayer 功能
+ * Relayer service module
+ * Handles all GasPass contract Relayer functionality
  */
 export class RelayerService {
   constructor(wallet) {
@@ -12,19 +12,19 @@ export class RelayerService {
   }
 
   /**
-   * 代送 mintWithSig 交易
+   * Relaying mintWithSig transaction
    */
   async relayMint(typedData, signature) {
     try {
-      console.log(`📤 代送 mintWithSig 交易...`);
-      console.log(`👤 用戶: ${typedData.to}`);
-      console.log(`💰 金額: ${ethers.formatUnits(typedData.value, 6)} USDC`);
+      console.log(`📤 Relaying mintWithSig transaction...`);
+      console.log(`👤 User: ${typedData.to}`);
+      console.log(`💰 Amount: ${ethers.formatUnits(typedData.value, 6)} USDC`);
       
       const tx = await this.contract.mintWithSig(typedData, signature);
-      console.log(`📝 交易哈希: ${tx.hash}`);
+      console.log(`📝 Transaction hash: ${tx.hash}`);
       
       const receipt = await tx.wait();
-      console.log(`✅ 交易確認: ${receipt.hash}`);
+      console.log(`✅ Transaction confirmed: ${receipt.hash}`);
       
       return {
         success: true,
@@ -33,26 +33,26 @@ export class RelayerService {
         gasUsed: receipt.gasUsed.toString()
       };
     } catch (error) {
-      console.error('❌ mintWithSig 失敗:', error.message);
+      console.error('❌ mintWithSig failed:', error.message);
       throw error;
     }
   }
 
   /**
-   * 代送 mintBatchWithSig 交易
+   * Relaying mintBatchWithSig transaction
    */
   async relayMintBatch(typedData, signature) {
     try {
-      console.log(`📤 代送 mintBatchWithSig 交易...`);
-      console.log(`👤 用戶: ${typedData.to}`);
+      console.log(`📤 Relaying mintBatchWithSig transaction...`);
+      console.log(`👤 User: ${typedData.to}`);
       console.log(`📦 數量: ${typedData.amount}`);
       console.log(`💰 單價: ${ethers.formatUnits(typedData.singleValue, 6)} USDC`);
       
       const tx = await this.contract.mintBatchWithSig(typedData, signature);
-      console.log(`📝 交易哈希: ${tx.hash}`);
+      console.log(`📝 Transaction hash: ${tx.hash}`);
       
       const receipt = await tx.wait();
-      console.log(`✅ 交易確認: ${receipt.hash}`);
+      console.log(`✅ Transaction confirmed: ${receipt.hash}`);
       
       // 從事件中獲取 tokenIds
       const mintBatchEvents = receipt.logs.filter(log => {
@@ -102,25 +102,25 @@ export class RelayerService {
         }
       };
     } catch (error) {
-      console.error('❌ mintBatchWithSig 失敗:', error.message);
+      console.error('❌ mintBatchWithSig failed:', error.message);
       throw error;
     }
   }
 
   /**
-   * 代送 depositWithSig 交易
+   * Relay depositWithSig transaction
    */
   async relayDeposit(typedData, signature) {
     try {
-      console.log(`📤 代送 depositWithSig 交易...`);
+      console.log(`📤 Relay depositWithSig transaction...`);
       console.log(`🎫 Token ID: ${typedData.tokenId}`);
-      console.log(`💰 金額: ${ethers.formatUnits(typedData.amount, 6)} USDC`);
+      console.log(`💰 Amount: ${ethers.formatUnits(typedData.amount, 6)} USDC`);
       
       const tx = await this.contract.depositWithSig(typedData, signature);
-      console.log(`📝 交易哈希: ${tx.hash}`);
+      console.log(`📝 Transaction hash: ${tx.hash}`);
       
       const receipt = await tx.wait();
-      console.log(`✅ 交易確認: ${receipt.hash}`);
+      console.log(`✅ Transaction confirmed: ${receipt.hash}`);
       
       return {
         success: true,
@@ -129,28 +129,28 @@ export class RelayerService {
         gasUsed: receipt.gasUsed.toString()
       };
     } catch (error) {
-      console.error('❌ depositWithSig 失敗:', error.message);
+      console.error('❌ depositWithSig failed:', error.message);
       throw error;
     }
   }
 
   /**
-   * 代送 setRefuelPolicyWithSig 交易
+   * Relay setRefuelPolicyWithSig transaction
    */
   async relaySetRefuelPolicy(typedData, signature) {
     try {
-      console.log(`📤 代送 setRefuelPolicyWithSig 交易...`);
+      console.log(`📤 Relay setRefuelPolicyWithSig transaction...`);
       console.log(`🎫 Token ID: ${typedData.tokenId}`);
       console.log(`⛓️ 目標鏈: ${typedData.targetChainId}`);
-      console.log(`💰 Gas 金額: ${ethers.formatUnits(typedData.gasAmount, 6)} USDC`);
+      console.log(`💰 Gas Amount: ${ethers.formatUnits(typedData.gasAmount, 6)} USDC`);
       console.log(`⚠️ 觸發閾值: ${ethers.formatUnits(typedData.threshold, 6)} USDC`);
       console.log(`typedData: ${JSON.stringify(typedData)}`);
       console.log(`signature: ${signature}`);
       const tx = await this.contract.setRefuelPolicyWithSig(typedData, signature);
-      console.log(`📝 交易哈希: ${tx.hash}`);
+      console.log(`📝 Transaction hash: ${tx.hash}`);
       
       const receipt = await tx.wait();
-      console.log(`✅ 交易確認: ${receipt.hash}`);
+      console.log(`✅ Transaction confirmed: ${receipt.hash}`);
       
       return {
         success: true,
@@ -174,10 +174,10 @@ export class RelayerService {
       console.log(`⛓️ 目標鏈: ${typedData.targetChainId}`);
       
       const tx = await this.contract.cancelRefuelPolicyWithSig(typedData, signature);
-      console.log(`📝 交易哈希: ${tx.hash}`);
+      console.log(`📝 Transaction hash: ${tx.hash}`);
       
       const receipt = await tx.wait();
-      console.log(`✅ 交易確認: ${receipt.hash}`);
+      console.log(`✅ Transaction confirmed: ${receipt.hash}`);
       
       return {
         success: true,
@@ -201,10 +201,10 @@ export class RelayerService {
       console.log(`👤 Wallet: ${typedData.wallet}`);
       
       const tx = await this.contract.setAgentToWalletWithSig(typedData, signature);
-      console.log(`📝 交易哈希: ${tx.hash}`);
+      console.log(`📝 Transaction hash: ${tx.hash}`);
       
       const receipt = await tx.wait();
-      console.log(`✅ 交易確認: ${receipt.hash}`);
+      console.log(`✅ Transaction confirmed: ${receipt.hash}`);
       
       return {
         success: true,

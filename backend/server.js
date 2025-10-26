@@ -8,55 +8,55 @@ import apiRouter from './routes/index.js';
 import { createRelayerService } from './relayer/index.js';
 
 /**
- * GasPass 統一服務器
- * 整合 Relayer 和 Monitor 功能
+ * GasPass Unified Server
+ * Integrates Relayer and Monitor functionality
  */
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-// 環境變量驗證
+// Environment variable validation
 const required = ['PRIVATE_KEY', 'RPC_URL'];
 const missing = required.filter(key => !process.env[key]);
 
 if (missing.length > 0) {
-  console.error(`❌ 缺少必要的環境變量: ${missing.join(', ')}`);
+  console.error(`❌ Missing required environment variables: ${missing.join(', ')}`);
   process.exit(1);
 }
 
-// 設定
+// Settings
 const PRIVATE_KEY = process.env.PRIVATE_KEY;
 const RPC_URL = process.env.RPC_URL || GAS_PASS_CONFIG.network.rpc;
 const PORT = process.env.PORT || GAS_PASS_CONFIG.service.port;
 
-// 創建 provider 和 wallet
+// Create provider and wallet
 const provider = new ethers.JsonRpcProvider(RPC_URL);
 const wallet = new ethers.Wallet(PRIVATE_KEY, provider);
 
-// 創建合約實例
+// Create contract instance
 const contract = new ethers.Contract(GAS_PASS_CONFIG.contractAddress, GAS_PASS_ABI, wallet);
 
-console.log(`🚀 GasPass 統一服務器啟動中...`);
-console.log(`👤 Relayer 地址: ${wallet.address}`);
-console.log(`🌐 RPC 端點: ${RPC_URL}`);
-console.log(`📋 合約地址: ${GAS_PASS_CONFIG.contractAddress}`);
-console.log(`🔗 網絡: ${GAS_PASS_CONFIG.network.name} (${GAS_PASS_CONFIG.network.chainId})`);
+console.log(`🚀 GasPass unified server starting...`);
+console.log(`👤 Relayer address: ${wallet.address}`);
+console.log(`🌐 RPC endpoint: ${RPC_URL}`);
+console.log(`📋 Contract address: ${GAS_PASS_CONFIG.contractAddress}`);
+console.log(`🔗 Network: ${GAS_PASS_CONFIG.network.name} (${GAS_PASS_CONFIG.network.chainId})`);
 
-// 初始化 Relayer 服務
+// Initialize Relayer service
 const relayerService = createRelayerService(wallet);
-console.log(`🔧 Relayer 服務已初始化: ${relayerService.getRelayerInfo().address}`);
+console.log(`🔧 Relayer service initialized: ${relayerService.getRelayerInfo().address}`);
 
-// 將 wallet 和 contract 存儲到 app.locals 供路由使用
+// Store wallet and contract in app.locals for use in routes
 app.locals.wallet = wallet;
 app.locals.contract = contract;
 
-// 整合 API 路由
+// Integrate API routes
 app.use('/api', apiRouter);
 
-// ==================== 基本端點 ====================
+// ==================== Basic Endpoints ====================
 
-// 健康檢查
+// Health check
 app.get('/health', (req, res) => {
   res.json({
     status: 'healthy',
@@ -69,7 +69,7 @@ app.get('/health', (req, res) => {
   });
 });
 
-// 獲取 Relayer 地址
+// Get Relayer address
 app.get('/relayer', (req, res) => {
   res.json({
     address: wallet.address,
@@ -78,7 +78,7 @@ app.get('/relayer', (req, res) => {
   });
 });
 
-// 獲取合約配置
+// Get contract configuration
 app.get('/config', (req, res) => {
   res.json({
     contractAddress: GAS_PASS_CONFIG.contractAddress,
@@ -92,26 +92,26 @@ app.get('/config', (req, res) => {
   });
 });
 
-// ==================== 定時監控功能 ====================
+// ==================== Scheduled Monitoring Functionality ====================
 
-// 定時執行監聽
+// Scheduled monitoring execution
 function startMonitoring(intervalMinutes = 1) {
-  console.log(`🕐 開始監聽，每 ${intervalMinutes} 分鐘執行一次`);
+  console.log(`🕐 Starting monitoring, executing every ${intervalMinutes} minutes`);
   
-  // 立即執行一次
+  // Execute immediately
   triggerMonitorScan();
   
-  // 設定定時器
+  // Set interval timer
   setInterval(() => {
-    console.log(`\n⏰ ${new Date().toLocaleString('zh-TW')} - 開始新一輪掃描`);
+    console.log(`\n⏰ ${new Date().toLocaleString()} - Starting new scan`);
     triggerMonitorScan();
   }, intervalMinutes * 60 * 1000);
 }
 
-// 觸發監控掃描
+// Trigger monitoring scan
 async function triggerMonitorScan() {
   try {
-    // 模擬 POST 請求到 monitor router
+    // Simulate POST request to monitor router
     const mockReq = {
       app: {
         locals: { contract, wallet }
@@ -120,39 +120,39 @@ async function triggerMonitorScan() {
     const mockRes = {
       json: (data) => {
         if (data.success) {
-          console.log('✅ 監控掃描完成:', data.data);
+          console.log('✅ Monitoring scan completed:', data.data);
         } else {
-          console.error('❌ 監控掃描失敗:', data.error);
+          console.error('❌ Monitoring scan failed:', data.error);
         }
       },
       status: () => ({
         json: (data) => {
-          console.error('❌ 監控掃描失敗:', data.error);
+          console.error('❌ Monitoring scan failed:', data.error);
         }
       })
     };
     
-    // 直接調用 checkAllPolicies 函數
+    // Call checkAllPolicies function directly
     const { checkAllPolicies } = await import('./routes/monitor.js');
     
     const defaultRpcUrl = process.env.RPC_URL || GAS_PASS_CONFIG.network.rpc;
-    console.log('🔍 使用 RPC 端點:', defaultRpcUrl);
+    console.log('🔍 Using RPC endpoint:', defaultRpcUrl);
     const result = await checkAllPolicies(contract, defaultRpcUrl, wallet);
-    console.log('✅ 監控掃描完成:', result);
+    console.log('✅ Monitoring scan completed:', result);
   } catch (error) {
-    console.error('❌ 觸發監控掃描失敗:', error.message);
+    console.error('❌ Trigger monitoring scan failed:', error.message);
   }
 }
 
-// 啟動監控
+// Start monitoring
 startMonitoring();
 
-// 啟動服務
+// Start server
 app.listen(PORT, () => {
-  console.log(`🌐 GasPass 統一服務器運行在端口 ${PORT}`);
-  console.log(`📡 API 端點: http://localhost:${PORT}`);
-  console.log(`🔍 健康檢查: http://localhost:${PORT}/health`);
-  console.log(`📊 監控狀態: http://localhost:${PORT}/api/monitor/status`);
+  console.log(`🌐 GasPass unified server running on port ${PORT}`);
+  console.log(`📡 API endpoint: http://localhost:${PORT}`);
+  console.log(`🔍 Health check: http://localhost:${PORT}/health`);
+  console.log(`📊 Monitor status: http://localhost:${PORT}/api/monitor/status`);
   console.log(`🔗 Vincent API: http://localhost:${PORT}/api/vincent`);
   console.log(`⚡ GasPass API: http://localhost:${PORT}/api/gaspass`);
   console.log(`🚀 Relayer API: http://localhost:${PORT}/api/relayer`);

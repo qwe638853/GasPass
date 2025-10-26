@@ -3,7 +3,7 @@ import { RelayerService } from './relayerService.js';
 
 const router = Router();
 
-// 創建 RelayerService 實例的工廠函數
+// Factory function to create RelayerService instance
 let relayerService = null;
 
 export function createRelayerService(wallet) {

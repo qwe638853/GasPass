@@ -8,7 +8,7 @@ export const BUNGEE_CONFIG = {
   ]
 };
 
-// 支援的鏈配置
+// Supported chain configuration
 export const SUPPORTED_CHAINS = {
   1: {
     rpc: 'https://mainnet.infura.io/v3/YOUR-API-KEY',

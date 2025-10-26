@@ -9,7 +9,7 @@ let sponsorAbilityClient = null;
 let bungeeAbilityClient = null;
 let delegateeSigner = null;
 
-// 環境設定
+// Environment settings
 const LIT_NETWORK = process.env.LIT_NETWORK || 'datil';
 const LIT_RPC_URL = process.env.LIT_RPC_URL || 'https://yellowstone-rpc.litprotocol.com/';
 
@@ -17,13 +17,13 @@ const alchemyGasSponsorApiKey = process.env.ALCHEMY_GAS_SPONSOR_API_KEY;
 const alchemyGasSponsorPolicyId = process.env.ALCHEMY_GAS_SPONSOR_POLICY_ID;
 const delegateePrivateKey = process.env.DELEGATEE_PRIVATE_KEY;
 if (!delegateePrivateKey) {
-  throw new Error('delegateePrivateKey 環境變數未設定');
+  throw new Error('delegateePrivateKey environment variable not set');
 }
 if (!alchemyGasSponsorApiKey) {
-  throw new Error('alchemyGasSponsorApiKey 環境變數未設定');
+  throw new Error('alchemyGasSponsorApiKey environment variable not set');
 }
 if (!alchemyGasSponsorPolicyId) {
-  throw new Error('alchemyGasSponsorPolicyId 環境變數未設定');
+  throw new Error('alchemyGasSponsorPolicyId environment variable not set');
 }
 export async function ensureInitialized() {
   if (litNodeClient && sponsorAbilityClient && bungeeAbilityClient && delegateeSigner) return;
