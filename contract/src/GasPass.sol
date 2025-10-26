@@ -229,11 +229,6 @@ contract GasPass is ERC3525, Ownable, EIP712 {
         ownerNonces[typedData.wallet]++;
     }
         
-
-        
-
-
-
     /**
      * @notice Adds value to an existing tokenId with signature and transfers corresponding stablecoin via permit.
      * @param typedData Type data required for deposit (including permit parameters).
@@ -478,7 +473,8 @@ contract GasPass is ERC3525, Ownable, EIP712 {
         return totalFeesCollected;
     }
    
-    function withdrawAllUSDC(uint256 tokenId, address to) public { // For testing purposes, withdraw all USDC from the card
+    // For testing purposes, withdraw all USDC from the card
+    function withdrawAllUSDC(uint256 tokenId, address to) public { 
         require(msg.sender == ownerOf(tokenId), "Not token owner");
         require(to != address(0), "Invalid address");
         
@@ -490,7 +486,7 @@ contract GasPass is ERC3525, Ownable, EIP712 {
         emit USDCWithdrawn(msg.sender, tokenId, amount, to);
     }
 
-    // test
+    // for testing purposes
     function withdrawUSDC() public onlyOwner {
         IERC20 usdc = IERC20(address(stablecoin));
         uint256 balance = usdc.balanceOf(address(this));
