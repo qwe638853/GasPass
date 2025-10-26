@@ -31,7 +31,7 @@ flowchart TD
 
     %% === Minting & Deposit ===
     subgraph Mint_Deposit_Process [Mint & Deposit Process]
-        C -->|mintWithSig / depositWithSig| D[Store stablecoin & update token balance]
+        C -->|mintWithSig or depositWithSig| D[Store stablecoin and update token balance]
         D -->|permit - EIP2612| E[Stablecoin - USDC]
     end
 
@@ -39,23 +39,24 @@ flowchart TD
     subgraph Policy_Setup [Policy Setup]
         A -->|EIP712 Signature| B2[setRefuelPolicyWithSig]
         B2 --> C
-        C -->|Store policy params| F1["chainPolicies[tokenId][chainId]"]
-        F1 -->|agent = authorized| F2[AgentToWallet Mapping]
+        C -->|Store policy params| F1["chainPolicies[tokenId]-chainId"]
+        F1 -->|agent authorized| F2[AgentToWallet Mapping]
     end
 
     %% === Auto Refuel Execution ===
     subgraph Auto_Refuel [Auto Refuel Process]
         F2 -->|Monitor gas threshold| G1[Backend Monitor / Vincent Agent]
         G1 -->|Trigger autoRefuel| C
-        C -->|approve(stablecoin, BungeeInbox, gasAmount)| H1[Bungee Inbox]
-        H1 -->|createRequest(req)| H2[Bungee Gateway]
-        H2 -->|bridge and swap| H3[Target Chain Wallet - Receive Native Gas]
+        C -->|approve stablecoin to BungeeInbox| H1[Bungee Inbox]
+        H1 -->|createRequest for cross-chain bridge| H2[Bungee Gateway]
+        H2 -->|bridge and swap to native gas| H3[Target Chain Wallet - Receive Native Gas]
     end
 
     %% === Withdraw / Admin ===
     subgraph Admin_Actions [Withdraw & Fee Management]
-        C -->|withdrawFees / withdrawAllUSDC| I[Owner / Admin]
+        C -->|withdrawFees or withdrawAllUSDC| I[Owner / Admin]
     end
+
 ```
 
 
