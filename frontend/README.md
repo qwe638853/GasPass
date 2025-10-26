@@ -13,11 +13,6 @@ cd GasPass
 # Install dependencies
 pnpm install
 
-# Compile contracts
-forge build
-
-# Deploy to Arbitrum
-forge script script/DeployGasPass.s.sol:DeployGasPass \
-  --rpc-url $ARBITRUM_RPC \
-  --broadcast
+# run
+pnpm run dev
 ```
