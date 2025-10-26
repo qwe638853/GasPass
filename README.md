@@ -139,20 +139,19 @@ All actual fund movement or contract interaction is performed **only through a V
 The contract recognizes the PKP’s address as an **authorized executor** only for those **whitelisted Abilities**.  
 Even if the backend or the Vincent service is compromised, any out-of-scope call would fail due to **on-chain policy** and **signature verification**.
 
-###  [Key Properties]
+### [ability-sponsor-transaction]
 
-- **User-scoped authorization**  
-  Every Ability is derived from explicit user consent and cannot exceed predefined function scopes.
+To achieve a fully gasless user experience, we developed a custom package — ability-sponsor-transaction — inspired by the official Vincent SDK.
+This package extends the Vincent SDK’s design pattern but adds full Alchemy Gas Manager integration to support sponsored execution for arbitrary contract calls such as autoRefuel() and manualRefuel().
 
-- **Delegated execution**  
-  The Vincent Agent executes only `autoRefuel()` or other approved functions within its authorized Ability.
+In the standard Vincent SDK, only a few built-in operations (like approve()) could be sponsored.
+However, the GasPass workflow required Vincent Agents to perform more complex on-chain calls, which also needed gas.
+To solve this, we studied the Vincent SDK internals and built our own ability-sponsor-transaction module — a drop-in extension that signs, wraps, and relays transactions through Alchemy’s Gas Manager API.
 
-- **Backend isolation**  
-  The backend can only trigger the Vincent Agent; it cannot move funds or submit on-chain transactions itself.
+This module ensures that Vincent Agents can execute authorized contract functions without holding native tokens, while preserving the same cryptographic constraints and Ability-based authorization model defined by the Lit Protocol.
 
-- **Contract enforcement**  
-  GasPass validates the executor address before allowing any operation.
-  
+> **More detail in [`vincent-sponsor-transaction`](https://github.com/qwe638853/vincent-sponsor-transaction)**
+
 ---
 ### How GasPass Integrates with Avail
 
