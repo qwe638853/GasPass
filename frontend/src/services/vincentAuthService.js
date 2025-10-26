@@ -153,8 +153,8 @@ export async function bootstrapAuthFlow(vincentAppClient, audienceOverride) {
     if (!storedJwt || expired) {
       // 清除壞資料避免下次還是讀到錯誤狀態
       // 但保留 PKP 地址，因為它不會過期
-      localStorage.removeItem(STORAGE_JWT)
-      localStorage.removeItem(STORAGE_DECODED)
+      //localStorage.removeItem(STORAGE_JWT)
+      //localStorage.removeItem(STORAGE_DECODED)
       // 不刪除 PKP 地址：localStorage.removeItem(STORAGE_PKP_ADDR)
       console.log('⚠️ JWT 過期，清除 JWT 但保留 PKP 地址')
       return { needsRedirect: true }
@@ -335,3 +335,4 @@ export function debugVincentStorage() {
     console.error('解析 JWT 時發生錯誤:', error)
   }
 }
+
