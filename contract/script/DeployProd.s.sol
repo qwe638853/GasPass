@@ -30,12 +30,12 @@ contract DeployProd is Script {
         console.log("GasPass deployed at:", address(gasPass));
         console.log("Deployment completed successfully!");
         
-        // 輸出用於驗證的資訊
-        console.log(unicode"\n=== 部署資訊 ===");
-        console.log(unicode"合約地址:", address(gasPass));
-        console.log(unicode"穩定幣地址:", stablecoin);
-        console.log(unicode"Relayer地址:", relayer);
-        console.log(unicode"部署者地址:", deployer);
+        // Output information for verification
+        console.log("\n=== Deployment Information ===");
+        console.log("Contract Address:", address(gasPass));
+        console.log("Stablecoin Address:", stablecoin);
+        console.log("Relayer Address:", relayer);
+        console.log("Deployer Address:", deployer);
     }
 }
 

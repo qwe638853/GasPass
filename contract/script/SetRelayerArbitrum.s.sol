@@ -6,14 +6,14 @@ import {GasPass} from "../src/GasPass.sol";
 
 contract SetRelayerArbitrum is Script {
     function run() public {
-        // 獲取私鑰
+        // Get private key
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
         address deployer = vm.addr(deployerPrivateKey);
         
-        // 合約地址 - 請填入部署後的 GasPass 合約地址
+        // Contract address - please fill in the deployed GasPass contract address
         address gasPassAddress = vm.envAddress("GASPASS_ADDRESS");
         
-        // 新的 relayer 地址 - 請填入真實的 relayer 地址
+        // New relayer address - please fill in the real relayer address
         address newRelayer = vm.envAddress("NEW_RELAYER_ADDRESS");
         
         console.log("Setting relayer for GasPass contract");
@@ -25,15 +25,15 @@ contract SetRelayerArbitrum is Script {
         
         GasPass gasPass = GasPass(gasPassAddress);
         
-        // 檢查當前 relayer
+        // Check current relayer
         address currentRelayer = gasPass.relayer();
         console.log("Current relayer:", currentRelayer);
         
-        // 設置新的 relayer
+        // Set new relayer
         console.log("Setting new relayer...");
         gasPass.setRelayer(newRelayer);
         
-        // 驗證設置
+        // Verify setting
         address updatedRelayer = gasPass.relayer();
         console.log("Updated relayer:", updatedRelayer);
         
