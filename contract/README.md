@@ -23,43 +23,47 @@ It combines **EIP-712 typed data signatures**, **EIP-2612 stablecoin permits**, 
 
 ## Contract Architecture
 
-```mermaid
-flowchart TD
-    %% === User & Relayer Flow ===
-    A[Frontend / User Wallet] -->|EIP712 Signature: Mint / Deposit / Policy| B[Relayer]
-    B -->|relayUserOp| C[GasPass Contract - ERC3525]
+GasPass is a modular ERC-3525-based system that lets users store stablecoins (e.g. USDC) and automatically convert them into cross-chain gas through programmable policies. The contract is structured into four layers: Token, Signature, Policy, and Bridge Execution.
 
-    %% === Minting & Deposit ===
-    subgraph Mint_Deposit_Process [Mint & Deposit Process]
-        C -->|mintWithSig or depositWithSig| D[Store stablecoin and update token balance]
-        D -->|permit - EIP2612| E[Stablecoin - USDC]
-    end
+---
 
-    %% === Refuel Policy Setup ===
-    subgraph Policy_Setup [Policy Setup]
-        A -->|EIP712 Signature| B2[setRefuelPolicyWithSig]
-        B2 --> C
-        C -->|Store policy params| F1["chainPolicies[tokenId]-chainId"]
-        F1 -->|agent authorized| F2[AgentToWallet Mapping]
-    end
+### Core Layers
 
-    %% === Auto Refuel Execution ===
-    subgraph Auto_Refuel [Auto Refuel Process]
-        F2 -->|Monitor gas threshold| G1[Backend Monitor / Vincent Agent]
-        G1 -->|Trigger autoRefuel| C
-        C -->|approve stablecoin to BungeeInbox| H1[Bungee Inbox]
-        H1 -->|createRequest for cross-chain bridge| H2[Bungee Gateway]
-        H2 -->|bridge and swap to native gas| H3[Target Chain Wallet - Receive Native Gas]
-    end
+#### 1. Token Layer — ERC-3525 Core
 
-    %% === Withdraw / Admin ===
-    subgraph Admin_Actions [Withdraw & Fee Management]
-        C -->|withdrawFees or withdrawAllUSDC| I[Owner / Admin]
-    end
+- Each `tokenId` is a **Gas Card**, and its `value` represents stored USDC
+- Handles minting, depositing, and burning via `_mint`, `_mintValue`, `_burnValue`
+- Uses a single `slotId = 0` (future versions can define per-chain or multi-token slots)
 
-```
+---
 
+#### 2. Signature Layer — Gasless UX (EIP-712 + EIP-2612)
 
+- All operations (`mintWithSig`, `depositWithSig`, `setRefuelPolicyWithSig`) are signed off-chain
+- **EIP-712**: verifies typed signatures
+- **EIP-2612**: allows gasless stablecoin approval
+- Executed by a trusted `relayer`; protected by nonces to prevent replay
+
+---
+
+#### 3. Policy Layer — Automated Refueling
+
+- Each token can store per-chain refuel policies in `chainPolicies`
+- A policy defines `gasAmount`, `threshold`, and assigned `agent`
+- Agents are securely mapped via `agentToWallet`
+- Supports on-chain setup or signed setup through relayer
+
+---
+
+#### 4. Bridge Execution Layer — Cross-Chain via Bungee
+
+- When gas is low, the bound `agent` triggers `autoRefuel()`
+- Burns stored USDC → approves `bungeeInbox` → calls `IBungeeInbox.createRequest()`
+- `BungeeGateway` bridges and swaps it into native gas (ETH, MATIC, etc.)
+- Uses `BungeeInboxRequest.createSORHash()` to verify integrity
+- Manual refills via `manualRefuelByAgent()` (no policy check)
+
+---
 ## Slot Design — Future Expansion
 
 GasPass currently uses a **single slot (slotId = 0)** for all cards, meaning every GasPass represents the same type of prepaid gas card.  
@@ -90,8 +94,6 @@ However, the ERC-3525 design allows **slot-based categorization**, which enables
 | `setRefuelPolicyWithSig()` | Define automated gas top-up parameters (chain, amount, threshold, agent). |
 | `cancelRefuelPolicyWithSig()` | Cancel a refuel policy by signature. |
 | `autoRefuel()` | Executed by agent when threshold is reached; burns value and forwards USDC to Bungee Inbox. |
-| `withdrawFees()` | Owner withdraws accumulated platform fees. |
-| `withdrawAllUSDC()` | Owner of token withdraws remaining USDC (for testing or refunds). |
 
 ---
 
