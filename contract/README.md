@@ -126,15 +126,6 @@ forge create GasPass   --rpc-url https://arb-sepolia.g.alchemy.com/v2/XXX   --pr
   0xCdEa28Ee7BD5bf7710B294d9391e1b6A318d809a \   # Bungee Gateway
   0x0000000000000000000000000000000000000000     # Bungee Inbox
 ```
-
----
-
-## Example Use Cases
-- **Hackathon Sponsorship:** Give developers pre-loaded GasPass cards for instant cross-chain deployment.  
-- **Onboarding Campaigns:** Apps airdrop small gas cards to new users for first-time transactions.  
-- **Enterprise Giveaways:** Brands distribute GasPass as redeemable cross-chain fuel prizes.  
-- **Subscription Refueling:** DApps offer tiered refuel memberships via slot-based GasPass types.  
-
 ---
 
 ## License
