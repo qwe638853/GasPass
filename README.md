@@ -53,7 +53,7 @@ This function still interacts with the GasPass contract, using deposited USDC to
 Alternatively, users can directly bridge funds using Avail Nexus SDK, performing a one-time cross-chain gas transfer from their own wallet.
 
 5. Gas Top-Up
-On the destination chain, bridged stablecoins are swapped into native gas (via relayer or Alchemy Gas Manager) and credited to the Target Wallet.
+On the destination chain, bridged stablecoins are swapped into native gas and credited to the Target Wallet.
 
 ---
 ##  Features
