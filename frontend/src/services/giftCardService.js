@@ -215,11 +215,25 @@ class GiftCardService {
           { name: "deadline",       type: "uint256"  },
         ],
       }
+             // 獲取 agent 地址，確保是有效的地址格式
+       let agentAddress = getStoredPkpEthAddress()
+       
+       // 如果沒有找到 PKP 地址，使用用戶錢包地址作為備用
+       if (!agentAddress || !ethers.isAddress(agentAddress)) {
+         console.warn('⚠️ PKP agent address not found, using wallet address as agent')
+         agentAddress = owner
+       }
+       
+       // 驗證 agent 地址格式
+       if (!ethers.isAddress(agentAddress)) {
+         throw new Error(`Invalid agent address: ${agentAddress}`)
+       }
+
       const message = {
         to,
         amount: BigInt(quantity),
         singleValue: singleValueWei,
-        agent: getStoredPkpEthAddress(),
+        agent: agentAddress,
         permitDataHash,
         nonce: BigInt(gaspassNonce.toString()),
         deadline,
@@ -227,8 +241,10 @@ class GiftCardService {
 
       console.log('✍️ 簽署 EIP-712 數據...')
       console.log('🔍 message:', message)
+      console.log('🔍 agent address:', agentAddress)
 
-      // 簽名驗證
+      // 簽名驗證 - 確保使用正確的 signer，並手動解析 domain
+      // 使用 signTypedData 時，確保 agent 是地址格式，不是 ENS 名稱
       const sig = await this.signer.signTypedData(domain, types, message)
       const who = ethers.verifyTypedData(domain, types, message, sig)
       if (who.toLowerCase() !== owner.toLowerCase()) {
@@ -251,7 +267,7 @@ class GiftCardService {
           r: pr,
           s: ps
         },
-        agent: getStoredPkpEthAddress(),
+        agent: agentAddress,
         nonce: gaspassNonce.toString(),
         deadline: deadline.toString()
       }

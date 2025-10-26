@@ -652,30 +652,30 @@
       <div class="success-modal" @click.stop>
         <div class="success-modal-content">
           <div class="success-icon">🎉</div>
-          <h3 class="success-title">手動兌換成功！</h3>
-          <p class="success-message">您的 Gas 已成功兌換並轉移到目標鏈</p>
+          <h3 class="success-title">Manual Exchange Successful!</h3>
+          <p class="success-message">Your Gas has been successfully exchanged and transferred to the target chain</p>
           <div class="success-details">
             <div class="detail-item">
-              <span class="detail-label">交易哈希:</span>
+              <span class="detail-label">Transaction Hash:</span>
               <a v-if="manualRefuelSuccessData.txHash && manualRefuelSuccessData.txHash !== 'Pending...'" 
                  :href="`https://arbiscan.io/tx/${manualRefuelSuccessData.txHash}`" 
                  target="_blank" 
-                 class="detail-value text-green-800 hover:text-green-900">
+                 class="detail-value text-green-800 hover:text-green-900 font-mono text-xs">
                 {{ manualRefuelSuccessData.txHash.slice(0, 10) }}...{{ manualRefuelSuccessData.txHash.slice(-8) }}
               </a>
-              <span v-else class="detail-value">Pending...</span>
+              <span v-else class="detail-value font-mono text-xs">Pending...</span>
             </div>
             <div class="detail-item">
-              <span class="detail-label">兌換金額:</span>
-              <span class="detail-value">{{ manualRefuelSuccessData.amount }} USDC</span>
+              <span class="detail-label">Exchange Amount:</span>
+              <span class="detail-value font-mono text-xs">{{ manualRefuelSuccessData.amount }} USDC</span>
             </div>
             <div class="detail-item">
-              <span class="detail-label">目標鏈:</span>
-              <span class="detail-value">{{ manualRefuelSuccessData.chainName }}</span>
+              <span class="detail-label">Target Chain:</span>
+              <span class="detail-value font-mono text-xs">{{ manualRefuelSuccessData.chainName }}</span>
             </div>
           </div>
           <button @click="showManualRefuelSuccess = false" class="continue-btn">
-            繼續使用 GasPass
+            Continue Using GasPass
           </button>
         </div>
       </div>
@@ -686,24 +686,24 @@
       <div class="success-modal" @click.stop>
         <div class="success-modal-content">
           <div class="success-icon">🎉</div>
-          <h3 class="success-title">Agent 監測設定成功！</h3>
-          <p class="success-message">Agent 已成功設定並開始自動監測您的錢包餘額</p>
+          <h3 class="success-title">Agent Monitoring Setup Successful!</h3>
+          <p class="success-message">Agent has been successfully configured and started monitoring your wallet balance</p>
           <div class="success-details">
             <div class="detail-item">
-              <span class="detail-label">監測鏈:</span>
-              <span class="detail-value">{{ agentSetSuccessData.chainName }}</span>
+              <span class="detail-label">Monitor Chain:</span>
+              <span class="detail-value font-mono text-xs">{{ agentSetSuccessData.chainName }}</span>
             </div>
             <div class="detail-item">
-              <span class="detail-label">觸發閾值:</span>
-              <span class="detail-value">{{ agentSetSuccessData.threshold }} USDC</span>
+              <span class="detail-label">Trigger Threshold:</span>
+              <span class="detail-value font-mono text-xs">{{ agentSetSuccessData.threshold }} USDC</span>
             </div>
             <div class="detail-item">
-              <span class="detail-label">補氣金額:</span>
-              <span class="detail-value">{{ agentSetSuccessData.amount }} USDC</span>
+              <span class="detail-label">Refill Amount:</span>
+              <span class="detail-value font-mono text-xs">{{ agentSetSuccessData.amount }} USDC</span>
             </div>
           </div>
           <button @click="showAgentSetSuccess = false" class="continue-btn">
-            繼續使用 GasPass
+            Continue Using GasPass
           </button>
         </div>
       </div>

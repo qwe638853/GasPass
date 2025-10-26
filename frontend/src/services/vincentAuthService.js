@@ -94,7 +94,40 @@ export function getStoredPkpEthAddress() {
     }
   }
   
-  return pkp || null
+  // 處理 pkp 可能是 JSON 對象的情況
+  let result = pkp
+  if (result && typeof result === 'string') {
+    try {
+      const parsed = JSON.parse(result)
+      // 如果是對象，嘗試提取地址
+      if (typeof parsed === 'object') {
+        result = parsed.ethAddress || parsed.address || parsed.value || result
+        console.log('🔍 解析 PKP 對象結果:', result)
+      }
+    } catch (e) {
+      // 不是 JSON，直接使用字串值
+      result = pkp
+    }
+  }
+  
+  // 如果還是沒有找到，嘗試從其他 localStorage key 查找
+  if (!result) {
+    for (const key of allKeys) {
+      const value = localStorage.getItem(key)
+      // 檢查是否是有效的以太坊地址格式
+      if (value && /^0x[a-fA-F0-9]{40}$/.test(value)) {
+        // 排除已知的其他地址類型
+        if (key.includes('WALLET') || key.includes('PKP') || key.includes('VINCENT')) {
+          console.log(`🔍 從 ${key} 找到可能的 PKP 地址: ${value}`)
+          // 暫時使用找到的地址（但這可能不是 PKP 地址）
+          // result = value
+          // break
+        }
+      }
+    }
+  }
+  
+  return result || null
 }
 
 // 參考 testScript 的簡潔實現
