@@ -646,6 +646,83 @@
       @close="showAutoRefuel = false"
       @success="handleAutoRefuelSuccess"
     />
+    
+    <!-- Manual Refuel Success Modal -->
+    <div v-if="showManualRefuelSuccess" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50 backdrop-blur-sm" @click="showManualRefuelSuccess = false">
+      <div class="relative bg-gradient-to-br from-emerald-900 to-teal-900 rounded-2xl shadow-2xl max-w-lg w-full mx-4 overflow-hidden transform transition-all duration-300 scale-100" @click.stop>
+        <!-- Header -->
+        <div class="bg-gradient-to-r from-emerald-600 to-teal-600 p-6">
+          <div class="flex items-center justify-between">
+            <div>
+              <h3 class="text-2xl font-bold text-white flex items-center gap-2">
+                <span class="text-3xl">✅</span>
+                Gas 兌換成功！
+              </h3>
+              <p class="text-emerald-100 mt-1">您的 Gas 已成功兌換</p>
+            </div>
+            <button @click="showManualRefuelSuccess = false" class="text-white/80 hover:text-white transition-colors duration-200 p-2 hover:bg-white/10 rounded-lg">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+              </svg>
+            </button>
+          </div>
+        </div>
+        
+        <!-- Content -->
+        <div class="p-6 space-y-4">
+          <!-- Transaction Details -->
+          <div class="bg-slate-800/50 rounded-xl p-4 border border-emerald-400/20">
+            <div class="space-y-3">
+              <div class="flex justify-between items-center">
+                <span class="text-gray-300">交易哈希</span>
+                <a v-if="manualRefuelSuccessData.txHash && manualRefuelSuccessData.txHash !== 'Pending...'" 
+                   :href="`https://arbiscan.io/tx/${manualRefuelSuccessData.txHash}`" 
+                   target="_blank" 
+                   class="text-emerald-400 hover:text-emerald-300 font-mono text-sm flex items-center gap-1">
+                  {{ manualRefuelSuccessData.txHash.slice(0, 10) }}...{{ manualRefuelSuccessData.txHash.slice(-8) }}
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                  </svg>
+                </a>
+                <span v-else class="text-gray-500 font-mono text-sm">Pending...</span>
+              </div>
+              
+              <div class="flex justify-between items-center">
+                <span class="text-gray-300">兌換金額</span>
+                <span class="text-white font-bold text-lg">{{ manualRefuelSuccessData.amount }} USDC</span>
+              </div>
+              
+              <div class="flex justify-between items-center">
+                <span class="text-gray-300">目標鏈</span>
+                <span class="text-emerald-400 font-semibold">{{ manualRefuelSuccessData.chainName }}</span>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Info Box -->
+          <div class="bg-blue-900/30 border border-blue-400/30 rounded-xl p-4">
+            <p class="text-blue-200 text-sm">
+              <span class="font-semibold">💡 提示：</span>
+              您的 Gas 已經成功兌換並轉移到目標鏈。交易可能需要幾分鐘時間確認。
+            </p>
+          </div>
+          
+          <!-- Actions -->
+          <div class="flex gap-3 pt-2">
+            <button @click="showManualRefuelSuccess = false" 
+                    class="flex-1 bg-slate-700 hover:bg-slate-600 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-300">
+              關閉
+            </button>
+            <a v-if="manualRefuelSuccessData.txHash && manualRefuelSuccessData.txHash !== 'Pending...'"
+               :href="`https://arbiscan.io/tx/${manualRefuelSuccessData.txHash}`" 
+               target="_blank"
+               class="flex-1 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-300 text-center">
+              查看交易
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
   </Layout>
 </template>
 
@@ -687,6 +764,15 @@ const showAutoRefuel = ref(false)
 const showGasJar = ref(false) // 新增：控制 Gas Jar 顯示
 const selectedTokenId = ref(null) // 新增：選中的 Token ID
 const showGasExchange = ref(false) // 新增：控制 Gas Exchange 顯示
+
+// 新增：手動兌換成功視窗
+const showManualRefuelSuccess = ref(false)
+const manualRefuelSuccessData = ref({
+  txHash: '',
+  amount: '',
+  chainId: '',
+  chainName: ''
+})
 
 // 新增：Tab 切換
 const activeTab = ref('manual')
@@ -1077,7 +1163,13 @@ const executeManualRefuel = async () => {
     await loadUserData()
     
     // 顯示成功訊息
-    alert(`Gas 兌換成功！\n交易哈希: ${result.txHash}\n兌換金額: ${exchangeAmount} USDC`)
+    showManualRefuelSuccess.value = true
+    manualRefuelSuccessData.value = {
+      txHash: result.result?.txHash || result.txHash || 'Pending...',
+      amount: exchangeAmount,
+      chainId: manualRefuel.value.chainId,
+      chainName: getChainName(manualRefuel.value.chainId)
+    }
     
   } catch (error) {
     console.error('❌ Manual refuel failed:', error)

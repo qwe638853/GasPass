@@ -82,6 +82,16 @@ router.post('/triggerManualRefuel', vincentAuth, withVincentAuth(async (req, res
     // 獲取 USDC 合約地址
     const usdcAddress = await contract.stablecoin();
     console.log('💰 USDC 合約地址:', usdcAddress);
+    
+    // 獲取 USDC decimals
+    const usdcContract = new ethers.Contract(usdcAddress, ['function decimals() view returns (uint8)'], provider);
+    const usdcDecimals = await usdcContract.decimals();
+    console.log('📏 USDC decimals:', usdcDecimals);
+
+    // 將 gasAmount (實際金額) 轉換為最小單位 (wei)
+    // 例如: 3 USDC -> 3 * 10^6 = 3000000
+    const inputAmountWei = ethers.parseUnits(gasAmount.toString(), usdcDecimals).toString();
+    console.log('💵 金額轉換:', { original: gasAmount, decimals: usdcDecimals, wei: inputAmountWei });
 
     // 獲取當前區塊信息
     const blockNumber = await contract.runner.provider.getBlockNumber();
@@ -97,7 +107,7 @@ router.post('/triggerManualRefuel', vincentAuth, withVincentAuth(async (req, res
       destinationChainId: parseInt(chainId),
       receiver: owner,
       inputToken: usdcAddress,
-      inputAmount: gasAmount.toString(), // 確保轉換為字符串
+      inputAmount: inputAmountWei, // 使用轉換後的 wei 格式
       contractAddress: contract.target,
       blockNumber,
       gasLeft: 1000000,

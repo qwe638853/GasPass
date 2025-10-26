@@ -343,8 +343,8 @@ export async function getQuote(quoteParams) {
     destinationChainId: quoteParams.destinationChainId,
     inputToken: quoteParams.fromToken,
     outputToken: '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE',
-    inputAmount: inputAmountInWei.toString(),
-    slippage: 0.5
+    inputAmount: quoteParams.amount,
+    slippage: 1
   };
   
   try {
