@@ -858,6 +858,10 @@ const loadUserData = async () => {
       // 載入用戶卡片
       userCards.value = await contractService.getUserCards(account.value)
       console.log('🔍 載入的卡片:', userCards.value)
+      console.log('📊 卡片詳細信息:')
+      userCards.value.forEach((card, index) => {
+        console.log(`  卡片 ${index + 1}: ID=${card.tokenId}, 餘額=${card.balance} USDC`)
+      })
       
       // 如果沒有選中的卡片，默認選中第一張並顯示 Gas Exchange Management
       if (!selectedTokenId.value && userCards.value.length > 0) {
@@ -931,16 +935,52 @@ const handleMintSuccess = async () => {
   }
 }
 
-const handleDepositSuccess = () => {
-  loadUserData()
+const handleDepositSuccess = async (data) => {
+  console.log('💰 充值成功事件觸發，接收到的數據:', data)
+  console.log('💰 開始刷新餘額...')
+  
+  try {
+    // 立即刷新一次，嘗試獲取最新數據
+    console.log('🔄 立即嘗試刷新餘額...')
+    await loadUserData()
+    
+    // 打印當前卡片餘額供調試
+    const currentCard = userCards.value.find(card => card.tokenId === selectedTokenId.value?.toString())
+    if (currentCard) {
+      console.log('📊 當前卡片餘額:', currentCard.balance)
+    }
+    
+    // 添加延遲確保區塊鏈狀態更新
+    await new Promise(resolve => setTimeout(resolve, 3000))
+    
+    // 再次刷新
+    console.log('🔄 第二次刷新餘額...')
+    await loadUserData()
+    
+    // 再次打印當前卡片餘額供調試
+    const updatedCard = userCards.value.find(card => card.tokenId === selectedTokenId.value?.toString())
+    if (updatedCard) {
+      console.log('📊 更新後卡片餘額:', updatedCard.balance)
+    }
+    
+    console.log('✅ 餘額刷新完成')
+  } catch (error) {
+    console.error('❌ 刷新餘額失敗:', error)
+  }
 }
 
-const handleManualRefuelSuccess = () => {
-  loadUserData()
+const handleManualRefuelSuccess = async () => {
+  console.log('⚡️ 手動加註成功，開始刷新餘額...')
+  await new Promise(resolve => setTimeout(resolve, 2000))
+  await loadUserData()
+  console.log('✅ 餘額已更新')
 }
 
-const handleAutoRefuelSuccess = () => {
-  loadUserData()
+const handleAutoRefuelSuccess = async () => {
+  console.log('🔥 自動加註成功，開始刷新餘額...')
+  await new Promise(resolve => setTimeout(resolve, 2000))
+  await loadUserData()
+  console.log('✅ 餘額已更新')
 }
 
 const handleError = (error) => {

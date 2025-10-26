@@ -286,6 +286,12 @@ const handleSubmit = async () => {
       showSuccess.value = true
       // Trigger celebration animation
       celebrateSuccess()
+      // 發送成功事件讓父組件刷新數據
+      console.log('✅ 充值成功，發送 success 事件')
+      emit('success', {
+        type: props.isFirstTime ? 'mint' : 'deposit',
+        result: result
+      })
     } else {
       throw new Error(result.error || 'Operation failed')
     }
