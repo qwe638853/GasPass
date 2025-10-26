@@ -332,9 +332,27 @@ function generateNonce(timestamp, blockNumber, contractAddress, inputAmount, cha
 export async function getQuote(quoteParams) {
   const BUNGEE_API_BASE_URL = BUNGEE_CONFIG.baseUrl;
   console.log('Bungee API Base URL:', BUNGEE_API_BASE_URL);
+  console.log('Input amount (from params):', quoteParams.amount);
   
-  // 將 USDC 金額轉換為最小單位 (USDC 有 6 位小數)
-  const inputAmountInWei = Math.floor(parseFloat(quoteParams.amount) * Math.pow(10, 6));
+  // quoteParams.amount 可能是：
+  // 1. 前端傳入的實際 USDC 金額（如 "1"）-> 需要轉換
+  // 2. 後端已轉換的最小單位（如 "1000000"）-> 不需要轉換
+  
+  // 判斷是否需要轉換：如果數值小於 1000000，認為是實際金額需要轉換
+  const amountValue = parseFloat(quoteParams.amount);
+  const shouldConvert = amountValue < 1000000;
+  
+  let inputAmountInWei;
+  if (shouldConvert) {
+    // 將 USDC 金額轉換為最小單位 (USDC 有 6 位小數)
+    // 例如: 1 USDC = 1000000 (最小單位)
+    inputAmountInWei = Math.floor(amountValue * Math.pow(10, 6));
+    console.log('Converting:', quoteParams.amount, '=> Min unit:', inputAmountInWei);
+  } else {
+    // 已經是最小單位，直接使用
+    inputAmountInWei = Math.floor(amountValue);
+    console.log('Already in min unit:', inputAmountInWei);
+  }
   
   const apiParams = {
     userAddress: BUNGEE_CONFIG.inboxAddress,
@@ -343,7 +361,7 @@ export async function getQuote(quoteParams) {
     destinationChainId: quoteParams.destinationChainId,
     inputToken: quoteParams.fromToken,
     outputToken: '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE',
-    inputAmount: quoteParams.amount,
+    inputAmount: inputAmountInWei.toString(),
     slippage: 1
   };
   
