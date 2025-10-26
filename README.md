@@ -32,23 +32,26 @@ Status	Cross-chain prototype deployed on Arbitrum & Base testnets
 ###  [How It Works]
 
 1. User Deposit
-Users deposit USDC into an ERC-3525 slot using MintWithSig.
+Users mint a GasPass card and deposit USDC into the ERC-3525 GasPass Contract via MintWithSig.
+The deposited balance is locked inside the contract for future refueling operations.
 
 2. Threshold Monitoring
-The Vincent Agent (Lit PKP) monitors target chain gas balances.
+A Backend Monitor periodically checks the native gas balance of each target-chain wallet.
+When the balance falls below a defined threshold, it triggers a refill task.
 
-3. Auto Refuel Trigger
-When the balance drops below a set threshold, the agent triggers an Avail XCS intent.
+3. Auto Mode (Vincent Agent)
+The Vincent Agent (Lit PKP) automatically calls autoRefill() on the GasPass contract, which creates a refill request using the stored USDC balance.
+The request specifies parameters like destination chain, receiver, and gas amount.
 
-4. Cross-Chain Execution
-Avail executes through Bungee, bridging stablecoins securely.
+4. Manual Mode (Avail Nexus SDK)
+When users prefer direct control, they initiate manualRefill() from the frontend, which leverages Avail Nexus SDK to perform a one-time cross-chain execution directly from the user’s wallet — without routing through Bungee.
 
-5. Gas Top-Up
-Alchemy Gas Manager or relayer converts bridged tokens to gas and funds the destination wallet.
+5. Cross-Chain Execution
+-In Auto Mode, the refill request is routed through the Bungee protocol, which handles bridging and swapping of stablecoins into native gas on the destination chain.
+-In Manual Mode, Avail Nexus SDK performs the bridging itself, using the intent-based transaction flow to deliver gas to the target wallet.
 
-6. Balance Sync
-Updated balances and execution logs are stored on Avail.
-
+6. Gas Top-Up
+On the destination chain, the received tokens are converted into native gas (via relayer or Alchemy Gas Manager) and credited to the Target Chain Wallet.
 ---
 ##  Features
 
