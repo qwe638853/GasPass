@@ -42,6 +42,25 @@ Status	Cross-chain prototype deployed on Arbitrum & Base testnets
 
 <img width="779" height="428" alt="截圖 2025-10-26 凌晨1 27 06" src="https://github.com/user-attachments/assets/c7eee6e8-a3a1-4581-8f49-ab3d8762fdd9" />
 
+###  [How It Works]
+
+1. User Deposit
+Users deposit USDC into an ERC-3525 slot using MintWithSig.
+
+2. Threshold Monitoring
+The Vincent Agent (Lit PKP) monitors target chain gas balances.
+
+3. Auto Refuel Trigger
+When the balance drops below a set threshold, the agent triggers an Avail XCS intent.
+
+4. Cross-Chain Execution
+Avail executes through Bungee, bridging stablecoins securely.
+
+5. Gas Top-Up
+Alchemy Gas Manager or relayer converts bridged tokens to gas and funds the destination wallet.
+
+6. Balance Sync
+Updated balances and execution logs are stored on Avail.
 
 ---
 ##  Features
@@ -83,27 +102,7 @@ Key Components
 | **Backend / Infra**   | Node.js, Express, Alchemy SDK, Avail SDK       |
 
 ---
-##  How It Works
 
-1. User Deposit
-Users deposit USDC into an ERC-3525 slot using MintWithSig.
-
-2. Threshold Monitoring
-The Vincent Agent (Lit PKP) monitors target chain gas balances.
-
-3. Auto Refuel Trigger
-When the balance drops below a set threshold, the agent triggers an Avail XCS intent.
-
-4. Cross-Chain Execution
-Avail executes through Bungee, bridging stablecoins securely.
-
-5. Gas Top-Up
-Alchemy Gas Manager or relayer converts bridged tokens to gas and funds the destination wallet.
-
-6. Balance Sync
-Updated balances and execution logs are stored on Avail.
-
----
 
 ##  Deployment
 ```bash
