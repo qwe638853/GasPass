@@ -101,26 +101,7 @@ Key Components
 | **Frontend**          | Vue 3, Vite, Vuetify, Pinia, Viem, Ethers.js   |
 | **Backend / Infra**   | Node.js, Express, Alchemy SDK, Avail SDK       |
 
----
 
-
-##  Deployment
-```bash
-# Clone repository
-git clone https://github.com/<your-username>/GasPass.git
-cd GasPass
-
-# Install dependencies
-pnpm install
-
-# Compile contracts
-forge build
-
-# Deploy to Arbitrum
-forge script script/DeployGasPass.s.sol:DeployGasPass \
-  --rpc-url $ARBITRUM_RPC \
-  --broadcast
-```
 ---
 
 ##  Integration SDK
@@ -185,15 +166,19 @@ Even if the backend or the Vincent service is compromised, any out-of-scope call
 - **Contract enforcement**  
   GasPass validates the executor address before allowing any operation.
 
-
 ---
-##  Future Roadmap
-Phase	Goal
- Phase 1	ERC-3525 base contract + manual refuel;
- Phase 2	Automated refuel via Vincent Agent (Lit PKP);
- Phase 3	Avail XCS integration (Bridge & Execute)
- Phase 4	Multi-chain dashboard + analytics;
- Phase 5	Public launch + staking incentives;
+## Use Cases
+
+- **Hackathon Distribution:
+Distribute GasPass cards to participants, enabling them to instantly deploy smart contracts across multiple chains.
+
+- **Brand Marketing Giveaway:
+Companies can issue GasPass cards as raffle prizes to increase brand engagement and user loyalty.
+
+- **Onboarding Card for New Users:
+Web3 apps can gift GasPass cards to new users to lower the entry barrier and simplify their first on-chain experience.
+
+
 
 ---
 ##  License
