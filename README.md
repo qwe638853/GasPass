@@ -208,21 +208,6 @@ Vincent Agent automates top-ups from USDC locked in the GasPass contract when wa
 Avail Nexus SDK enables manual, user-initiated refueling directly from the user’s wallet.  
 Together, they make GasPass both autonomous and flexible, supporting automatic and on-demand refueling.  
 
-### [Key Properties]
-
-- Decentralized, Verifiable Cross-Chain Intents
-Each intent is individually signed, auditable, and traceable.
-
-- Bridge & Execute
-Instant post-bridge execution without manual relay or backend triggers.
-
-- Anti-Replay & Guardrail Controls
-Uses nonce, expiry, and minOut to prevent replay attacks or malicious routing.
-
-- Security + Flexibility
-Users can freely choose between automated (Vincent) or self-custodial (Avail) refueling.
-
-
 ---
 ## Use Cases
 
