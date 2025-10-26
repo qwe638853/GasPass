@@ -44,13 +44,13 @@ The Vincent Agent (Lit PKP) automatically calls autoRefill() on the GasPass cont
 The request specifies parameters like destination chain, receiver, and gas amount.
 
 4. Manual Mode (Avail Nexus SDK)
-When users prefer direct control, they initiate manualRefill() from the frontend, which leverages Avail Nexus SDK to perform a one-time cross-chain execution directly from the user’s wallet — without routing through Bungee.
+When users prefer direct control, they initiate manualRefill() from the frontend, which leverages Avail Nexus SDK to perform a one-time cross-chain execution directly from the user’s wallet.
 
-5. Cross-Chain Execution
+6. Cross-Chain Execution
 -In Auto Mode, the refill request is routed through the Bungee protocol, which handles bridging and swapping of stablecoins into native gas on the destination chain.
 -In Manual Mode, Avail Nexus SDK performs the bridging itself, using the intent-based transaction flow to deliver gas to the target wallet.
 
-6. Gas Top-Up
+7. Gas Top-Up
 On the destination chain, the received tokens are converted into native gas (via relayer or Alchemy Gas Manager) and credited to the Target Chain Wallet.
 ---
 ##  Features
