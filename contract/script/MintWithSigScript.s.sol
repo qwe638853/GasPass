@@ -237,7 +237,7 @@ contract MintWithSigScript is Script {
 
         // ---------- 2) 再對 GasPass 的 mintWithSig 做 EIP-712 簽名 ----------
         uint256 mintNonce = gasPass.ownerNonces(user);
-        address agent = 0xC753b713A574bBeFDC496DBD6959c217F49D4bf8; // 你目前用自身當 agent OK
+        address agent = 0xF0f26bAfEf9D969a5A1660959C886907D6312cF7; // 你目前用自身當 agent OK
 
         GasPassTypes.MintWithSigTypedData memory mintData = GasPassTypes.MintWithSigTypedData({
             to: user,
