@@ -203,11 +203,10 @@ It supports any destination chain — Arbitrum, Base, Polygon, Optimism, and mor
 allowing users to refuel from anywhere, to anywhere.
 
 4. Complements the GasPass Automation Layer
-Vincent Agent and Avail are complementary, not competing components.
-Mode	Execution Path	Description
-Auto Mode	Vincent Agent (backend-triggered)	Automated monitoring and refueling with stored USDC
-Manual Mode	Avail Nexus SDK (user-initiated)	Direct cross-chain refuel from the user’s wallet
-Both share the same policy logic and tracking structure, ensuring consistent system behavior across modes.
+Vincent Agent and Avail play complementary roles in GasPass — two paths for cross-chain gas refueling.  
+Vincent Agent automates top-ups from USDC locked in the GasPass contract when wallet gas falls below a threshold.  
+Avail Nexus SDK enables manual, user-initiated refueling directly from the user’s wallet.  
+Together, they make GasPass both autonomous and flexible, supporting automatic and on-demand refueling.  
 
 ### [Key Properties]
 
