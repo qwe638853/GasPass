@@ -1,13 +1,13 @@
 /**
- * GasPass 前端配置文件
- * 包含合約地址、ABI 和網絡配置
+ * GasPass Frontend Configuration File
+ * Contains contract addresses, ABI, and network configuration
  */
 
 export const GAS_PASS_CONFIG = {
-  // 合約地址
+  // Contract address
   contractAddress: '0xF0f26bAfEf9D969a5A1660959C886907D6312cF7',
   
-  // 網絡配置
+  // Network configuration
   network: {
     name: 'Arbitrum One',
     chainId: 42161,
@@ -20,18 +20,18 @@ export const GAS_PASS_CONFIG = {
     explorerUrl: 'https://arbiscan.io'
   },
   
-  // USDC 配置
+  // USDC configuration
   usdc: {
     address: '0xaf88d065e77c8cC2239327C5EDb3A432268e5831',
     decimals: 6,
     symbol: 'USDC'
   },
   
-  // 服務配置
+  // Service configuration
   relayerUrl: import.meta.env.VITE_RELAYER_URL || 'http://localhost:3001'
 };
 
-// GasPass 合約 ABI（前端版本）
+// GasPass Contract ABI (frontend version)
 export const GAS_PASS_ABI = [
   // View functions
   'function totalSupply() view returns (uint256)',
@@ -58,7 +58,7 @@ export const GAS_PASS_ABI = [
   'function setRelayer(address _relayer) external'
 ];
 
-// 支援的鏈配置
+// Supported chains configuration
 export const SUPPORTED_CHAINS = {
   1: {
     name: 'Ethereum',

@@ -2,7 +2,7 @@
   <div class="modal-overlay" @click="$emit('close')">
     <div class="modal-content" @click.stop>
       <div class="modal-header">
-        <h2 class="modal-title">💰 儲值到儲值卡</h2>
+        <h2 class="modal-title">💰 Deposit to Card</h2>
         <button @click="$emit('close')" class="close-btn">
           <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
@@ -13,7 +13,7 @@
       <div class="modal-body">
         <!-- Card Selection -->
         <div class="section">
-          <h3 class="section-title">選擇儲值卡</h3>
+          <h3 class="section-title">Select Card</h3>
           <div class="cards-grid">
             <div 
               v-for="card in cards" 
@@ -26,7 +26,7 @@
               <div class="card-info">
                 <div class="card-name">GasPass #{{ card.tokenId }}</div>
                 <div class="card-balance">${{ card.balance }} USDC</div>
-                <div class="card-date">創建於 {{ formatDate(card.createdAt) }}</div>
+                <div class="card-date">Created {{ formatDate(card.createdAt) }}</div>
               </div>
             </div>
           </div>
@@ -34,15 +34,15 @@
 
         <!-- Amount Input -->
         <div v-if="selectedCard" class="section">
-          <h3 class="section-title">儲值金額</h3>
+          <h3 class="section-title">Deposit Amount</h3>
           <div class="amount-section">
             <div class="balance-info">
               <div class="balance-item">
-                <span class="balance-label">目前餘額:</span>
+                <span class="balance-label">Current Balance:</span>
                 <span class="balance-value">${{ selectedCard.balance }} USDC</span>
               </div>
               <div class="balance-item">
-                <span class="balance-label">您的 USDC 餘額:</span>
+                <span class="balance-label">Your USDC Balance:</span>
                 <span class="balance-value">${{ userUSDCBalance }} USDC</span>
               </div>
             </div>
@@ -54,7 +54,7 @@
                 step="0.01"
                 min="0"
                 :max="userUSDCBalance"
-                placeholder="輸入儲值金額"
+                placeholder="Enter deposit amount"
                 class="amount-input"
               />
               <span class="currency-label">USDC</span>
@@ -76,7 +76,7 @@
                 class="quick-btn max"
                 :class="{ 'active': depositAmount == userUSDCBalance }"
               >
-                全部
+                All
               </button>
             </div>
           </div>
@@ -85,25 +85,25 @@
         <!-- Fee Estimation -->
         <div v-if="selectedCard && depositAmount" class="section">
           <div class="fee-card">
-            <h3 class="section-title">費用明細</h3>
+            <h3 class="section-title">Fee Details</h3>
             <div class="fee-breakdown">
               <div class="fee-row">
-                <span>儲值金額:</span>
+                <span>Deposit Amount:</span>
                 <span class="highlight">${{ depositAmount }} USDC</span>
               </div>
               <div class="fee-row">
-                <span>Gas 費用:</span>
+                <span>Gas Fee:</span>
                 <span>${{ gasFee }} USDC</span>
               </div>
               <div class="fee-row total">
-                <span>您需支付:</span>
+                <span>You Will Pay:</span>
                 <span class="highlight">${{ totalCost }} USDC</span>
               </div>
             </div>
             
             <div class="result-preview">
               <div class="preview-item">
-                <span>儲值後餘額:</span>
+                <span>Balance After Deposit:</span>
                 <span class="preview-balance">${{ newBalance }} USDC</span>
               </div>
             </div>
@@ -115,10 +115,10 @@
           <div class="permit-info">
             <div class="info-header">
               <div class="info-icon">ℹ️</div>
-              <h4 class="info-title">關於 ERC-2612 Permit</h4>
+              <h4 class="info-title">About ERC-2612 Permit</h4>
             </div>
             <p class="info-description">
-              我們使用 ERC-2612 Permit 簽名來授權轉帳，這樣您只需要支付一次 Gas 費用，無需額外的 approve 交易。
+              We use ERC-2612 Permit signatures to authorize transfers, so you only need to pay Gas fees once, without additional approve transactions.
             </p>
           </div>
         </div>
@@ -133,10 +133,10 @@
           >
             <span v-if="isLoading" class="loading-content">
               <div class="loading-spinner"></div>
-              處理中...
+              Processing...
             </span>
             <span v-else>
-              💰 確認儲值
+              💰 Confirm Deposit
             </span>
           </button>
           
@@ -151,7 +151,7 @@
         <!-- Transaction Progress -->
         <div v-if="isLoading" class="section">
           <div class="progress-card">
-            <h3 class="section-title">交易進度</h3>
+            <h3 class="section-title">Transaction Progress</h3>
             <div class="progress-steps">
               <div 
                 v-for="(step, index) in progressSteps" 
@@ -185,20 +185,20 @@
       <div class="success-modal" @click.stop>
         <div class="success-modal-content">
           <div class="success-icon">🎉</div>
-          <h3 class="success-title">儲值成功！</h3>
+          <h3 class="success-title">Deposit Successful!</h3>
           <p class="success-message">{{ successMessage }}</p>
           <div v-if="successData" class="success-details">
             <div class="detail-item">
-              <span class="detail-label">交易哈希:</span>
+              <span class="detail-label">Transaction Hash:</span>
               <span class="detail-value">{{ successData.txHash }}</span>
             </div>
             <div class="detail-item">
-              <span class="detail-label">儲值金額:</span>
+              <span class="detail-label">Deposit Amount:</span>
               <span class="detail-value">{{ successData.amount }} USDC</span>
             </div>
           </div>
           <button @click="handleSuccessContinue" class="continue-btn">
-            繼續使用 GasPass
+            Continue Using GasPass
           </button>
         </div>
       </div>
@@ -237,10 +237,10 @@ const quickAmounts = ['10', '25', '50', '100', '250']
 const gasFee = ref('0.5')
 
 const progressSteps = [
-  { title: '準備交易', description: '驗證參數和餘額' },
-  { title: '簽署 Permit', description: '使用 ERC-2612 授權' },
-  { title: '執行儲值', description: '將 USDC 轉入儲值卡' },
-  { title: '更新餘額', description: '同步卡片餘額資訊' }
+  { title: 'Prepare Transaction', description: 'Verify parameters and balance' },
+  { title: 'Sign Permit', description: 'Authorize with ERC-2612' },
+  { title: 'Execute Deposit', description: 'Transfer USDC to card' },
+  { title: 'Update Balance', description: 'Sync card balance info' }
 ]
 
 // Computed
@@ -295,11 +295,11 @@ const getErrorMessage = () => {
   if (!depositAmount.value) return ''
   
   if (parseFloat(depositAmount.value) <= 0) {
-    return '請輸入有效的儲值金額'
+    return 'Please enter a valid deposit amount'
   }
   
   if (parseFloat(totalCost.value) > parseFloat(userUSDCBalance.value)) {
-    return 'USDC 餘額不足'
+    return 'Insufficient USDC balance'
   }
   
   return ''
@@ -322,24 +322,24 @@ const handleDeposit = async () => {
     await new Promise(resolve => setTimeout(resolve, 1200))
     currentStep.value = 4
     
-    // Step 4: Complete - 調用真實的合約服務
+    // Step 4: Complete - Call real contract service
     const result = await contractService.depositToCard({
       tokenId: selectedCard.value.tokenId,
       amount: depositAmount.value
     })
     
     if (result.success) {
-      // 顯示成功彈窗
+      // Show success modal
       successData.value = {
         txHash: result.txHash,
         card: selectedCard.value,
         amount: depositAmount.value,
         transaction: result.transaction
       }
-      successMessage.value = `成功為 GasPass 卡片 #${selectedCard.value.tokenId} 儲值 ${depositAmount.value} USDC！`
+      successMessage.value = `Successfully deposited ${depositAmount.value} USDC to GasPass card #${selectedCard.value.tokenId}!`
       showSuccess.value = true
       
-      // 同時發送事件給父組件
+      // Also emit event to parent component
       emit('success', successData.value)
     } else {
       throw new Error(result.error)
@@ -347,7 +347,7 @@ const handleDeposit = async () => {
     
   } catch (error) {
     console.error('Deposit failed:', error)
-    alert('儲值失敗: ' + error.message)
+    alert('Deposit failed: ' + error.message)
   } finally {
     isLoading.value = false
     currentStep.value = 0

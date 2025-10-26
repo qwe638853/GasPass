@@ -20,7 +20,7 @@
             <input 
               v-model="searchQuery"
               type="text" 
-              placeholder="搜尋區塊鏈..."
+              placeholder="Search blockchain..."
               class="search-input"
             />
           </div>
@@ -62,23 +62,23 @@
         <!-- Empty State -->
         <div v-if="filteredChains.length === 0" class="empty-state">
           <div class="empty-icon">🔍</div>
-          <p class="empty-text">找不到符合條件的區塊鏈</p>
-          <p class="empty-description">請嘗試其他搜尋關鍵字</p>
+          <p class="empty-text">No matching blockchains found</p>
+          <p class="empty-description">Please try other search keywords</p>
         </div>
 
         <!-- Chain Info Footer -->
         <div class="chain-info-footer">
           <div class="info-item">
             <div class="info-icon gas-high">🔴</div>
-            <span class="info-text">高 Gas 費</span>
+            <span class="info-text">High Gas Fee</span>
           </div>
           <div class="info-item">
             <div class="info-icon gas-medium">🟡</div>
-            <span class="info-text">中等 Gas 費</span>
+            <span class="info-text">Medium Gas Fee</span>
           </div>
           <div class="info-item">
             <div class="info-icon gas-low">🟢</div>
-            <span class="info-text">低 Gas 費</span>
+            <span class="info-text">Low Gas Fee</span>
           </div>
         </div>
       </div>
@@ -100,7 +100,7 @@ const props = defineProps({
   },
   title: {
     type: String,
-    default: '選擇區塊鏈'
+    default: 'Select Blockchain'
   }
 })
 

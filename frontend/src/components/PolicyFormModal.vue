@@ -3,7 +3,7 @@
     <div class="modal-content" @click.stop>
       <div class="modal-header">
         <h2 class="modal-title">
-          {{ isEditing ? '編輯' : '新增' }}監控策略
+          {{ isEditing ? 'Edit' : 'Add' }} Monitoring Policy
         </h2>
         <button @click="$emit('close')" class="close-btn">
           <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -15,7 +15,7 @@
       <div class="modal-body">
         <!-- Chain Selection -->
         <div class="section">
-          <h3 class="section-title">選擇監控區塊鏈</h3>
+          <h3 class="section-title">Select Monitoring Blockchain</h3>
           <div class="chain-grid">
             <div 
               v-for="chain in supportedChains" 
@@ -41,18 +41,18 @@
 
         <!-- Threshold Settings -->
         <div v-if="selectedChain" class="section">
-          <h3 class="section-title">觸發條件設定</h3>
+          <h3 class="section-title">Trigger Condition Settings</h3>
           <div class="threshold-card">
             <div class="threshold-description">
               <div class="desc-icon">⚠️</div>
               <div>
-                <p class="desc-title">當 {{ selectedChain.symbol }} 餘額低於設定值時自動補充</p>
-                <p class="desc-subtitle">建議設定為足夠執行 5-10 筆交易的 Gas 費用</p>
+                <p class="desc-title">Auto refuel when {{ selectedChain.symbol }} balance drops below threshold</p>
+                <p class="desc-subtitle">Recommended to set as enough to execute 5-10 transactions</p>
               </div>
             </div>
             
             <div class="threshold-input-section">
-              <label class="input-label">觸發閾值</label>
+              <label class="input-label">Trigger Threshold</label>
               <div class="input-wrapper">
                 <input 
                   v-model="form.threshold"
@@ -82,18 +82,18 @@
 
         <!-- Gas Amount Settings -->
         <div v-if="selectedChain" class="section">
-          <h3 class="section-title">補充數量設定</h3>
+          <h3 class="section-title">Refuel Amount Settings</h3>
           <div class="gas-amount-card">
             <div class="amount-description">
               <div class="desc-icon">⚡</div>
               <div>
-                <p class="desc-title">每次觸發時補充的 {{ selectedChain.symbol }} 數量</p>
-                <p class="desc-subtitle">建議設定為足夠使用一段時間的數量，避免頻繁觸發</p>
+                <p class="desc-title">Amount of {{ selectedChain.symbol }} to refuel each time triggered</p>
+                <p class="desc-subtitle">Recommend setting enough amount for a period to avoid frequent triggers</p>
               </div>
             </div>
             
             <div class="amount-input-section">
-              <label class="input-label">補充數量</label>
+              <label class="input-label">Refuel Amount</label>
               <div class="input-wrapper">
                 <input 
                   v-model="form.gasAmount"
@@ -124,7 +124,7 @@
         <!-- Advanced Settings -->
         <div v-if="selectedChain" class="section">
           <div class="advanced-toggle" @click="showAdvanced = !showAdvanced">
-            <h3 class="section-title">進階設定</h3>
+            <h3 class="section-title">Advanced Settings</h3>
             <svg 
               class="w-5 h-5 transition-transform"
               :class="{ 'rotate-180': showAdvanced }"
@@ -138,7 +138,7 @@
           
           <div v-if="showAdvanced" class="advanced-settings">
             <div class="setting-row">
-              <label class="setting-label">最大每日執行次數</label>
+              <label class="setting-label">Maximum Daily Executions</label>
               <input 
                 v-model="form.maxDailyExecutions"
                 type="number" 
@@ -149,22 +149,22 @@
             </div>
             
             <div class="setting-row">
-              <label class="setting-label">冷卻時間 (分鐘)</label>
+              <label class="setting-label">Cooldown Time (minutes)</label>
               <select v-model="form.cooldownMinutes" class="setting-select">
-                <option value="5">5 分鐘</option>
-                <option value="15">15 分鐘</option>
-                <option value="30">30 分鐘</option>
-                <option value="60">1 小時</option>
-                <option value="120">2 小時</option>
+                <option value="5">5 minutes</option>
+                <option value="15">15 minutes</option>
+                <option value="30">30 minutes</option>
+                <option value="60">1 hour</option>
+                <option value="120">2 hours</option>
               </select>
             </div>
             
             <div class="setting-row">
-              <label class="setting-label">優先級</label>
+              <label class="setting-label">Priority</label>
               <select v-model="form.priority" class="setting-select">
-                <option value="low">低</option>
-                <option value="normal">普通</option>
-                <option value="high">高</option>
+                <option value="low">Low</option>
+                <option value="normal">Normal</option>
+                <option value="high">High</option>
               </select>
             </div>
           </div>
@@ -173,18 +173,18 @@
         <!-- Cost Estimation -->
         <div v-if="costEstimation" class="section">
           <div class="cost-card">
-            <h3 class="section-title">費用預估</h3>
+            <h3 class="section-title">Cost Estimate</h3>
             <div class="cost-breakdown">
               <div class="cost-row">
-                <span>單次補充成本:</span>
+                <span>Single Refuel Cost:</span>
                 <span class="highlight">{{ costEstimation.singleRefuelCost }} USDC</span>
               </div>
               <div class="cost-row">
-                <span>預計月執行次數:</span>
-                <span>{{ costEstimation.monthlyExecutions }} 次</span>
+                <span>Estimated Monthly Executions:</span>
+                <span>{{ costEstimation.monthlyExecutions }} times</span>
               </div>
               <div class="cost-row">
-                <span>預計月費用:</span>
+                <span>Estimated Monthly Cost:</span>
                 <span>{{ costEstimation.monthlyCost }} USDC</span>
               </div>
             </div>
@@ -201,10 +201,10 @@
           >
             <span v-if="isLoading" class="loading-content">
               <div class="loading-spinner"></div>
-              {{ isEditing ? '更新中...' : '創建中...' }}
+              {{ isEditing ? 'Updating...' : 'Creating...' }}
             </span>
             <span v-else>
-              {{ isEditing ? '💾 更新策略' : '✨ 創建策略' }}
+              {{ isEditing ? '💾 Update Policy' : '✨ Create Policy' }}
             </span>
           </button>
         </div>
@@ -267,7 +267,7 @@ const selectChain = (chain) => {
   form.value.chainName = chain.name
   form.value.symbol = chain.symbol
   
-  // 設定建議值
+  // Set recommended values
   if (!form.value.threshold) {
     form.value.threshold = getQuickThresholds()[0]
   }
@@ -335,7 +335,7 @@ const handleSubmit = async () => {
     emit('success', policyData)
   } catch (error) {
     console.error('Failed to save policy:', error)
-    alert('儲存策略失敗：' + error.message)
+    alert('Failed to save policy: ' + error.message)
   } finally {
     isLoading.value = false
   }

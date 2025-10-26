@@ -2,7 +2,7 @@
   <div class="modal-overlay" @click="$emit('close')">
     <div class="modal-container" @click.stop>
       <div class="modal-header">
-        <h3 class="modal-title">🤖 自動補 Gas 設定</h3>
+        <h3 class="modal-title">🤖 Auto Refuel Settings</h3>
         <button @click="$emit('close')" class="modal-close">
           <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
@@ -15,8 +15,8 @@
           <!-- Enable Toggle -->
           <div class="flex items-center justify-between">
             <div>
-              <h4 class="text-lg font-semibold text-gray-900">啟用自動補充</h4>
-              <p class="text-sm text-gray-600">讓 AI Agent 自動監控並補充 Gas</p>
+              <h4 class="text-lg font-semibold text-gray-900">Enable Auto Refuel</h4>
+              <p class="text-sm text-gray-600">Let AI Agent automatically monitor and refuel Gas</p>
             </div>
             <label class="toggle-switch">
               <input v-model="isEnabled" type="checkbox" />
@@ -26,7 +26,7 @@
 
           <!-- Monitoring Chains -->
           <div v-if="isEnabled">
-            <label class="block text-sm font-medium text-gray-700 mb-3">監控的區塊鏈</label>
+            <label class="block text-sm font-medium text-gray-700 mb-3">Monitored Blockchains</label>
             <div class="grid grid-cols-2 gap-3">
               <label
                 v-for="chain in supportedChains"
@@ -50,7 +50,7 @@
 
           <!-- Threshold Settings -->
           <div v-if="isEnabled" class="space-y-4">
-            <h4 class="text-lg font-semibold text-gray-900">閾值設定</h4>
+            <h4 class="text-lg font-semibold text-gray-900">Threshold Settings</h4>
             
             <div v-for="chain in selectedChains" :key="chain.id" class="threshold-group">
               <div class="flex items-center gap-3 mb-2">
@@ -61,24 +61,24 @@
               
               <div class="grid grid-cols-2 gap-4">
                 <div>
-                  <label class="block text-sm text-gray-600 mb-1">最低餘額</label>
+                  <label class="block text-sm text-gray-600 mb-1">Minimum Balance</label>
                   <input
                     v-model="thresholds[chain.id].minBalance"
                     type="number"
                     step="0.001"
                     min="0"
-                    :placeholder="`${chain.symbol} 數量`"
+                    :placeholder="`${chain.symbol} amount`"
                     class="threshold-input"
                   />
                 </div>
                 <div>
-                  <label class="block text-sm text-gray-600 mb-1">補充數量</label>
+                  <label class="block text-sm text-gray-600 mb-1">Refuel Amount</label>
                   <input
                     v-model="thresholds[chain.id].refuelAmount"
                     type="number"
                     step="0.001"
                     min="0"
-                    :placeholder="`${chain.symbol} 數量`"
+                    :placeholder="`${chain.symbol} amount`"
                     class="threshold-input"
                   />
                 </div>
@@ -88,20 +88,20 @@
 
           <!-- Advanced Settings -->
           <div v-if="isEnabled" class="space-y-4">
-            <h4 class="text-lg font-semibold text-gray-900">進階設定</h4>
+            <h4 class="text-lg font-semibold text-gray-900">Advanced Settings</h4>
             
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">檢查頻率</label>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Check Frequency</label>
               <select v-model="checkFrequency" class="select-input">
-                <option value="5">每 5 分鐘</option>
-                <option value="15">每 15 分鐘</option>
-                <option value="30">每 30 分鐘</option>
-                <option value="60">每小時</option>
+                <option value="5">Every 5 minutes</option>
+                <option value="15">Every 15 minutes</option>
+                <option value="30">Every 30 minutes</option>
+                <option value="60">Every hour</option>
               </select>
             </div>
 
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">最大每日補充次數</label>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Maximum Daily Refuels</label>
               <input
                 v-model="maxDailyRefuels"
                 type="number"
@@ -117,20 +117,20 @@
                 type="checkbox"
                 class="checkbox-input"
               />
-              <label class="text-sm text-gray-700">啟用通知提醒</label>
+              <label class="text-sm text-gray-700">Enable Notification Alerts</label>
             </div>
           </div>
 
           <!-- Cost Preview -->
           <div v-if="isEnabled && totalCost > 0" class="cost-preview">
-            <h4 class="text-sm font-medium text-gray-700 mb-2">預估費用</h4>
+            <h4 class="text-sm font-medium text-gray-700 mb-2">Estimated Cost</h4>
             <div class="space-y-1 text-sm">
               <div class="flex justify-between">
-                <span>每日最大補充:</span>
+                <span>Maximum Daily Refuel:</span>
                 <span>{{ totalCost }} USDC</span>
               </div>
               <div class="flex justify-between">
-                <span>每月預估:</span>
+                <span>Monthly Estimate:</span>
                 <span>{{ (totalCost * 30).toFixed(2) }} USDC</span>
               </div>
             </div>
@@ -144,9 +144,9 @@
           >
             <span v-if="isLoading" class="flex items-center justify-center gap-2">
               <div class="loading-spinner"></div>
-              設定中...
+              Setting up...
             </span>
-            <span v-else>確認設定</span>
+            <span v-else>Confirm Settings</span>
           </button>
         </form>
       </div>
@@ -228,7 +228,7 @@ const handleSubmit = async () => {
     emit('close')
   } catch (error) {
     console.error('Auto refuel setup failed:', error)
-    alert('設定失敗，請稍後再試')
+    alert('Settings failed, please try again later')
   } finally {
     isLoading.value = false
   }

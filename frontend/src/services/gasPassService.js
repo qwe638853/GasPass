@@ -1,4 +1,4 @@
-// GasPass 業務邏輯服務
+// GasPass business logic service
 import { mockGasPassCards, mockTransactionHistory, mockRefuelPolicies } from '../utils/mockData.js'
 
 class GasPassService {
@@ -9,33 +9,33 @@ class GasPassService {
     this.agentSettings = new Map() // tokenId -> settings
   }
 
-  // 檢查用戶是否有儲值卡
+  // Check if user has a gas pass card
   async hasGasPassCard(walletAddress) {
     if (!walletAddress) return false
-    // 模擬檢查邏輯 - 在真實環境中會查詢智能合約
+    // Simulate check logic - in real environment would query smart contract
     const cards = await this.getUserCards(walletAddress)
     return cards.length > 0
   }
 
-  // 獲取用戶的所有儲值卡
+  // Get all user's gas pass cards
   async getUserCards(walletAddress) {
     if (!walletAddress) return []
-    // 模擬從智能合約獲取用戶卡片
+    // Simulate fetching user cards from smart contract
     this.userCards = mockGasPassCards.filter(card => 
       card.owner.toLowerCase() === walletAddress.toLowerCase()
     )
     return this.userCards
   }
 
-  // 鑄造新的儲值卡
+  // Mint new gas pass card
   async mintGasPassCard(params) {
     const { to, amount, permitData, deadline } = params
     
     try {
-      // 模擬鑄造過程
+      // Simulate minting process
       await this.simulateDelay(2000)
       
-      // 生成新的儲值卡
+      // Generate new card
       const newCard = {
         tokenId: Date.now(),
         owner: to,
@@ -46,7 +46,7 @@ class GasPassService {
       
       this.userCards.push(newCard)
       
-      // 記錄交易歷史
+      // Record transaction history
       const transaction = {
         id: Date.now(),
         hash: '0x' + Math.random().toString(16).substr(2, 64),

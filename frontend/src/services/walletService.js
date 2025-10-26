@@ -1,31 +1,31 @@
-// 錢包和 Web3 相關服務 - 使用 wagmi core
+// Wallet and Web3 related services - using wagmi core
 import { getAccount, getChainId, watchAccount, watchChainId, switchChain, disconnect, reconnect } from '@wagmi/core'
 import { createWeb3Modal, defaultWagmiConfig } from '@web3modal/wagmi'
 import { mainnet, optimism, polygon, arbitrum, avalanche, base, bsc } from 'viem/chains'
 
 class WalletService {
   constructor() {
-    this.projectId = '255a4cd46f3cd791463a56bb6c43d7bc' // 您的 WalletConnect Project ID
+    this.projectId = '255a4cd46f3cd791463a56bb6c43d7bc' // Your WalletConnect Project ID
     this.metadata = {
       name: 'GasPass',
-      description: '基於 ERC-3525 的跨鏈 Gas 管理平台',
-      url: window.location.origin, // 使用當前頁面的 URL
+      description: 'ERC-3525 based cross-chain Gas management platform',
+      url: window.location.origin, // Use current page URL
       icons: ['https://gaspass.com/icon.png']
     }
-    // 使用主網鏈清單，並添加 Arbitrum Sepolia 測試網
+    // Use mainnet chain list, and add Arbitrum Sepolia testnet
     this.chains = [mainnet, optimism, polygon, arbitrum, avalanche, base, bsc]
     this.wagmiConfig = null
     this.modal = null
     this.isInitialized = false
     this.listeners = []
-    this.initializationPromise = null // 防止重複初始化
+    this.initializationPromise = null // Prevent duplicate initialization
     
     this.initializeWeb3Modal()
   }
 
-  // 初始化 Web3Modal
+  // Initialize Web3Modal
   async initializeWeb3Modal() {
-    // 防止重複初始化
+    // Prevent duplicate initialization
     if (this.initializationPromise) {
       return this.initializationPromise
     }
@@ -36,7 +36,7 @@ class WalletService {
   
   async _doInitialize() {
     try {
-      // 檢查是否已經初始化
+      // Check if already initialized
       if (this.isInitialized) {
         console.log('Web3Modal already initialized')
         return

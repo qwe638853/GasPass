@@ -2,7 +2,7 @@
   <div class="modal-overlay" @click="$emit('close')">
     <div class="modal-container" @click.stop>
       <div class="modal-header">
-        <h3 class="modal-title">⚡ 手動補 Gas</h3>
+        <h3 class="modal-title">⚡ Manual Refuel</h3>
         <button @click="$emit('close')" class="modal-close">
           <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
@@ -14,7 +14,7 @@
         <form @submit.prevent="handleSubmit" class="space-y-6">
           <!-- Target Chain Selection -->
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-3">選擇目標區塊鏈</label>
+            <label class="block text-sm font-medium text-gray-700 mb-3">Select Target Blockchain</label>
             <div class="grid grid-cols-2 gap-3">
               <button
                 v-for="chain in supportedChains"
@@ -33,14 +33,14 @@
 
           <!-- Amount Input -->
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">補充數量</label>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Refuel Amount</label>
             <div class="relative">
               <input
                 v-model="amount"
                 type="number"
                 step="0.001"
                 min="0"
-                placeholder="輸入數量"
+                placeholder="Enter amount"
                 class="amount-input"
                 required
               />
@@ -50,7 +50,7 @@
 
           <!-- Quick Amount Buttons -->
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">快速選擇</label>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Quick Select</label>
             <div class="grid grid-cols-4 gap-2">
               <button
                 v-for="quickAmount in quickAmounts"
@@ -67,18 +67,18 @@
 
           <!-- Cost Preview -->
           <div v-if="costEstimate" class="cost-preview">
-            <h4 class="text-sm font-medium text-gray-700 mb-2">費用預估</h4>
+            <h4 class="text-sm font-medium text-gray-700 mb-2">Cost Estimate</h4>
             <div class="space-y-1 text-sm">
               <div class="flex justify-between">
-                <span>補充數量:</span>
+                <span>Refuel Amount:</span>
                 <span>{{ amount }} {{ getChainSymbol(selectedChain) }}</span>
               </div>
               <div class="flex justify-between">
-                <span>Gas 費用:</span>
+                <span>Gas Fee:</span>
                 <span>≈ {{ costEstimate.gas }} ETH</span>
               </div>
               <div class="flex justify-between font-semibold">
-                <span>總費用:</span>
+                <span>Total Cost:</span>
                 <span>{{ costEstimate.total }} USDC</span>
               </div>
             </div>
@@ -92,9 +92,9 @@
           >
             <span v-if="isLoading" class="flex items-center justify-center gap-2">
               <div class="loading-spinner"></div>
-              處理中...
+              Processing...
             </span>
-            <span v-else>確認補充</span>
+            <span v-else>Confirm Refuel</span>
           </button>
         </form>
       </div>
@@ -162,7 +162,7 @@ const handleSubmit = async () => {
     emit('close')
   } catch (error) {
     console.error('Manual refuel failed:', error)
-    alert('補充失敗，請稍後再試')
+    alert('Refuel failed, please try again later')
   } finally {
     isLoading.value = false
   }

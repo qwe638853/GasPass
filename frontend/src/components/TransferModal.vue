@@ -2,7 +2,7 @@
   <div class="modal-overlay" @click="$emit('close')">
     <div class="modal-content" @click.stop>
       <div class="modal-header">
-        <h2 class="modal-title">🔄 轉移儲值卡餘額</h2>
+        <h2 class="modal-title">🔄 Transfer Card Balance</h2>
         <button @click="$emit('close')" class="close-btn">
           <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
@@ -13,7 +13,7 @@
       <div class="modal-body">
         <!-- Source Card Selection -->
         <div class="section">
-          <h3 class="section-title">選擇來源儲值卡</h3>
+          <h3 class="section-title">Select Source Card</h3>
           <div class="cards-grid">
             <div 
               v-for="card in availableSourceCards" 
@@ -26,21 +26,21 @@
               <div class="card-info">
                 <div class="card-name">GasPass #{{ card.tokenId }}</div>
                 <div class="card-balance">${{ card.balance }} USDC</div>
-                <div class="card-date">可轉移餘額</div>
+                <div class="card-date">Transferable Balance</div>
               </div>
             </div>
           </div>
           
           <div v-if="availableSourceCards.length === 0" class="empty-state">
             <div class="empty-icon">💸</div>
-            <p class="empty-text">沒有可轉移的儲值卡</p>
-            <p class="empty-description">需要至少一張有餘額的儲值卡才能進行轉移</p>
+            <p class="empty-text">No transferable cards</p>
+            <p class="empty-description">You need at least one card with balance to transfer</p>
           </div>
         </div>
 
         <!-- Target Card Selection -->
         <div v-if="fromCard" class="section">
-          <h3 class="section-title">選擇目標儲值卡</h3>
+          <h3 class="section-title">Select Target Card</h3>
           <div class="cards-grid">
             <div 
               v-for="card in availableTargetCards" 
@@ -53,7 +53,7 @@
               <div class="card-info">
                 <div class="card-name">GasPass #{{ card.tokenId }}</div>
                 <div class="card-balance">${{ card.balance }} USDC</div>
-                <div class="card-date">接收目標</div>
+                <div class="card-date">Receive Target</div>
               </div>
             </div>
           </div>
@@ -61,11 +61,11 @@
 
         <!-- Transfer Amount -->
         <div v-if="fromCard && toCard" class="section">
-          <h3 class="section-title">轉移金額</h3>
+          <h3 class="section-title">Transfer Amount</h3>
           <div class="transfer-section">
             <div class="transfer-preview">
               <div class="transfer-card from">
-                <div class="transfer-label">來源</div>
+                <div class="transfer-label">From</div>
                 <div class="transfer-info">
                   <div class="transfer-name">GasPass #{{ fromCard.tokenId }}</div>
                   <div class="transfer-balance">
@@ -81,7 +81,7 @@
               </div>
               
               <div class="transfer-card to">
-                <div class="transfer-label">目標</div>
+                <div class="transfer-label">To</div>
                 <div class="transfer-info">
                   <div class="transfer-name">GasPass #{{ toCard.tokenId }}</div>
                   <div class="transfer-balance">
@@ -98,7 +98,7 @@
                 step="0.01"
                 min="0"
                 :max="maxTransferAmount"
-                placeholder="輸入轉移金額"
+                placeholder="Enter transfer amount"
                 class="amount-input"
               />
               <span class="currency-label">USDC</span>
@@ -119,17 +119,17 @@
                 class="quick-btn max"
                 :class="{ 'active': transferAmount == maxTransferAmount }"
               >
-                全部
+                All
               </button>
             </div>
             
             <div class="transfer-limits">
               <div class="limit-item">
-                <span class="limit-label">最大可轉移:</span>
+                <span class="limit-label">Max Transferable:</span>
                 <span class="limit-value">${{ maxTransferAmount }} USDC</span>
               </div>
               <div class="limit-item">
-                <span class="limit-label">轉移後保留:</span>
+                <span class="limit-label">Remaining After Transfer:</span>
                 <span class="limit-value">${{ (parseFloat(fromCard.balance) - parseFloat(transferAmount || 0)).toFixed(2) }} USDC</span>
               </div>
             </div>
@@ -139,13 +139,13 @@
         <!-- Fee Information -->
         <div v-if="fromCard && toCard && transferAmount" class="section">
           <div class="fee-card">
-            <h3 class="section-title">費用說明</h3>
+            <h3 class="section-title">Fee Information</h3>
             <div class="fee-info">
               <div class="fee-icon">ℹ️</div>
               <div class="fee-content">
-                <p class="fee-title">內部轉移免費</p>
+                <p class="fee-title">Internal Transfer Free</p>
                 <p class="fee-description">
-                  儲值卡之間的餘額轉移完全在智能合約內部進行，不會產生額外的 Gas 費用或手續費。
+                  Balance transfers between cards are processed entirely within the smart contract, with no additional Gas fees or transaction charges.
                 </p>
               </div>
             </div>
@@ -155,23 +155,23 @@
         <!-- Confirmation -->
         <div v-if="fromCard && toCard && transferAmount" class="section">
           <div class="confirmation-card">
-            <h3 class="section-title">確認轉移</h3>
+            <h3 class="section-title">Confirm Transfer</h3>
             <div class="confirmation-details">
               <div class="confirmation-row">
-                <span>轉移金額:</span>
+                <span>Transfer Amount:</span>
                 <span class="highlight">${{ transferAmount }} USDC</span>
               </div>
               <div class="confirmation-row">
-                <span>從:</span>
+                <span>From:</span>
                 <span>GasPass #{{ fromCard.tokenId }}</span>
               </div>
               <div class="confirmation-row">
-                <span>到:</span>
+                <span>To:</span>
                 <span>GasPass #{{ toCard.tokenId }}</span>
               </div>
               <div class="confirmation-row">
-                <span>手續費:</span>
-                <span class="free">免費</span>
+                <span>Transaction Fee:</span>
+                <span class="free">Free</span>
               </div>
             </div>
           </div>
@@ -187,10 +187,10 @@
           >
             <span v-if="isLoading" class="loading-content">
               <div class="loading-spinner"></div>
-              轉移中...
+              Transferring...
             </span>
             <span v-else>
-              🔄 確認轉移
+              🔄 Confirm Transfer
             </span>
           </button>
           
@@ -205,7 +205,7 @@
         <!-- Transaction Progress -->
         <div v-if="isLoading" class="section">
           <div class="progress-card">
-            <h3 class="section-title">轉移進度</h3>
+            <h3 class="section-title">Transfer Progress</h3>
             <div class="progress-steps">
               <div 
                 v-for="(step, index) in progressSteps" 
@@ -257,9 +257,9 @@ const isLoading = ref(false)
 const currentStep = ref(0)
 
 const progressSteps = [
-  { title: '驗證參數', description: '檢查轉移條件和餘額' },
-  { title: '執行轉移', description: '在智能合約中執行餘額轉移' },
-  { title: '更新狀態', description: '同步卡片餘額資訊' }
+  { title: 'Verify Parameters', description: 'Check transfer conditions and balance' },
+  { title: 'Execute Transfer', description: 'Execute balance transfer in smart contract' },
+  { title: 'Update Status', description: 'Sync card balance information' }
 ]
 
 // Computed

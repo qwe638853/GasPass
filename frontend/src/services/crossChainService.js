@@ -1,4 +1,4 @@
-// 跨鏈轉換服務
+// Cross-chain swap service
 import { supportedChains, mockSwapHistory } from '../utils/mockData.js'
 
 class CrossChainService {
@@ -8,17 +8,17 @@ class CrossChainService {
     this.chainBalances = {}
   }
 
-  // 獲取支援的鏈
+  // Get supported chains
   getSupportedChains() {
     return this.supportedChains
   }
 
-  // 獲取鏈資訊
+  // Get chain information
   getChainInfo(chainId) {
     return this.supportedChains.find(chain => chain.id === chainId)
   }
 
-  // 估算跨鏈轉換費用
+  // Estimate cross-chain swap cost
   async estimateSwapCost(fromChain, toChain, amount) {
     await this.simulateDelay(800)
     
@@ -26,7 +26,7 @@ class CrossChainService {
     const toChainInfo = this.getChainInfo(toChain)
     
     if (!fromChainInfo || !toChainInfo) {
-      throw new Error('不支援的鏈')
+      throw new Error('Unsupported chain')
     }
 
     // 模擬費用計算

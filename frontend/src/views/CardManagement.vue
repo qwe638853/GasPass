@@ -39,7 +39,7 @@
 
         <!-- Connected State -->
         <div v-else>
-          <!-- Vincent Agent 登入銜接卡片（尚未取得 JWT 時顯示） -->
+          <!-- Vincent Agent login prompt card (shown when JWT is not available) -->
           <div v-if="!vincentJwt" class="mb-8">
             <div class="premium-card-vincent p-8 relative overflow-hidden group">
               <div class="absolute inset-0 bg-gradient-to-br from-emerald-50/10 to-teal-50/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
@@ -73,7 +73,7 @@
                   </div>
                 </div>
 
-                <!-- 導轉前確認區塊 -->
+                <!-- Pre-redirect confirmation block -->
                 <div v-if="confirmVincentVisible" class="mt-6 p-4 bg-emerald-500/10 border border-emerald-400/30 rounded-xl">
                   <p class="text-white mb-4">About to leave GasPass for Vincent login, will automatically return after completion. Continue?</p>
                   <div class="flex items-center justify-between">
@@ -90,17 +90,17 @@
               </div>
             </div>
           </div>
-          <!-- 上半部分：儲值卡管理 -->
+          <!-- Top Section: Card Management -->
           <div v-if="vincentJwt" class="mb-12">
-            <!-- 沒有儲值卡的情況 -->
+            <!-- No cards scenario -->
             <div v-if="!hasCard" class="py-8 -mt-8">
               <div class="premium-card-main px-8 py-4 max-w-5xl mx-auto relative overflow-hidden">
-                <!-- 背景裝飾 -->
+                <!-- Background decoration -->
                 <div class="absolute inset-0 bg-gradient-to-br from-emerald-50/10 to-teal-50/10"></div>
                 <div class="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-emerald-200/20 to-teal-200/20 rounded-full -translate-y-32 translate-x-32"></div>
                 <div class="absolute bottom-0 left-0 w-48 h-48 bg-gradient-to-tr from-emerald-200/20 to-teal-200/20 rounded-full translate-y-24 -translate-x-24"></div>
                 
-                <!-- 錢包地址 -->
+                <!-- Wallet address -->
                 <div class="card-number-display">
                   <span class="number-segment">{{ getAddressSegment(0) }}</span>
                   <span class="number-segment">{{ getAddressSegment(1) }}</span>
@@ -109,7 +109,7 @@
                 </div>
                 
                 <div class="relative z-10 flex items-center gap-12">
-                  <!-- 左側文字內容 -->
+                  <!-- Left side text content -->
                   <div class="flex-1 -mt-8">
                     <div class="flex items-center gap-3 mb-6">
                       <h3 class="text-4xl font-black text-gray-600">Welcome to GasPass!</h3>
@@ -120,7 +120,7 @@
                     </p>
                   </div>
                   
-                  <!-- 右側 Cute Gas Jar Component -->
+                  <!-- Right side Cute Gas Jar Component -->
                   <div class="flex-shrink-0">
                     <CuteGasJar 
                       :isFirstTime="true"
@@ -132,9 +132,9 @@
               </div>
             </div>
 
-            <!-- 有儲值卡的情況 - 與沒有儲值卡畫面保持一致 -->
+            <!-- Has cards scenario - keep consistency with no cards view -->
             <div v-else class="py-8 -mt-8">
-              <!-- 多張卡片時的選擇器 -->
+              <!-- Card selector when multiple cards exist -->
               <div v-if="userCards.length > 1" class="mb-6 flex justify-center">
                 <div class="card-selector-elegant">
                   <div class="flex items-center gap-3">
@@ -157,14 +157,14 @@
                 </div>
               </div>
 
-              <!-- 主要卡片區域 - 與沒有儲值卡畫面保持一致 -->
+              <!-- Main card area - keep consistency with no cards view -->
               <div class="premium-card-main px-8 py-4 max-w-5xl mx-auto relative overflow-hidden">
-                <!-- 背景裝飾 -->
+                <!-- Background decoration -->
                 <div class="absolute inset-0 bg-gradient-to-br from-emerald-50/10 to-teal-50/10"></div>
                 <div class="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-emerald-200/20 to-teal-200/20 rounded-full -translate-y-32 translate-x-32"></div>
                 <div class="absolute bottom-0 left-0 w-48 h-48 bg-gradient-to-tr from-teal-200/20 to-emerald-200/20 rounded-full translate-y-24 -translate-x-24"></div>
                 
-                <!-- 錢包地址 -->
+                <!-- Wallet address -->
                 <div class="card-number-display">
                   <span class="number-segment">{{ getAddressSegment(0) }}</span>
                   <span class="number-segment">{{ getAddressSegment(1) }}</span>
@@ -172,7 +172,7 @@
                   <span class="number-segment">{{ getAddressSegment(3) }}</span>
                     </div>
                     
-                 <!-- 卡片信息 - 左上角 -->
+                 <!-- Card info - top left corner -->
                  <div v-if="selectedTokenId" class="absolute top-6 left-6 z-20">
                    <div class="card-info-top-left">
                      <div class="flex items-center gap-3">
@@ -195,13 +195,13 @@
                  </div>
 
                  <div class="relative z-10 flex items-center gap-12">
-                   <!-- 左側文字內容 -->
+                   <!-- Left side text content -->
                    <div class="flex-1 -mt-8">
                      <div class="flex items-center gap-3 mb-6">
                        <h3 class="text-4xl font-black text-gray-600">Welcome back!</h3>
                      </div>
                      
-                     <!-- 專業化的狀態信息 -->
+                     <!-- Professional status information -->
                      <div class="status-info-container mb-8">
                        <div class="status-description">
                          <p class="primary-text">Your GasPass infrastructure is ready</p>
@@ -210,7 +210,7 @@
                      </div>
                    </div>
                    
-                   <!-- 右側 Cute Gas Jar Component -->
+                   <!-- Right side Cute Gas Jar Component -->
                    <div class="flex-shrink-0">
                      <CuteGasJar 
                        :isFirstTime="false"
@@ -224,14 +224,14 @@
             </div>
           </div>
 
-          <!-- 下半部分：Gas 兌換管理 -->
+          <!-- Bottom Section: Gas Exchange Management -->
           <div v-if="hasCard && showGasExchange && selectedTokenId" class="premium-card-exchange p-8 relative overflow-hidden">
-            <!-- 背景裝飾 -->
+            <!-- Background decoration -->
             <div class="absolute inset-0 bg-gradient-to-br from-emerald-50/5 to-teal-50/5"></div>
             <div class="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-emerald-200/20 to-teal-200/20 rounded-full -translate-y-16 translate-x-16"></div>
             
             <div class="relative z-10">
-              <!-- 標題 -->
+              <!-- Title -->
               <div class="flex items-center justify-center gap-3 mb-8">
                 <div class="w-8 h-8 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-lg flex items-center justify-center">
                   <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -247,7 +247,7 @@
                 </button>
               </div>
               
-              <!-- 切換標籤 -->
+              <!-- Tab switching -->
               <div class="flex justify-center mb-8">
                 <div class="bg-slate-700/50 rounded-2xl p-1 inline-flex">
                   <button 
@@ -281,10 +281,10 @@
                   </div>
                 </div>
 
-              <!-- 手動兌換 Gas -->
+              <!-- Manual Gas Exchange -->
               <div v-if="activeTab === 'manual'" class="space-y-6">
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                  <!-- 兌換設定 -->
+                  <!-- Exchange settings -->
                   <div class="premium-card-settings p-6">
                     <div class="flex items-center gap-3 mb-6">
                       <div class="w-8 h-8 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-lg flex items-center justify-center">
@@ -327,7 +327,7 @@
                            class="w-full p-3 bg-slate-600/50 border border-emerald-400/30 rounded-xl focus:border-emerald-400 focus:outline-none transition-colors text-white placeholder-emerald-300 mb-4"
                          />
 
-                         <!-- 快捷按鈕 -->
+                         <!-- Quick buttons -->
                          <div class="flex gap-2 mb-3">
                           <button 
                             @click="setExchangeAmount(25)"
@@ -376,7 +376,7 @@
                     </button>
                   </div>
                   
-                  <!-- 兌換預覽 -->
+                  <!-- Exchange preview -->
                   <div class="premium-card-preview p-6">
                     <div class="flex items-center gap-3 mb-6">
                       <div class="w-8 h-8 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-lg flex items-center justify-center">
@@ -413,10 +413,10 @@
                 </div>
               </div>
 
-              <!-- Agent 自動監測 -->
+              <!-- Agent Auto Monitoring -->
               <div v-else class="space-y-6">
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                  <!-- Agent 設定 -->
+                  <!-- Agent Settings -->
                   <div class="premium-card-settings p-6">
                     <div class="flex items-center gap-3 mb-6">
                       <div class="w-8 h-8 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-lg flex items-center justify-center">
@@ -478,7 +478,7 @@
                     </button>
                   </div>
                   
-                  <!-- Agent 狀態 -->
+                  <!-- Agent Status -->
                   <div class="premium-card-preview p-6">
                     <div class="flex items-center gap-3 mb-6">
                       <div class="w-8 h-8 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-lg flex items-center justify-center">
@@ -729,13 +729,13 @@ import AutoRefuelModal from '../components/AutoRefuelModal.vue'
 // Web3 composable
 const { account, isConnected, isWalletReady, connectWallet, formatAddress, getUSDCBalance, provider, signer, isArbitrum, switchToArbitrum } = useWeb3()
 
-// Vincent Auth composable（使用硬編碼的 App ID）
+// Vincent Auth composable (uses hardcoded App ID)
 const { ensureAuth, loadFromStorage, vincentJwt, vincentRedirecting, vincentPkpEthAddress } = useVincentAuth()
 
-// 暴露 SUPPORTED_CHAINS 給模板使用
+// Expose SUPPORTED_CHAINS for template use
 const supportedChains = SUPPORTED_CHAINS
 
-// Vincent JWT 狀態監聽（可選調試）
+// Vincent JWT status monitoring (optional debugging)
 // watch(vincentJwt, (newVal) => {
 //   console.log('[CardManagement] vincentJwt changed:', !!newVal, newVal)
 // }, { immediate: true })
@@ -746,11 +746,11 @@ const transactionHistory = ref([])
 const usdcBalance = ref('0.00')
 const showManualRefuel = ref(false)
 const showAutoRefuel = ref(false)
-const showGasJar = ref(false) // 新增：控制 Gas Jar 顯示
-const selectedTokenId = ref(null) // 新增：選中的 Token ID
-const showGasExchange = ref(false) // 新增：控制 Gas Exchange 顯示
+const showGasJar = ref(false) // New: Control Gas Jar display
+const selectedTokenId = ref(null) // New: Selected Token ID
+const showGasExchange = ref(false) // New: Control Gas Exchange display
 
-// 新增：手動兌換成功視窗
+// New: Manual exchange success modal
 const showManualRefuelSuccess = ref(false)
 const manualRefuelSuccessData = ref({
   txHash: '',
@@ -759,7 +759,7 @@ const manualRefuelSuccessData = ref({
   chainName: ''
 })
 
-// 新增：Agent Set 成功視窗
+// New: Agent Set success modal
 const showAgentSetSuccess = ref(false)
 const agentSetSuccessData = ref({
   chainName: '',
@@ -767,36 +767,36 @@ const agentSetSuccessData = ref({
   amount: ''
 })
 
-// 新增：Tab 切換
+// New: Tab switching
 const activeTab = ref('manual')
 
-// 新增：手動兌換設定
+// New: Manual exchange settings
 const manualRefuel = ref({
-  chainId: '42161', // 預設 Arbitrum
+  chainId: '42161', // Default Arbitrum
   amount: '',
   recipient: ''
 })
 
-// 新增：Agent 自動監測設定
+// New: Agent auto monitoring settings
 const agentRefuel = ref({
-  chainId: '42161', // 預設 Arbitrum
+  chainId: '42161', // Default Arbitrum
   threshold: '',
   amount: ''
 })
 
-// 新增：Agent 狀態
+// New: Agent status
 const agentStatus = ref({
   active: false,
   lastCheck: null
 })
 
-// 新增：模態視窗狀態
+// New: Modal state
 const showManualChainModal = ref(false)
 const showAgentChainModal = ref(false)
 const manualChainSearch = ref('')
 const agentChainSearch = ref('')
 
-// 新增：報價相關狀態
+// New: Quote related state
 const actualAmount = ref('0.000000')
 const isLoadingQuote = ref(false)
 const quoteError = ref('')
@@ -804,7 +804,7 @@ const quoteError = ref('')
 // Computed
 const hasCard = computed(() => userCards.value.length > 0)
 
-// 手動兌換驗證
+// Manual exchange validation
 const canExecuteManualRefuel = computed(() => {
   return manualRefuel.value.amount && 
          parseFloat(manualRefuel.value.amount) > 0 &&
@@ -812,7 +812,7 @@ const canExecuteManualRefuel = computed(() => {
          hasCard.value
 })
 
-// Agent 設定驗證
+// Agent settings validation
 const canSetupAgentRefuel = computed(() => {
   return agentRefuel.value.threshold && 
          parseFloat(agentRefuel.value.threshold) > 0 &&
@@ -823,8 +823,8 @@ const canSetupAgentRefuel = computed(() => {
 
 // Methods
 const loadUserData = async () => {
-  console.log('🔍 loadUserData 開始執行')
-  console.log('🔍 檢查條件:', {
+  console.log('🔍 loadUserData starting execution')
+  console.log('🔍 Checking conditions:', {
     account: account.value,
     provider: !!provider.value,
     signer: !!signer.value,
@@ -832,53 +832,53 @@ const loadUserData = async () => {
   })
   
   if (!account.value || !provider.value || !signer.value) {
-    console.warn('⚠️ 缺少必要參數，無法載入用戶數據')
+    console.warn('⚠️ Missing required parameters, cannot load user data')
     return
   }
   
   try {
-    console.log('🔍 開始初始化合約服務...')
-    // 初始化合約服務
+    console.log('🔍 Starting contract service initialization...')
+    // Initialize contract service
     await contractService.init(provider.value, signer.value)
     
-    console.log('🔍 檢查是否有 GasPass 卡片...')
-    // 檢查是否有 GasPass 卡片
+    console.log('🔍 Checking for GasPass cards...')
+    // Check for GasPass cards
     const hasCard = await contractService.hasGasPassCard(account.value)
-    console.log('🔍 hasCard 結果:', hasCard)
+    console.log('🔍 hasCard result:', hasCard)
     
     if (hasCard) {
-      console.log('🔍 載入用戶卡片...')
-      // 載入用戶卡片
+      console.log('🔍 Loading user cards...')
+      // Load user cards
       userCards.value = await contractService.getUserCards(account.value)
-      console.log('🔍 載入的卡片:', userCards.value)
-      console.log('📊 卡片詳細信息:')
+      console.log('🔍 Loaded cards:', userCards.value)
+      console.log('📊 Card details:')
       userCards.value.forEach((card, index) => {
-        console.log(`  卡片 ${index + 1}: ID=${card.tokenId}, 餘額=${card.balance} USDC`)
+        console.log(`  Card ${index + 1}: ID=${card.tokenId}, Balance=${card.balance} USDC`)
       })
       
-      // 如果沒有選中的卡片，默認選中第一張並顯示 Gas Exchange Management
+      // If no card is selected, default to first card and show Gas Exchange Management
       if (!selectedTokenId.value && userCards.value.length > 0) {
         selectedTokenId.value = userCards.value[0].tokenId
         showGasExchange.value = true
-        console.log('🔍 默認選中卡片:', selectedTokenId.value, '並顯示 Gas Exchange Management')
+        console.log('🔍 Default selected card:', selectedTokenId.value, 'and show Gas Exchange Management')
       }
     } else {
-      console.log('🔍 用戶沒有卡片')
+      console.log('🔍 User has no cards')
       userCards.value = []
       selectedTokenId.value = null
       showGasExchange.value = false
     }
     
-    // Load transaction history (暫時使用模擬數據)
+    // Load transaction history (temporary mock data)
     transactionHistory.value = await gasPassService.getTransactionHistory()
     
     // Load USDC balance
     usdcBalance.value = await contractService.getUSDCBalance(account.value)
     
-    // 載入 Agent 狀態
+    // Load Agent status
     await loadAgentStatus()
     
-    console.log('✅ loadUserData 完成')
+    console.log('✅ loadUserData completed')
   } catch (error) {
     console.error('❌ Failed to load user data:', error)
   }
@@ -889,12 +889,12 @@ const refreshCards = async () => {
 }
 
 const handleMintSuccess = async () => {
-  console.log('🎉 Mint 成功，刷新用戶數據...')
+  console.log('🎉 Mint successful, refreshing user data...')
   
-  // 添加延遲確保區塊鏈狀態更新
+  // Add delay to ensure blockchain state update
   await new Promise(resolve => setTimeout(resolve, 2000))
   
-  // 重試機制：最多重試 3 次
+  // Retry mechanism: up to 3 retries
   let retryCount = 0
   const maxRetries = 3
   
@@ -902,19 +902,19 @@ const handleMintSuccess = async () => {
     try {
   await loadUserData()
       
-      // 檢查是否成功載入卡片
+      // Check if cards are successfully loaded
       if (userCards.value.length > 0) {
-  console.log('✅ 用戶數據已刷新，現在應該顯示卡片視圖')
+  console.log('✅ User data refreshed, should now display card view')
         break
       } else {
-        console.log(`⏳ 第 ${retryCount + 1} 次重試，等待區塊鏈確認...`)
+        console.log(`⏳ Retry ${retryCount + 1}/${maxRetries}, waiting for blockchain confirmation...`)
         retryCount++
         if (retryCount < maxRetries) {
           await new Promise(resolve => setTimeout(resolve, 3000))
         }
       }
     } catch (error) {
-      console.error('❌ 載入用戶數據失敗:', error)
+      console.error('❌ Failed to load user data:', error)
       retryCount++
       if (retryCount < maxRetries) {
         await new Promise(resolve => setTimeout(resolve, 3000))
@@ -923,57 +923,57 @@ const handleMintSuccess = async () => {
   }
   
   if (retryCount >= maxRetries && userCards.value.length === 0) {
-    console.warn('⚠️ 多次重試後仍無法載入卡片，可能需要手動重新整理')
-    // 可以在這裡顯示一個提示給用戶
+    console.warn('⚠️ Unable to load cards after multiple retries, may need manual refresh')
+    // Can show a prompt to the user here
   }
 }
 
 const handleDepositSuccess = async (data) => {
-  console.log('💰 充值成功事件觸發，接收到的數據:', data)
-  console.log('💰 開始刷新餘額...')
+  console.log('💰 Deposit success event triggered, received data:', data)
+  console.log('💰 Starting balance refresh...')
   
   try {
-    // 立即刷新一次，嘗試獲取最新數據
-    console.log('🔄 立即嘗試刷新餘額...')
+    // Refresh immediately to get latest data
+    console.log('🔄 Immediately attempting to refresh balance...')
     await loadUserData()
     
-    // 打印當前卡片餘額供調試
+    // Print current card balance for debugging
     const currentCard = userCards.value.find(card => card.tokenId === selectedTokenId.value?.toString())
     if (currentCard) {
-      console.log('📊 當前卡片餘額:', currentCard.balance)
+      console.log('📊 Current card balance:', currentCard.balance)
     }
     
-    // 添加延遲確保區塊鏈狀態更新
+    // Add delay to ensure blockchain state update
     await new Promise(resolve => setTimeout(resolve, 3000))
     
-    // 再次刷新
-    console.log('🔄 第二次刷新餘額...')
+    // Refresh again
+    console.log('🔄 Second balance refresh...')
     await loadUserData()
     
-    // 再次打印當前卡片餘額供調試
+    // Print updated card balance for debugging
     const updatedCard = userCards.value.find(card => card.tokenId === selectedTokenId.value?.toString())
     if (updatedCard) {
-      console.log('📊 更新後卡片餘額:', updatedCard.balance)
+      console.log('📊 Updated card balance:', updatedCard.balance)
     }
     
-    console.log('✅ 餘額刷新完成')
+    console.log('✅ Balance refresh completed')
   } catch (error) {
-    console.error('❌ 刷新餘額失敗:', error)
+    console.error('❌ Balance refresh failed:', error)
   }
 }
 
 const handleManualRefuelSuccess = async () => {
-  console.log('⚡️ 手動加註成功，開始刷新餘額...')
+  console.log('⚡️ Manual refuel successful, starting balance refresh...')
   await new Promise(resolve => setTimeout(resolve, 2000))
   await loadUserData()
-  console.log('✅ 餘額已更新')
+  console.log('✅ Balance updated')
 }
 
 const handleAutoRefuelSuccess = async () => {
-  console.log('🔥 自動加註成功，開始刷新餘額...')
+  console.log('🔥 Auto refuel successful, starting balance refresh...')
   await new Promise(resolve => setTimeout(resolve, 2000))
   await loadUserData()
-  console.log('✅ 餘額已更新')
+  console.log('✅ Balance updated')
 }
 
 const handleError = (error) => {
@@ -981,38 +981,38 @@ const handleError = (error) => {
   // You can add toast notification here
 }
 
-// 新增：點擊卡片選擇
+// New: Card selection on click
 const selectCard = (tokenId) => {
   selectedTokenId.value = tokenId
   showGasExchange.value = true
-  console.log('🎯 選擇卡片:', tokenId, '顯示 Gas Exchange Management')
+  console.log('🎯 Selected card:', tokenId, 'show Gas Exchange Management')
   
-  // 移除自動滾動效果
+  // Remove auto-scroll effect
 }
 
-// 新增：獲取選中的卡片
+// New: Get selected card
 const getSelectedCard = () => {
   if (!selectedTokenId.value) return null
   return userCards.value.find(card => card.tokenId === selectedTokenId.value)
 }
 
-// 新增：獲取選中卡片的餘額
+// New: Get selected card balance
 const getSelectedCardBalance = () => {
   const card = getSelectedCard()
   return card ? card.balance : '0'
 }
 
-// 新增：鏈名稱映射
+// New: Chain name mapping
 const getChainName = (chainId) => {
   return SUPPORTED_CHAINS[chainId]?.name || 'Unknown Chain'
 }
 
-// 新增：獲取目標鏈的原生代幣符號
+// New: Get target chain native token symbol
 const getChainNativeSymbol = (chainId) => {
   return SUPPORTED_CHAINS[chainId]?.nativeSymbol || 'ETH'
 }
 
-// 新增：計算實際到賬金額（使用真實報價）
+// New: Calculate actual received amount (using real quote)
 const calculateActualAmount = async (amount) => {
   if (!amount || !manualRefuel.value.chainId || !account.value) {
     return '0.000000'
@@ -1032,9 +1032,9 @@ const calculateActualAmount = async (amount) => {
     return result.actualAmount
     
   } catch (error) {
-    console.error('❌ 計算實際金額失敗:', error)
+    console.error('❌ Failed to calculate actual amount:', error)
     quoteError.value = error.message
-    // 返回預設計算（扣除 0.5% 手續費）
+    // Return fallback calculation (deduct 0.5% fee)
     const fee = parseFloat(amount) * 0.005
     const fallbackAmount = (parseFloat(amount) - fee).toFixed(6)
     actualAmount.value = fallbackAmount
@@ -1044,7 +1044,7 @@ const calculateActualAmount = async (amount) => {
   }
 }
 
-// 新增：過濾鏈列表
+// New: Filter chain list
 const filteredManualChains = computed(() => {
   if (!manualChainSearch.value) return supportedChains
   return Object.fromEntries(
@@ -1065,7 +1065,7 @@ const filteredAgentChains = computed(() => {
   )
 })
 
-// 新增：選擇鏈函數
+// New: Select chain function
 const selectManualChain = (chainId) => {
   manualRefuel.value.chainId = chainId
   showManualChainModal.value = false
@@ -1078,14 +1078,14 @@ const selectAgentChain = (chainId) => {
   agentChainSearch.value = ''
 }
 
-// 新增：圖片錯誤處理
+// New: Image error handling
 const handleImageError = (event) => {
-  console.log('圖片載入失敗:', event.target.src)
+  console.log('Image load failed:', event.target.src)
   
-  // 嘗試使用備用圖片源
+  // Try using fallback image source
   const currentSrc = event.target.src
   if (currentSrc.includes('cryptologos.cc')) {
-    // 如果 cryptologos.cc 失敗，嘗試使用 CoinGecko
+    // If cryptologos.cc fails, try using CoinGecko
     const coinGeckoUrl = currentSrc.replace('cryptologos.cc/logos/', 'assets.coingecko.com/coins/images/')
     event.target.src = coinGeckoUrl
     return
@@ -1105,9 +1105,9 @@ const handleImageError = (event) => {
   }
 }
 
-// 新增：圖片載入成功處理
+// New: Image load success handling
 const handleImageLoad = (event) => {
-  // 圖片載入成功時，隱藏 emoji fallback
+  // Hide emoji fallback when image loads successfully
   const parent = event.target.parentElement
   if (parent) {
     const emojiSpan = parent.querySelector('.emoji-fallback')
@@ -1117,35 +1117,35 @@ const handleImageLoad = (event) => {
   }
 }
 
-// 新增：當前 Token ID (使用選中的 Token ID)
+// New: Current Token ID (use selected Token ID)
 const currentTokenId = computed(() => {
   return selectedTokenId.value || (userCards.value.length > 0 ? userCards.value[0].tokenId : null)
 })
 
-// 新增：當前卡片餘額
+// New: Current card balance
 const currentCardBalance = computed(() => {
   if (!currentTokenId.value) return 0
   const card = userCards.value.find(card => card.tokenId === currentTokenId.value)
   return card ? parseFloat(card.balance) : 0
 })
 
-// 新增：快捷按鈕函數
+// New: Quick button function
 const setExchangeAmount = (percentage) => {
   const amount = (currentCardBalance.value * percentage / 100).toFixed(2)
   manualRefuel.value.amount = amount
 }
 
-// 新增：分割錢包地址為四段
+// New: Split wallet address into four segments
 const getAddressSegment = (index) => {
   if (!account.value) return 'Not Connected'
   
   const address = account.value
   if (address.length < 8) return address
   
-  // 移除 0x 前綴
+  // Remove 0x prefix
   const cleanAddress = address.startsWith('0x') ? address.slice(2) : address
   
-  // 每段4個字符
+  // 4 characters per segment
   const segmentLength = Math.ceil(cleanAddress.length / 4)
   const start = index * segmentLength
   const end = Math.min(start + segmentLength, cleanAddress.length)
@@ -1153,25 +1153,25 @@ const getAddressSegment = (index) => {
   return cleanAddress.slice(start, end).toUpperCase()
 }
 
-// 新增：執行手動兌換
+// New: Execute manual exchange
 const executeManualRefuel = async () => {
   if (!canExecuteManualRefuel.value) return
   
   try {
-    console.log('🚀 執行手動兌換:', manualRefuel.value)
+    console.log('🚀 Executing manual exchange:', manualRefuel.value)
     
-    // 檢查是否有選中的 Token ID
+    // Check if Token ID is selected
     if (!currentTokenId.value) {
-      throw new Error('請先選擇一張 GasPass 卡片')
+      throw new Error('Please select a GasPass card first')
     }
     
-    // 檢查餘額是否足夠
+    // Check if balance is sufficient
     const exchangeAmount = parseFloat(manualRefuel.value.amount)
     if (exchangeAmount > currentCardBalance.value) {
-      throw new Error(`餘額不足！當前餘額: ${currentCardBalance.value.toFixed(2)} USDC`)
+      throw new Error(`Insufficient balance! Current balance: ${currentCardBalance.value.toFixed(2)} USDC`)
     }
     
-    // 使用 gasPassService 執行手動兌換
+    // Use gasPassService to execute manual exchange
     const result = await gasPassService.manualRefuel({
       tokenId: currentTokenId.value,
       targetChainId: manualRefuel.value.chainId,
@@ -1183,9 +1183,9 @@ const executeManualRefuel = async () => {
       throw new Error(result.error)
     }
     
-    console.log('✅ 兌換成功:', result)
+    console.log('✅ Exchange successful:', result)
     
-    // 成功後重置表單
+    // Reset form after success
     manualRefuel.value = {
       chainId: '42161',
       amount: '',
@@ -1206,54 +1206,54 @@ const executeManualRefuel = async () => {
     
   } catch (error) {
     console.error('❌ Manual refuel failed:', error)
-    alert('兌換失敗: ' + error.message)
+    alert('Exchange failed: ' + error.message)
   }
 }
 
-// 新增：設定 Agent 監測
+// New: Setup Agent monitoring
 const setupAgentRefuel = async () => {
   if (!canSetupAgentRefuel.value) return
   
   try {
-    // 獲取 PKP 地址
+    // Get PKP address
     const pkpAddress = getStoredPkpEthAddress()
     if (!pkpAddress) {
-      alert('請先登入 Vincent 以獲取 PKP 地址')
+      alert('Please login to Vincent first to get PKP address')
       return
     }
     
-    // 檢查錢包連接
+    // Check wallet connection
     if (!account.value) {
-      alert('請先連接錢包')
+      alert('Please connect wallet first')
       return
     }
     
-    // 檢查是否有 Token ID
+    // Check if Token ID exists
     if (!currentTokenId.value) {
-      alert('請先創建 GasPass 卡片')
+      alert('Please create a GasPass card first')
       return
     }
     
-    // 驗證輸入值
+    // Validate input values
     if (!agentRefuel.value.threshold || !agentRefuel.value.amount) {
-      alert('請填寫完整的 Agent 設定資訊')
+      alert('Please fill in complete Agent settings')
       return
     }
     
-    // 轉換為數字並驗證
+    // Convert to numbers and validate
     const thresholdNum = parseFloat(agentRefuel.value.threshold)
     const amountNum = parseFloat(agentRefuel.value.amount)
     
     if (isNaN(thresholdNum) || isNaN(amountNum) || thresholdNum <= 0 || amountNum <= 0) {
-      alert('請輸入有效的數值')
+      alert('Please enter valid values')
       return
     }
     
-    // 轉換 USDC 為最小單位 (1 USDC = 1000000 最小單位)
-    const thresholdInWei = parseUnits(thresholdNum.toString(), 6) // USDC 有 6 位小數
+    // Convert USDC to smallest unit (1 USDC = 1000000 smallest units)
+    const thresholdInWei = parseUnits(thresholdNum.toString(), 6) // USDC has 6 decimals
     const amountInWei = parseUnits(amountNum.toString(), 6)
     
-    console.log('設定 Agent 監測:', {
+    console.log('Setting up Agent monitoring:', {
       tokenId: currentTokenId.value,
       chainId: agentRefuel.value.chainId,
       threshold: agentRefuel.value.threshold,
@@ -1263,11 +1263,11 @@ const setupAgentRefuel = async () => {
       agent: pkpAddress
     })
     
-     // 檢查 agent 映射是否正確
-     console.log('🔧 檢查 Agent 映射...')
+     // Check if agent mapping is correct
+     console.log('🔧 Checking Agent mapping...')
      const { gaspassRead } = contractService.getContracts()
      
-     // 添加重試機制
+     // Add retry mechanism
      let agentToWallet = null
      let retryCount = 0
      const maxRetries = 3
@@ -1275,7 +1275,7 @@ const setupAgentRefuel = async () => {
      while (retryCount < maxRetries && agentToWallet === null) {
        try {
          agentToWallet = await gaspassRead.agentToWallet(pkpAddress)
-         console.log('🔍 Agent 映射狀態:', { 
+         console.log('🔍 Agent mapping status:', { 
            pkpAddress, 
            currentWallet: account.value, 
            mappedWallet: agentToWallet 
@@ -1283,63 +1283,63 @@ const setupAgentRefuel = async () => {
          break
        } catch (error) {
          retryCount++
-         console.warn(`⚠️ 獲取 Agent 映射失敗 (嘗試 ${retryCount}/${maxRetries}):`, error.message)
-         
-         if (retryCount < maxRetries) {
-           console.log('⏳ 等待 1 秒後重試...')
-           await new Promise(resolve => setTimeout(resolve, 1000))
-         } else {
-           console.error('❌ 獲取 Agent 映射失敗，跳過檢查')
-           // 如果無法獲取映射，跳過檢查直接繼續
-           agentToWallet = account.value // 假設映射正確
+         console.warn(`⚠️ Failed to get Agent mapping (attempt ${retryCount}/${maxRetries}):`, error.message)
+        
+        if (retryCount < maxRetries) {
+          console.log('⏳ Waiting 1 second before retry...')
+          await new Promise(resolve => setTimeout(resolve, 1000))
+        } else {
+          console.error('❌ Failed to get Agent mapping, skipping check')
+          // If unable to get mapping, skip check and proceed directly
+          agentToWallet = account.value // Assume mapping is correct
          }
        }
      }
      
      if (agentToWallet && agentToWallet.toLowerCase() !== account.value.toLowerCase()) {
-       throw new Error(`PKP Agent 地址 ${pkpAddress} 已經綁定到其他錢包 ${agentToWallet}。請使用相同的錢包或重新登入 Vincent。`)
-     }
-     
-     console.log('✅ Agent 映射檢查通過')
-     
-     // 如果 Agent 沒有綁定，先進行綁定
-     if (!agentToWallet || agentToWallet === '0x0000000000000000000000000000000000000000') {
-       console.log('🔧 Agent 未綁定，先進行綁定...')
-       const bindResult = await contractService.setAgentToWallet(pkpAddress, account.value)
-       if (!bindResult.success) {
-         throw new Error(`Agent 綁定失敗: ${bindResult.error}`)
-       }
-       console.log('✅ Agent 綁定成功')
-     }
-     
-     // 設置 refuel policy
-     console.log('🔧 設置 Refuel Policy...')
-     console.log('🔍 簽名者地址 (用戶錢包):', account.value)
-     console.log('🔍 Agent 地址 (PKP):', pkpAddress)
-     console.log('🔍 Token 擁有者檢查: 簽名者必須是 Token 擁有者')
+      throw new Error(`PKP Agent address ${pkpAddress} is already bound to another wallet ${agentToWallet}. Please use the same wallet or re-login to Vincent.`)
+    }
+    
+    console.log('✅ Agent mapping check passed')
+    
+    // If Agent is not bound, bind it first
+    if (!agentToWallet || agentToWallet === '0x0000000000000000000000000000000000000000') {
+      console.log('🔧 Agent not bound, binding first...')
+      const bindResult = await contractService.setAgentToWallet(pkpAddress, account.value)
+      if (!bindResult.success) {
+        throw new Error(`Agent binding failed: ${bindResult.error}`)
+      }
+      console.log('✅ Agent binding successful')
+    }
+    
+    // Set refuel policy
+    console.log('🔧 Setting Refuel Policy...')
+    console.log('🔍 Signer address (user wallet):', account.value)
+    console.log('🔍 Agent address (PKP):', pkpAddress)
+    console.log('🔍 Token owner check: signer must be token owner')
      
      const result = await contractService.setRefuelPolicy(
-       currentTokenId.value, // 當前 Token ID
-       agentRefuel.value.chainId, // 目標鏈 ID
-       amountInWei.toString(), // 補氣金額 (USDC 最小單位)
-       thresholdInWei.toString(), // 觸發閾值 (USDC 最小單位)
-       pkpAddress // PKP 地址作為 agent
+      currentTokenId.value, // Current Token ID
+      agentRefuel.value.chainId, // Target chain ID
+      amountInWei.toString(), // Refuel amount (USDC smallest unit)
+      thresholdInWei.toString(), // Trigger threshold (USDC smallest unit)
+      pkpAddress // PKP address as agent
      )
     
-    console.log('Agent 策略設定結果:', result)
+    console.log('Agent policy setting result:', result)
     
-    // 檢查結果
+    // Check result
     if (!result.success) {
-      throw new Error(result.error || '設定失敗')
+      throw new Error(result.error || 'Setup failed')
     }
     
-    // 更新 Agent 狀態
+    // Update Agent status
     agentStatus.value = {
       active: true,
-      lastCheck: new Date().toLocaleString('zh-TW')
+      lastCheck: new Date().toLocaleString()
     }
     
-    // 顯示成功視窗
+    // Show success modal
     const chainName = getChainName(agentRefuel.value.chainId)
     agentSetSuccessData.value = {
       chainName: chainName,
@@ -1350,15 +1350,15 @@ const setupAgentRefuel = async () => {
     
   } catch (error) {
     console.error('Agent setup failed:', error)
-    alert('設定失敗: ' + error.message)
+    alert('Setup failed: ' + error.message)
   }
 }
 
-// 新增：載入 Agent 狀態
+// New: Load Agent status
 const loadAgentStatus = async () => {
   try {
-    // 這裡會從後端載入 Agent 狀態
-    // 暫時使用模擬數據
+    // This will load Agent status from backend
+    // Temporarily using mock data
     agentStatus.value = {
       active: false,
       lastCheck: null
@@ -1370,43 +1370,43 @@ const loadAgentStatus = async () => {
 
 // Lifecycle
 onMounted(async () => {
-  // 從 localStorage 嘗試還原 Vincent JWT（避免重整後狀態遺失）
+  // Try to restore Vincent JWT from localStorage (avoid state loss after refresh)
   loadFromStorage()
 
-  // 檢查並清除可能不匹配的 JWT
+  // Check and clear mismatched JWT
   const currentOrigin = window.location.origin
-  console.log('🔍 當前頁面 origin:', currentOrigin)
-  console.log('🔍 當前頁面 href:', window.location.href)
+  console.log('🔍 Current page origin:', currentOrigin)
+  console.log('🔍 Current page href:', window.location.href)
   
-  // 檢查 localStorage 中的 JWT 是否與當前 origin 匹配
+  // Check if JWT in localStorage matches current origin
   const storedJwt = localStorage.getItem('VINCENT_AUTH_JWT')
   if (storedJwt) {
     try {
-      // 嘗試解析 JWT 的 payload 來檢查 audience
+      // Try parsing JWT payload to check audience
       const payload = JSON.parse(atob(storedJwt.split('.')[1]))
-      console.log('🔍 存儲的 JWT payload:', payload)
+      console.log('🔍 Stored JWT payload:', payload)
       console.log('🔍 JWT audience:', payload.aud)
       
       if (payload.aud && payload.aud !== currentOrigin + '/') {
-        console.warn('⚠️ JWT audience 不匹配，清除舊的 JWT')
-        console.warn('⚠️ 期望:', currentOrigin + '/', '實際:', payload.aud)
+        console.warn('⚠️ JWT audience mismatch, clearing old JWT')
+        console.warn('⚠️ Expected:', currentOrigin + '/', 'Actual:', payload.aud)
         localStorage.removeItem('VINCENT_AUTH_JWT')
         localStorage.removeItem('VINCENT_AUTH_JWT_DECODED')
         localStorage.removeItem('VINCENT_PKP_ETH_ADDRESS')
       }
     } catch (e) {
-      console.warn('⚠️ 無法解析存儲的 JWT，清除它')
+      console.warn('⚠️ Unable to parse stored JWT, clearing it')
       localStorage.removeItem('VINCENT_AUTH_JWT')
       localStorage.removeItem('VINCENT_AUTH_JWT_DECODED')
       localStorage.removeItem('VINCENT_PKP_ETH_ADDRESS')
     }
   }
 
-  // 無論是否已連接錢包，都先檢查本地 JWT 是否有效（若過期將自動清除）
+  // Check local JWT validity first regardless of wallet connection (expired ones will be automatically cleared)
   try {
     await ensureAuth(currentOrigin, { allowRedirect: false })
   } catch (e) {
-    console.error('Vincent JWT 檢查失敗:', e)
+    console.error('Vincent JWT check failed:', e)
   }
 
   if (isConnected.value) {
@@ -1417,24 +1417,24 @@ onMounted(async () => {
         await loadUserData()
       }
     } catch (e) {
-      console.error('Vincent Auth 初始化失敗:', e)
+      console.error('Vincent Auth initialization failed:', e)
       await loadUserData()
     }
   } else {
-    console.log('🔍 錢包未連接，等待連接...')
+    console.log('🔍 Wallet not connected, waiting for connection...')
   }
 
-  // 回跳時不主動打開錢包 UI；自動重連交由 wagmi autoConnect/reconnect 完成
+  // Don't actively open wallet UI when returning; auto-reconnect handled by wagmi autoConnect/reconnect
   
-  // 預設填入當前錢包地址
+  // Fill current wallet address by default
   if (account.value) {
     manualRefuel.value.recipient = account.value
   }
 })
 
-// 監聽錢包連線後，觸發 Vincent 登入流程
+// Monitor wallet connection and trigger Vincent login flow
 watch(isConnected, async (connected) => {
-  console.log('🔍 isConnected 變化:', connected)
+  console.log('🔍 isConnected changed:', connected)
   if (connected) {
     try {
       const currentOrigin = window.location.origin
@@ -1443,45 +1443,45 @@ watch(isConnected, async (connected) => {
         await loadUserData()
       }
     } catch (e) {
-      console.error('Vincent Auth 啟動失敗:', e)
+      console.error('Vincent Auth startup failed:', e)
       await loadUserData()
     }
   }
 })
 
-// 監聽 account 變化，確保在錢包連接後載入數據
+// Monitor account changes to ensure data is loaded after wallet connection
 watch(account, async (newAccount, oldAccount) => {
-  console.log('🔍 account 變化:', { newAccount, oldAccount, isConnected: isConnected.value })
+  console.log('🔍 account changed:', { newAccount, oldAccount, isConnected: isConnected.value })
   if (newAccount && isConnected.value) {
-    console.log('🔍 檢測到新帳戶，嘗試載入用戶數據...')
-    // 更新 Manual Exchange 的預設地址
+    console.log('🔍 New account detected, attempting to load user data...')
+    // Update Manual Exchange default address
     manualRefuel.value.recipient = newAccount
-    // 延遲一點時間確保 provider 和 signer 都已更新
+    // Delay slightly to ensure provider and signer are updated
     setTimeout(async () => {
       await loadUserData()
     }, 1000)
   }
 })
 
-// 監聽手動兌換參數變化，自動更新報價
+// Monitor manual exchange parameter changes and auto-update quote
 watch([() => manualRefuel.value.amount, () => manualRefuel.value.chainId], async ([amount, chainId]) => {
   if (amount && chainId && account.value) {
-    console.log('🔄 參數變化，更新報價:', { amount, chainId })
+    console.log('🔄 Parameters changed, updating quote:', { amount, chainId })
     await calculateActualAmount(amount)
   }
 }, { deep: true })
 
-// 供 UI 觸發 Vincent 登入（導轉）
+// Trigger Vincent login (redirect) from UI
 const handleVincentConnect = async () => {
   try {
     const currentOrigin = window.location.origin
     await ensureAuth(currentOrigin, { allowRedirect: true })
   } catch (e) {
-    console.error('啟動 Vincent 登入失敗:', e)
+    console.error('Vincent login startup failed:', e)
   }
 }
 
-// 導轉前確認與偏好
+// Pre-redirect confirmation and preferences
 const confirmVincentVisible = ref(false)
 const skipVincentConfirm = ref(false)
 const SKIP_KEY = 'VIN_SKIP_CONFIRM_LOGIN'
@@ -1511,7 +1511,7 @@ const confirmVincentProceed = () => {
 </script>
 
 <style scoped>
-/* 儲值卡背景設計 */
+/* Card background design */
 .card-background {
   background: linear-gradient(135deg, #0f172a 0%, #1e293b 25%, #334155 50%, #1e293b 75%, #0f172a 100%);
   background-size: 400% 400%;
@@ -1548,7 +1548,7 @@ const confirmVincentProceed = () => {
   pointer-events: none;
 }
 
-/* 高級儲值卡樣式 */
+/* Premium card styles */
 .premium-card {
   background: linear-gradient(135deg, 
     rgba(15, 23, 42, 0.9) 0%,
@@ -2007,7 +2007,7 @@ const confirmVincentProceed = () => {
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* 動畫效果 */
+/* Animation effects */
 @keyframes card-gradient-shift {
   0%, 100% { background-position: 0% 50%; }
   50% { background-position: 100% 50%; }
@@ -2058,7 +2058,7 @@ const confirmVincentProceed = () => {
   50% { transform: translateY(-10px); }
 }
 
-/* 按鈕樣式 */
+/* Button styles */
 .btn-primary {
   @apply bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-emerald-500/30 focus:ring-offset-2 shadow-lg hover:shadow-xl hover:scale-105;
   position: relative;
@@ -2100,7 +2100,7 @@ const confirmVincentProceed = () => {
   @apply border-b border-emerald-400/20 py-4 last:border-b-0;
 }
 
-/* 新增：Tab 切換動畫 */
+/* New: Tab switching animation */
 .tab-transition-enter-active,
 .tab-transition-leave-active {
   transition: all 0.3s ease;
@@ -2116,13 +2116,13 @@ const confirmVincentProceed = () => {
   transform: translateY(-10px);
 }
 
-/* 新增：表單輸入樣式增強 */
+/* New: Form input style enhancements */
 input:focus,
 select:focus {
   @apply ring-2 ring-emerald-500/20 border-emerald-400;
 }
 
-/* 新增：按鈕懸停效果增強 */
+/* New: Button hover effect enhancements */
 button:not(:disabled):hover {
   transform: translateY(-1px);
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
@@ -2132,13 +2132,13 @@ button:not(:disabled):active {
   transform: translateY(0);
 }
 
-/* 新增：卡片懸停效果 */
+/* New: Card hover effects */
 .card-item-enhanced:hover {
   transform: translateY(-2px);
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
 }
 
-/* 新增：漸變背景動畫 */
+/* New: Gradient background animation */
 @keyframes gradient-shift {
   0% { background-position: 0% 50%; }
   50% { background-position: 100% 50%; }
@@ -2150,7 +2150,7 @@ button:not(:disabled):active {
   animation: gradient-shift 3s ease infinite;
 }
 
-/* 新增：光效動畫 */
+/* New: Glow effect animation */
 @keyframes glow-pulse {
   0%, 100% { box-shadow: 0 0 20px rgba(16, 185, 129, 0.3); }
   50% { box-shadow: 0 0 40px rgba(16, 185, 129, 0.6); }
@@ -2160,7 +2160,7 @@ button:not(:disabled):active {
   animation: glow-pulse 2s ease-in-out infinite;
 }
 
-/* 新增：載入動畫 */
+/* New: Loading animation */
 @keyframes loading-dots {
   0%, 20% { opacity: 0; }
   50% { opacity: 1; }
@@ -2179,7 +2179,7 @@ button:not(:disabled):active {
   animation-delay: 0.4s;
 }
 
-/* 新增：隱藏數字輸入框的箭頭 */
+/* New: Hide number input arrows */
 input[type="number"]::-webkit-outer-spin-button,
 input[type="number"]::-webkit-inner-spin-button {
   -webkit-appearance: none;
@@ -2191,7 +2191,7 @@ input[type="number"] {
   appearance: textfield;
 }
 
-/* 新增：響應式設計增強 */
+/* New: Responsive design enhancements */
 @media (max-width: 768px) {
   .card-item-enhanced {
     @apply p-4;
@@ -2204,7 +2204,7 @@ input[type="number"] {
 
 
 
-/* 錢包地址樣式 */
+/* Wallet address styles */
 .card-number-display {
   position: absolute;
   bottom: 2rem;
@@ -2233,14 +2233,14 @@ input[type="number"] {
   flex-shrink: 0;
 }
 
-/* 新增：深色模式支持（預留） */
+/* New: Dark mode support (reserved) */
 @media (prefers-color-scheme: dark) {
   .card-item-enhanced {
     @apply bg-slate-800/50 border-emerald-400/30;
   }
 }
 
-/* 模態視窗樣式 */
+/* Modal window styles */
 .modal-overlay {
   @apply fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 backdrop-blur-sm;
   animation: fadeIn 0.3s ease-out;
@@ -2325,7 +2325,7 @@ input[type="number"] {
   }
 }
 
-/* 專業化狀態信息樣式 */
+/* Professional status information styles */
 .status-info-container {
   @apply space-y-4;
 }

@@ -1,16 +1,16 @@
-// 跨鏈兌換報價服務
+// Cross-chain swap quote service
 class QuoteService {
   constructor() {
-    // 根據環境動態設置後端 URL
+    // Dynamically set backend URL based on environment
     this.baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001/api/gaspass';
   }
 
-  // 獲取跨鏈兌換報價
+  // Get cross-chain swap quote
   async getQuote(params) {
     try {
       const { destinationChainId, amount, userAddress } = params;
       
-      console.log('📊 請求跨鏈兌換報價:', params);
+      console.log('📊 Requesting cross-chain swap quote:', params);
       
       const response = await fetch(`${this.baseUrl}/quote`, {
         method: 'POST',
@@ -31,19 +31,19 @@ class QuoteService {
       const data = await response.json();
       
       if (!data.success) {
-        throw new Error(data.error || '獲取報價失敗');
+        throw new Error(data.error || 'Failed to get quote');
       }
 
-      console.log('✅ 報價獲取成功:', data);
+      console.log('✅ Quote retrieved successfully:', data);
       return data;
       
     } catch (error) {
-      console.error('❌ 獲取報價失敗:', error);
+      console.error('❌ Failed to get quote:', error);
       throw error;
     }
   }
 
-  // 計算實際到賬金額（從報價中獲取）
+  // Calculate actual received amount (from quote)
   async calculateActualAmount(params) {
     try {
       const quote = await this.getQuote(params);

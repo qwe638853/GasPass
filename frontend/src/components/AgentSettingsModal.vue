@@ -2,7 +2,7 @@
   <div class="modal-overlay" @click="$emit('close')">
     <div class="modal-container" @click.stop>
       <div class="modal-header">
-        <h3 class="modal-title">🤖 AI Agent 設定</h3>
+        <h3 class="modal-title">🤖 AI Agent Settings</h3>
         <button @click="$emit('close')" class="modal-close">
           <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
@@ -15,27 +15,27 @@
           <!-- Agent Status -->
           <div class="status-section">
             <div class="flex items-center justify-between mb-4">
-              <h4 class="text-lg font-semibold text-gray-900">Agent 狀態</h4>
+              <h4 class="text-lg font-semibold text-gray-900">Agent Status</h4>
               <div class="status-indicator" :class="agentStatus.isActive ? 'active' : 'inactive'">
-                {{ agentStatus.isActive ? '運行中' : '已停止' }}
+                {{ agentStatus.isActive ? 'Running' : 'Stopped' }}
               </div>
             </div>
             
             <div class="grid grid-cols-2 gap-4 text-sm">
               <div class="stat-item">
-                <span class="stat-label">監控錢包:</span>
+                <span class="stat-label">Monitoring Wallets:</span>
                 <span class="stat-value">{{ agentStatus.monitoringWallets }}</span>
               </div>
               <div class="stat-item">
-                <span class="stat-label">監控鏈:</span>
+                <span class="stat-label">Monitoring Chains:</span>
                 <span class="stat-value">{{ agentStatus.monitoringChains }}</span>
               </div>
               <div class="stat-item">
-                <span class="stat-label">今日執行:</span>
-                <span class="stat-value">{{ agentStatus.todayExecutions }} 次</span>
+                <span class="stat-label">Executions Today:</span>
+                <span class="stat-value">{{ agentStatus.todayExecutions }} times</span>
               </div>
               <div class="stat-item">
-                <span class="stat-label">成功率:</span>
+                <span class="stat-label">Success Rate:</span>
                 <span class="stat-value">{{ agentStatus.successRate }}%</span>
               </div>
             </div>
@@ -43,12 +43,12 @@
 
           <!-- Agent Control -->
           <div class="control-section">
-            <h4 class="text-lg font-semibold text-gray-900 mb-4">Agent 控制</h4>
+            <h4 class="text-lg font-semibold text-gray-900 mb-4">Agent Control</h4>
             
             <div class="flex items-center justify-between">
               <div>
-                <h5 class="font-medium text-gray-900">啟用 AI Agent</h5>
-                <p class="text-sm text-gray-600">讓 AI 自動監控和管理您的 Gas 費用</p>
+                <h5 class="font-medium text-gray-900">Enable AI Agent</h5>
+                <p class="text-sm text-gray-600">Let AI automatically monitor and manage your Gas fees</p>
               </div>
               <label class="toggle-switch">
                 <input v-model="agentEnabled" type="checkbox" />
@@ -59,21 +59,21 @@
 
           <!-- Monitoring Settings -->
           <div v-if="agentEnabled" class="monitoring-section">
-            <h4 class="text-lg font-semibold text-gray-900 mb-4">監控設定</h4>
+            <h4 class="text-lg font-semibold text-gray-900 mb-4">Monitoring Settings</h4>
             
             <div class="space-y-4">
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">監控頻率</label>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Monitoring Frequency</label>
                 <select v-model="monitoringFrequency" class="select-input">
-                  <option value="5">每 5 分鐘</option>
-                  <option value="15">每 15 分鐘</option>
-                  <option value="30">每 30 分鐘</option>
-                  <option value="60">每小時</option>
+                  <option value="5">Every 5 minutes</option>
+                  <option value="15">Every 15 minutes</option>
+                  <option value="30">Every 30 minutes</option>
+                  <option value="60">Every hour</option>
                 </select>
               </div>
 
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-3">監控的區塊鏈</label>
+                <label class="block text-sm font-medium text-gray-700 mb-3">Monitored Blockchains</label>
                 <div class="grid grid-cols-2 gap-3">
                   <label
                     v-for="chain in supportedChains"
@@ -99,23 +99,23 @@
 
           <!-- Strategy Settings -->
           <div v-if="agentEnabled" class="strategy-section">
-            <h4 class="text-lg font-semibold text-gray-900 mb-4">策略設定</h4>
+            <h4 class="text-lg font-semibold text-gray-900 mb-4">Strategy Settings</h4>
             
             <div class="space-y-4">
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">預設補充策略</label>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Default Refuel Strategy</label>
                 <select v-model="defaultStrategy" class="select-input">
-                  <option value="conservative">保守型 (低頻率，小額補充)</option>
-                  <option value="balanced">平衡型 (中等頻率，適中補充)</option>
-                  <option value="aggressive">積極型 (高頻率，大額補充)</option>
-                  <option value="custom">自定義</option>
+                  <option value="conservative">Conservative (Low frequency, small amounts)</option>
+                  <option value="balanced">Balanced (Medium frequency, moderate amounts)</option>
+                  <option value="aggressive">Aggressive (High frequency, large amounts)</option>
+                  <option value="custom">Custom</option>
                 </select>
               </div>
 
               <div v-if="defaultStrategy === 'custom'" class="custom-strategy">
                 <div class="grid grid-cols-2 gap-4">
                   <div>
-                    <label class="block text-sm text-gray-600 mb-1">最低餘額閾值</label>
+                    <label class="block text-sm text-gray-600 mb-1">Minimum Balance Threshold</label>
                     <input
                       v-model="customThresholds.minBalance"
                       type="number"
@@ -126,7 +126,7 @@
                     />
                   </div>
                   <div>
-                    <label class="block text-sm text-gray-600 mb-1">補充數量</label>
+                    <label class="block text-sm text-gray-600 mb-1">Refuel Amount</label>
                     <input
                       v-model="customThresholds.refuelAmount"
                       type="number"
@@ -143,7 +143,7 @@
 
           <!-- Notification Settings -->
           <div v-if="agentEnabled" class="notification-section">
-            <h4 class="text-lg font-semibold text-gray-900 mb-4">通知設定</h4>
+            <h4 class="text-lg font-semibold text-gray-900 mb-4">Notification Settings</h4>
             
             <div class="space-y-3">
               <label class="flex items-center gap-3">
@@ -152,7 +152,7 @@
                   type="checkbox"
                   class="checkbox-input"
                 />
-                <span class="text-sm text-gray-700">郵件通知</span>
+                <span class="text-sm text-gray-700">Email Notifications</span>
               </label>
               
               <label class="flex items-center gap-3">
@@ -161,7 +161,7 @@
                   type="checkbox"
                   class="checkbox-input"
                 />
-                <span class="text-sm text-gray-700">瀏覽器通知</span>
+                <span class="text-sm text-gray-700">Browser Notifications</span>
               </label>
               
               <label class="flex items-center gap-3">
@@ -170,18 +170,18 @@
                   type="checkbox"
                   class="checkbox-input"
                 />
-                <span class="text-sm text-gray-700">Telegram 通知</span>
+                <span class="text-sm text-gray-700">Telegram Notifications</span>
               </label>
             </div>
           </div>
 
           <!-- Advanced Settings -->
           <div v-if="agentEnabled" class="advanced-section">
-            <h4 class="text-lg font-semibold text-gray-900 mb-4">進階設定</h4>
+            <h4 class="text-lg font-semibold text-gray-900 mb-4">Advanced Settings</h4>
             
             <div class="space-y-4">
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">最大每日執行次數</label>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Maximum Daily Executions</label>
                 <input
                   v-model="maxDailyExecutions"
                   type="number"
@@ -192,11 +192,11 @@
               </div>
 
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Gas 價格策略</label>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Gas Price Strategy</label>
                 <select v-model="gasStrategy" class="select-input">
-                  <option value="fast">快速 (高 Gas 費)</option>
-                  <option value="standard">標準 (中等 Gas 費)</option>
-                  <option value="slow">慢速 (低 Gas 費)</option>
+                  <option value="fast">Fast (High Gas Fee)</option>
+                  <option value="standard">Standard (Medium Gas Fee)</option>
+                  <option value="slow">Slow (Low Gas Fee)</option>
                 </select>
               </div>
 
@@ -206,7 +206,7 @@
                   type="checkbox"
                   class="checkbox-input"
                 />
-                <label class="text-sm text-gray-700">啟用緊急模式 (忽略費用限制)</label>
+                <label class="text-sm text-gray-700">Enable Emergency Mode (Ignore cost limits)</label>
               </div>
             </div>
           </div>
@@ -219,9 +219,9 @@
           >
             <span v-if="isLoading" class="flex items-center justify-center gap-2">
               <div class="loading-spinner"></div>
-              設定中...
+              Saving...
             </span>
-            <span v-else>儲存設定</span>
+            <span v-else>Save Settings</span>
           </button>
         </form>
       </div>
@@ -300,7 +300,7 @@ const handleSubmit = async () => {
     emit('close')
   } catch (error) {
     console.error('Agent settings failed:', error)
-    alert('設定失敗，請稍後再試')
+    alert('Settings failed, please try again later')
   } finally {
     isLoading.value = false
   }

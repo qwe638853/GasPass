@@ -3,87 +3,87 @@ import { NexusSDK } from '@avail-project/nexus-core'
 import { getAccount, getWalletClient } from '@wagmi/core'
 import { walletService } from '../services/walletService.js'
 
-// 創建 SDK 實例 (使用主網)
-console.log('[useNexus] 🔧 創建 Nexus SDK 實例，配置 mainnet...')
+// Create SDK instance (using mainnet)
+console.log('[useNexus] 🔧 Creating Nexus SDK instance, configuring mainnet...')
 
-// 檢查環境變數和可能的配置選項
-console.log('[useNexus] 🌍 當前環境檢查:')
+// Check environment variables and possible configuration options
+console.log('[useNexus] 🌍 Current environment check:')
 console.log('  - NODE_ENV:', import.meta.env.NODE_ENV || 'undefined')
 console.log('  - MODE:', import.meta.env.MODE || 'undefined') 
 console.log('  - DEV:', import.meta.env.DEV || 'undefined')
-console.log('  - 當前 URL:', window.location.href)
+console.log('  - Current URL:', window.location.href)
 
-// 使用主網配置
+// Use mainnet configuration
 let sdk
 
-// 導出 sdk 實例供其他組件使用
+// Export sdk instance for use by other components
 export { sdk }
 try {
-  // 方法 1: 標準 mainnet 配置 (根據文檔)
+  // Method 1: Standard mainnet configuration (according to documentation)
   const config = { network: 'mainnet' }
-  console.log('[useNexus] 🌐 嘗試配置:', config)
+  console.log('[useNexus] 🌐 Attempting configuration:', config)
   sdk = new NexusSDK(config)
-  console.log('[useNexus] ✅ SDK 創建完成，配置方法 1 (標準):', config)
+  console.log('[useNexus] ✅ SDK created, method 1 (standard):', config)
 } catch (error) {
-  console.log('[useNexus] ❌ 配置方法 1 失敗:', error.message)
+  console.log('[useNexus] ❌ Method 1 failed:', error.message)
   
   try {
-    // 方法 2: 無參數初始化，預設是 mainnet
-    console.log('[useNexus] 🌐 嘗試配置: 無參數（預設 mainnet）')
+    // Method 2: No parameter initialization, default is mainnet
+    console.log('[useNexus] 🌐 Attempting configuration: No parameters (default mainnet)')
     sdk = new NexusSDK()
-    console.log('[useNexus] ✅ SDK 創建完成，配置方法 2: 無參數（預設 mainnet）')
+    console.log('[useNexus] ✅ SDK created, method 2: No parameters (default mainnet)')
   } catch (error2) {
-    console.log('[useNexus] ❌ 配置方法 2 失敗:', error2.message)
+    console.log('[useNexus] ❌ Method 2 failed:', error2.message)
     
     try {
-      // 方法 3: 嘗試明確的字串配置
-      console.log('[useNexus] 🌐 嘗試配置: mainnet 字串')
+      // Method 3: Try explicit string configuration
+      console.log('[useNexus] 🌐 Attempting configuration: mainnet string')
       sdk = new NexusSDK('mainnet')
-      console.log('[useNexus] ✅ SDK 創建完成，配置方法 3: mainnet 字串')
+      console.log('[useNexus] ✅ SDK created, method 3: mainnet string')
     } catch (error3) {
-      console.log('[useNexus] ❌ 所有配置方法失敗:', error3.message)
-      throw new Error('無法創建 Nexus SDK 實例')
+      console.log('[useNexus] ❌ All configuration methods failed:', error3.message)
+      throw new Error('Unable to create Nexus SDK instance')
     }
   }
 }
 
-// 立即檢查 SDK 是否正確配置
+// Immediately check if SDK is properly configured
 if (sdk && typeof sdk.utils === 'object') {
-  console.log('[useNexus] ✅ SDK utils 可用')
+  console.log('[useNexus] ✅ SDK utils available')
   
-  // 立即測試 getSupportedChains 在初始化前的結果
+  // Immediately test getSupportedChains before initialization
   try {
     const preInitChains = sdk.utils.getSupportedChains()
-    console.log('[useNexus] 🧪 初始化前的支援鏈 (應該是空或預設):', preInitChains)
+    console.log('[useNexus] 🧪 Supported chains before initialization (should be empty or default):', preInitChains)
   } catch (preError) {
-    console.log('[useNexus] ⚠️ 初始化前無法獲取支援鏈:', preError.message)
+    console.log('[useNexus] ⚠️ Unable to get supported chains before initialization:', preError.message)
   }
 } else {
-  console.log('[useNexus] ❌ SDK utils 不可用')
+  console.log('[useNexus] ❌ SDK utils not available')
 }
 
-// 移除硬編碼的鏈圖標映射 - SDK 會提供 logo
+// Remove hardcoded chain icon mappings - SDK will provide logo
 
-// 響應式狀態
+// Reactive state
 export const nexusState = reactive({
   initialized: false,
-  usdcAsset: null, // 存放原始的asset 物件
-  usdcBalances: null, // 存放正規化後的餘額
-  // 通用：目前選擇的資產及其餘額
+  usdcAsset: null, // Store the original asset object
+  usdcBalances: null, // Store normalized balances
+  // Generic: currently selected asset and its balance
   selectedToken: 'USDC',
   currentAsset: null,
   currentBalances: null,
-  supportedChains: [], // 支援的鏈列表
-  swapSupport: null, // swap 支援信息
+  supportedChains: [], // Supported chains list
+  swapSupport: null, // Swap support information
   loading: false,
   error: null,
-  // 進度追蹤
+  // Progress tracking
   currentOperation: null,
   operationSteps: [],
   completedSteps: [],
-  // Swap 相關狀態
-  swapSupportedChains: [], // 支援 swap 的鏈和代幣
-  destinationTokens: new Map(), // 目標代幣建議 chainId -> tokens[]
+  // Swap related state
+  swapSupportedChains: [], // Chains and tokens that support swap
+  destinationTokens: new Map(), // Destination token suggestions chainId -> tokens[]
   swapProgress: {
     steps: [],
     currentStep: null,
@@ -95,14 +95,14 @@ export const nexusState = reactive({
   swapError: null
 })
 
-// 錯誤處理
+// Error handling
 const handleError = (error, context = '') => {
   console.error(`Nexus ${context} error:`, error)
   nexusState.error = error.message || 'Unknown error'
   nexusState.loading = false
 }
 
-// 初始化 Nexus SDK（使用主網）
+// Initialize Nexus SDK (using mainnet)
 export async function initializeNexus() {
   try {
     nexusState.loading = true
@@ -110,18 +110,18 @@ export async function initializeNexus() {
 
     const account = getAccount(walletService.wagmiConfig)
     if (!account.isConnected) {
-      throw new Error('請先連接錢包')
+      throw new Error('Please connect your wallet first')
     }
 
     const walletClient = await getWalletClient(walletService.wagmiConfig)
-    if (!walletClient) throw new Error('無法獲取 WalletClient，請先連錢包')
+    if (!walletClient) throw new Error('Unable to get WalletClient, please connect wallet first')
 
-    console.log('[useNexus] 🔗 當前錢包鏈 ID:', walletClient.chain.id)
-    console.log('[useNexus] 🌐 使用 Nexus mainnet 模式')
+    console.log('[useNexus] 🔗 Current wallet chain ID:', walletClient.chain.id)
+    console.log('[useNexus] 🌐 Using Nexus mainnet mode')
 
-    // 檢查當前錢包鏈ID
+    // Check current wallet chain ID
     const currentChainId = walletClient.chain.id
-    console.log('[useNexus] 當前錢包鏈 ID:', currentChainId)
+    console.log('[useNexus] Current wallet chain ID:', currentChainId)
 
     const isEip1193 = (p) => !!p && typeof p.request === 'function'
 
@@ -148,73 +148,73 @@ export async function initializeNexus() {
     }
 
     const provider = providerFromWalletClient(walletClient)
-    if (!isEip1193(provider)) throw new Error('無法取得 EIP-1193 Provider')
+    if (!isEip1193(provider)) throw new Error('Unable to get EIP-1193 Provider')
 
     if (!sdk.isInitialized()) {
-      console.log('[useNexus] 🚀 初始化 Nexus SDK (mainnet 模式)...')
-      console.log('[useNexus] SDK 配置:', { network: 'mainnet' })
+      console.log('[useNexus] 🚀 Initializing Nexus SDK (mainnet mode)...')
+      console.log('[useNexus] SDK configuration:', { network: 'mainnet' })
       
-      // 在初始化前先檢查 SDK 是否正確配置為 mainnet
-      console.log('[useNexus] 初始化前 - 檢查 SDK network 配置...')
+      // Check if SDK is properly configured as mainnet before initialization
+      console.log('[useNexus] Before initialization - checking SDK network configuration...')
       
-      // 特別注意這裡 - 這是簽名請求出現的地方
-      console.log('[useNexus] 🔐 即將調用 sdk.initialize() - 這裡會出現簽名請求')
-      console.log('[useNexus] 🔐 預期: 簽名請求應該顯示主網 Chain ID')
-      console.log('[useNexus] 🔐 當前錢包鏈 ID:', walletClient.chain.id)
+      // Pay special attention here - this is where the signature request appears
+      console.log('[useNexus] 🔐 About to call sdk.initialize() - signature request will appear here')
+      console.log('[useNexus] 🔐 Expected: signature request should display mainnet Chain ID')
+      console.log('[useNexus] 🔐 Current wallet chain ID:', walletClient.chain.id)
       
       await sdk.initialize(provider)
       
-      console.log('[useNexus] ✅ SDK 初始化完成')
-      console.log('[useNexus] 初始化後 - 當前錢包鏈 ID:', walletClient.chain.id)
+      console.log('[useNexus] ✅ SDK initialization complete')
+      console.log('[useNexus] After initialization - current wallet chain ID:', walletClient.chain.id)
       
-      // 檢查簽名後的實際狀態
-      console.log('[useNexus] 🔍 檢查簽名後的狀態...')
+      // Check actual status after signature
+      console.log('[useNexus] 🔍 Checking status after signature...')
       try {
-        // 嘗試獲取當前連接的鏈信息
+        // Try to get current connected chain information
         if (typeof sdk.getCurrentChainId === 'function') {
           const sdkChainId = sdk.getCurrentChainId()
-          console.log('[useNexus] SDK 報告的當前鏈 ID:', sdkChainId)
+          console.log('[useNexus] SDK reported current chain ID:', sdkChainId)
         }
         
-        // 檢查 provider 的狀態
+        // Check provider status
         const chainIdHex = await provider.request({ method: 'eth_chainId' })
         const chainIdDecimal = parseInt(chainIdHex, 16)
-        console.log('[useNexus] Provider 報告的鏈 ID:', chainIdDecimal, '(hex:', chainIdHex, ')')
+        console.log('[useNexus] Provider reported chain ID:', chainIdDecimal, '(hex:', chainIdHex, ')')
         
       } catch (statusError) {
-        console.log('[useNexus] ⚠️ 檢查簽名後狀態時出錯:', statusError.message)
+        console.log('[useNexus] ⚠️ Error checking status after signature:', statusError.message)
       }
       
-      // 立即檢查 SDK 是否返回正確的主網鏈
+      // Immediately check if SDK returns correct mainnet chains
       const immediateCheck = sdk.utils.getSupportedChains()
-      console.log('[useNexus] 🔍 初始化後立即檢查支援的鏈:', immediateCheck)
+      console.log('[useNexus] 🔍 Immediately check supported chains after initialization:', immediateCheck)
       
       if (immediateCheck && immediateCheck.length > 0) {
         const chainIds = immediateCheck.map(c => c.id)
         
-        console.log('[useNexus] 📊 SDK 返回的鏈:', {
-          總數: chainIds.length,
-          鏈ID列表: chainIds
+        console.log('[useNexus] 📊 Chains returned by SDK:', {
+          total: chainIds.length,
+          chainIdList: chainIds
         })
         
-        console.log('[useNexus] ✅ SDK 成功返回支援的鏈')
+        console.log('[useNexus] ✅ SDK successfully returned supported chains')
       }
       
       nexusState.initialized = true
     }
 
-    // 先探索支援鏈，填充 nexusState.supportedChains，再抓餘額
+    // First explore supported chains, populate nexusState.supportedChains, then fetch balances
     await exploreNexusCapabilities()
     await fetchUnifiedUSDC()
     
-    // 獲取 swap 支援的鏈和代幣
+    // Get swap supported chains and tokens
     await getSwapSupportedChainsAndTokens()
     
-    // 設置默認的 hooks
+    // Set up default hooks
     setupIntentHook()
     setupAllowanceHook()
     
-    // 設置進度追蹤
+    // Set up progress tracking
     setupProgressTracking()
     setupSwapProgressTracking()
   } catch (error) {
@@ -225,7 +225,7 @@ export async function initializeNexus() {
   }
 }
 
-// 將 getUnifiedBalance('USDC') 的回傳轉成 { [chainId]: { balance, decimals, address, chainName } }
+// Convert getUnifiedBalance('USDC') return to { [chainId]: { balance, decimals, address, chainName } }
 function normalizeUSDC(asset) {
   const map = {}
   if (!asset || !Array.isArray(asset.breakdown)) return map
@@ -242,17 +242,17 @@ function normalizeUSDC(asset) {
   return map
 }
 
-// 專門獲取 USDC 統一餘額並正規化
+// Specifically get USDC unified balance and normalize
 export async function fetchUnifiedUSDC() {
   try {
-    if (!sdk.isInitialized()) throw new Error('Nexus SDK 未初始化')
+    if (!sdk.isInitialized()) throw new Error('Nexus SDK not initialized')
     nexusState.loading = true
     const usdcAsset = await sdk.getUnifiedBalance('USDC')
     console.log('Raw USDC asset:', usdcAsset)
 
-    nexusState.usdcAsset = usdcAsset // 保存原始物件
+    nexusState.usdcAsset = usdcAsset // Save original object
     nexusState.usdcBalances = normalizeUSDC(usdcAsset)
-    nexusState.selectedToken = 'USDC' // 設置選中的代幣
+    nexusState.selectedToken = 'USDC' // Set selected token
     console.log('Normalized USDC balances:', JSON.parse(JSON.stringify(nexusState.usdcBalances)))
 
     return nexusState.usdcBalances
@@ -264,10 +264,10 @@ export async function fetchUnifiedUSDC() {
   }
 }
 
-// 取得任意代幣的 unified balance 並正規化
+// Get unified balance of any token and normalize
 export async function fetchUnifiedToken(symbol) {
   try {
-    if (!sdk.isInitialized()) throw new Error('Nexus SDK 未初始化')
+    if (!sdk.isInitialized()) throw new Error('Nexus SDK not initialized')
     nexusState.loading = true
     const asset = await sdk.getUnifiedBalance(symbol)
     nexusState.currentAsset = asset
@@ -282,7 +282,7 @@ export async function fetchUnifiedToken(symbol) {
   }
 }
 
-// 計算屬性：提供給 UI 使用的 USDC 餘額列表
+// Computed property: USDC balance list for UI use
 export const getUSDCBalances = computed(() => {
   if (!nexusState.usdcBalances) return []
   return Object.entries(nexusState.usdcBalances).map(([chainId, data]) => ({
@@ -296,9 +296,9 @@ export const getUSDCBalances = computed(() => {
   }))
 })
 
-// 提供 UI 使用：目前選擇代幣的餘額列表
+// For UI use: balance list of currently selected token
 export const getSelectedTokenBalances = computed(() => {
-  // 根據選中的代幣類型選擇正確的數據源
+  // Select correct data source based on selected token type
   const src = nexusState.selectedToken === 'USDC' ? nexusState.usdcBalances : nexusState.currentBalances
   if (!src) return []
   return Object.entries(src).map(([chainId, data]) => ({
@@ -312,7 +312,7 @@ export const getSelectedTokenBalances = computed(() => {
   }))
 })
 
-// 計算屬性：所有鏈的 USDC 總餘額
+// Computed property: total USDC balance across all chains
 export const getTotalUSDCBalance = computed(() => {
   if (!nexusState.usdcAsset) return '0.00'
   if (nexusState.usdcAsset.balance) {
@@ -328,9 +328,9 @@ export const getTotalUSDCBalance = computed(() => {
   return total.toFixed(2)
 })
 
-// 目前選擇代幣的總餘額
+// Total balance of currently selected token
 export const getSelectedTokenTotal = computed(() => {
-  // 根據選中的代幣類型選擇正確的數據源
+  // Select correct data source based on selected token type
   if (nexusState.selectedToken === 'USDC') {
     return getTotalUSDCBalance.value
   } else if (nexusState.currentAsset?.balance) {
@@ -339,95 +339,95 @@ export const getSelectedTokenTotal = computed(() => {
   return '0.00'
 })
 
-// 探索 Nexus 的能力和支援的鏈 (使用官方 SDK utilities)
+// Explore Nexus capabilities and supported chains (using official SDK utilities)
 export async function exploreNexusCapabilities() {
   try {
-    if (!sdk.isInitialized()) throw new Error('Nexus SDK 未初始化')
+    if (!sdk.isInitialized()) throw new Error('Nexus SDK not initialized')
     
-    console.log('[useNexus] 探索 Nexus 能力 (mainnet 模式)...')
+    console.log('[useNexus] Exploring Nexus capabilities (mainnet mode)...')
     
-    // 詳細檢查 SDK 狀態和配置
-    console.log('[useNexus] 🔍 詳細 SDK 檢查:')
+    // Detailed check of SDK status and configuration
+    console.log('[useNexus] 🔍 Detailed SDK check:')
     console.log('  - isInitialized:', sdk.isInitialized())
-    console.log('  - 我們的配置: network: mainnet')
-    console.log('  - SDK 方法:', Object.keys(sdk).filter(k => typeof sdk[k] === 'function'))
-    console.log('  - Utils 方法:', Object.keys(sdk.utils).filter(k => typeof sdk.utils[k] === 'function'))
+    console.log('  - Our configuration: network: mainnet')
+    console.log('  - SDK methods:', Object.keys(sdk).filter(k => typeof sdk[k] === 'function'))
+    console.log('  - Utils methods:', Object.keys(sdk.utils).filter(k => typeof sdk.utils[k] === 'function'))
     
-    // 嘗試檢查 SDK 內部的網路配置（如果可能）
+    // Try to check SDK's internal network configuration (if possible)
     try {
-      // 檢查是否有方法可以驗證當前網路模式
+      // Check if there's a method to verify current network mode
       if (typeof sdk.getNetwork === 'function') {
         const currentNetwork = sdk.getNetwork()
-        console.log('[useNexus] 🌐 SDK 當前網路模式:', currentNetwork)
+        console.log('[useNexus] 🌐 SDK current network mode:', currentNetwork)
       } else {
-        console.log('[useNexus] ℹ️ SDK 沒有 getNetwork 方法')
+        console.log('[useNexus] ℹ️ SDK does not have getNetwork method')
       }
       
-      // 檢查 SDK 的配置物件（如果可訪問）
+      // Check SDK configuration object (if accessible)
       if (sdk.config) {
-        console.log('[useNexus] ⚙️ SDK 配置物件:', sdk.config)
+        console.log('[useNexus] ⚙️ SDK configuration object:', sdk.config)
       } else {
-        console.log('[useNexus] ℹ️ SDK 配置物件不可訪問')
+        console.log('[useNexus] ℹ️ SDK configuration object not accessible')
       }
     } catch (configError) {
-      console.log('[useNexus] ⚠️ 檢查 SDK 配置時出錯:', configError.message)
+      console.log('[useNexus] ⚠️ Error checking SDK configuration:', configError.message)
     }
     
-    // 使用官方 SDK utilities 獲取支援的鏈
+    // Use official SDK utilities to get supported chains
     const supportedChains = sdk.utils.getSupportedChains()
-    console.log('[useNexus] sdk.utils.getSupportedChains() 完整結果:', supportedChains)
-    console.log('[useNexus] supportedChains 類型:', typeof supportedChains, Array.isArray(supportedChains))
+    console.log('[useNexus] sdk.utils.getSupportedChains() full result:', supportedChains)
+    console.log('[useNexus] supportedChains type:', typeof supportedChains, Array.isArray(supportedChains))
     
-    // 獲取 swap 支援信息
+    // Get swap support information
     const swapSupport = sdk.utils.getSwapSupportedChainsAndTokens()
-    console.log('[useNexus] sdk.utils.getSwapSupportedChainsAndTokens() 結果:', swapSupport)
-    console.log('[useNexus] swapSupport 類型:', typeof swapSupport)
+    console.log('[useNexus] sdk.utils.getSwapSupportedChainsAndTokens() result:', swapSupport)
+    console.log('[useNexus] swapSupport type:', typeof swapSupport)
     
-    // 嘗試更多的 SDK utilities 方法
+    // Try more SDK utilities methods
     try {
-      // 檢查支援的代幣
+      // Check supported tokens
       if (typeof sdk.utils.isSupportedToken === 'function') {
         const tokens = ['USDC', 'ETH', 'USDT']
         tokens.forEach(token => {
           const supported = sdk.utils.isSupportedToken(token)
-          console.log(`[useNexus] 代幣 ${token} 支援狀態:`, supported)
+          console.log(`[useNexus] Token ${token} support status:`, supported)
         })
       }
       
-      // 檢查特定鏈是否支援 - 使用 SDK 提供的鏈列表
+      // Check if specific chain is supported - using SDK provided chain list
       if (typeof sdk.utils.isSupportedChain === 'function' && supportedChains) {
         supportedChains.forEach(chain => {
           const supported = sdk.utils.isSupportedChain(chain.id)
-          console.log(`[useNexus] 鏈 ${chain.id} (${chain.name}) 支援狀態:`, supported)
+          console.log(`[useNexus] Chain ${chain.id} (${chain.name}) support status:`, supported)
         })
       }
       
-      // 嘗試獲取鏈的 metadata - 使用 SDK 提供的鏈列表
+      // Try to get chain metadata - using SDK provided chain list
       if (typeof sdk.utils.getChainMetadata === 'function' && supportedChains) {
         supportedChains.forEach(chain => {
           const metadata = sdk.utils.getChainMetadata(chain.id)
-          console.log(`[useNexus] 鏈 ${chain.id} (${chain.name}) metadata:`, metadata)
+          console.log(`[useNexus] Chain ${chain.id} (${chain.name}) metadata:`, metadata)
         })
       }
       
     } catch (utilsError) {
-      console.log('[useNexus] 探索 utils 方法時出錯:', utilsError.message)
+      console.log('[useNexus] Error exploring utils methods:', utilsError.message)
     }
     
-    // 處理 getSupportedChains 的結果
+    // Process getSupportedChains results
     let finalChains = []
     
-    // 使用 getSupportedChains() 獲取主網鏈
-    console.log('[useNexus] 🌐 使用 getSupportedChains() 獲取主網鏈')
+    // Use getSupportedChains() to get mainnet chains
+    console.log('[useNexus] 🌐 Using getSupportedChains() to get mainnet chains')
     
     let actualMainnetChains = []
     
-    // 方法 1: 從 USDC 餘額中獲取實際可用的主網鏈
+    // Method 1: Get actual available mainnet chains from USDC balances
     if (nexusState.usdcBalances && Object.keys(nexusState.usdcBalances).length > 0) {
       const usdcChainIds = Object.keys(nexusState.usdcBalances).map(id => parseInt(id))
-      console.log('[useNexus] 📊 從 USDC 餘額發現的實際可用鏈:', usdcChainIds)
+      console.log('[useNexus] 📊 Actual available chains discovered from USDC balances:', usdcChainIds)
       
-      // 為這些鏈獲取 metadata
+      // Get metadata for these chains
       actualMainnetChains = usdcChainIds.map(chainId => {
         const metadata = sdk.utils.getChainMetadata(chainId)
         if (metadata) {
@@ -439,7 +439,7 @@ export async function exploreNexusCapabilities() {
             logo: metadata.logo
           }
         } else {
-          // 如果 SDK 沒有提供 metadata，使用基本資訊
+          // If SDK does not provide metadata, use basic information
           return {
             id: chainId,
             name: `Chain ${chainId}`,
@@ -449,12 +449,12 @@ export async function exploreNexusCapabilities() {
         }
       }).filter(Boolean)
       
-      console.log('[useNexus] ✅ 從實際 USDC 餘額構建的主網鏈:', actualMainnetChains)
+      console.log('[useNexus] ✅ Mainnet chains built from actual USDC balances:', actualMainnetChains)
     }
     
-    // 方法 2: 如果沒有 USDC 餘額，使用 getSupportedChains 的結果
+    // Method 2: If no USDC balances, use getSupportedChains results
     if (actualMainnetChains.length === 0 && supportedChains && Array.isArray(supportedChains)) {
-      console.log('[useNexus] 📋 備援方案：使用 getSupportedChains 返回的主網鏈')
+      console.log('[useNexus] 📋 Fallback: using mainnet chains returned by getSupportedChains')
       
       actualMainnetChains = supportedChains.map(chain => ({
         id: chain.id,
@@ -464,52 +464,52 @@ export async function exploreNexusCapabilities() {
         logo: chain.logo
       }))
       
-      console.log('[useNexus] 📋 使用 getSupportedChains 的鏈:', actualMainnetChains)
+      console.log('[useNexus] 📋 Chains from getSupportedChains:', actualMainnetChains)
     }
     
     finalChains = actualMainnetChains
     
-    // 記錄 getSupportedChains 的結果
+    // Log getSupportedChains results
     if (supportedChains && Array.isArray(supportedChains) && supportedChains.length > 0) {
-      console.log('[useNexus] ✅ getSupportedChains() 返回的主網鏈:')
+      console.log('[useNexus] ✅ Mainnet chains returned by getSupportedChains():')
       supportedChains.forEach((chain, index) => {
         console.log(`  [${index}] ID: ${chain.id}, Name: ${chain.name}, Logo: ${chain.logo}`)
       })
     }
     
-    // 更新狀態
+    // Update state
     nexusState.supportedChains = finalChains
     nexusState.swapSupport = swapSupport
     
-    console.log('[useNexus] 最終使用的鏈列表 (共', finalChains.length, '個):', finalChains)
+    console.log('[useNexus] Final chain list used (total', finalChains.length, 'chains):', finalChains)
     
     return { supportedChains: finalChains, swapSupport }
   } catch (error) {
-    console.error('[useNexus] 探索能力失敗:', error)
-    console.error('[useNexus] 錯誤堆疊:', error.stack)
+    console.error('[useNexus] Exploration failed:', error)
+    console.error('[useNexus] Error stack:', error.stack)
     return { supportedChains: [], swapSupport: null }
   }
 }
 
-// 獲取支援的目標鏈列表
+// Get supported target chain list
 export function getSupportedTargetChains() {
   if (nexusState.supportedChains && nexusState.supportedChains.length > 0) {
     return nexusState.supportedChains
   }
   
-  console.log('[useNexus] 尚未探索到支援的鏈，返回空列表')
+  console.log('[useNexus] No supported chains explored yet, returning empty list')
   return []
 }
 
 
 
-// 獲取鏈信息（從 Nexus 數據中）
+// Get chain information (from Nexus data)
 export function getChainMetadata(chainId) {
   if (!nexusState.supportedChains) return null
   return nexusState.supportedChains.find(chain => chain.id === chainId) || null
 }
 
-// 格式化代幣數量
+// Format token amount
 export function formatTokenAmount(amount, symbol) {
   const num = parseFloat(amount || '0')
   return `${num.toLocaleString(undefined, {
@@ -518,73 +518,73 @@ export function formatTokenAmount(amount, symbol) {
   })} ${symbol}`
 }
 
-// 設置 Intent Hook（用戶確認交易意圖）
+// Set up Intent Hook (user confirms transaction intent)
 export function setupIntentHook(confirmCallback) {
   if (!sdk.isInitialized()) return
   
   sdk.setOnIntentHook(({ intent, allow, deny, refresh }) => {
     console.log('[useNexus] Intent Hook:', intent)
     
-    // 調用外部的確認回調
+    // Call external confirmation callback
     if (confirmCallback) {
       confirmCallback({ intent, allow, deny, refresh })
     } else {
-      // 默認自動確認（開發階段）
-      console.log('[useNexus] 自動確認 Intent')
+      // Default auto-confirm (development phase)
+      console.log('[useNexus] Auto-confirming Intent')
       allow()
     }
   })
 }
 
-// 設置 Allowance Hook（用戶確認授權）
+// Set up Allowance Hook (user confirms authorization)
 export function setupAllowanceHook(allowanceCallback) {
   if (!sdk.isInitialized()) return
   
   sdk.setOnAllowanceHook(({ allow, deny, sources }) => {
     console.log('[useNexus] Allowance Hook:', sources)
     
-    // 調用外部的授權回調
+    // Call external authorization callback
     if (allowanceCallback) {
       allowanceCallback({ allow, deny, sources })
     } else {
-      // 默認使用最小授權
-      console.log('[useNexus] 自動確認 Allowance (min)')
+      // Default use minimum authorization
+      console.log('[useNexus] Auto-confirming Allowance (min)')
       allow(sources.map(() => 'min'))
     }
   })
 }
 
-// 設置進度事件監聽
+// Set up progress event listeners
 export function setupProgressTracking() {
   if (!sdk.isInitialized()) return
   
-  // Transfer 和 Bridge 進度
+  // Transfer and Bridge progress
   const unsubscribeExpected = sdk.nexusEvents.on('expected_steps', (steps) => {
-    console.log('[useNexus] 預期步驟:', steps)
+    console.log('[useNexus] Expected steps:', steps)
     nexusState.operationSteps = steps
   })
   
   const unsubscribeCompleted = sdk.nexusEvents.on('step_complete', (step) => {
-    console.log('[useNexus] 完成步驟:', step)
+    console.log('[useNexus] Completed step:', step)
     nexusState.completedSteps.push(step)
     
     if (step.typeID === 'IS' && step.data.explorerURL) {
-      console.log('[useNexus] 交易探索器:', step.data.explorerURL)
+      console.log('[useNexus] Transaction explorer:', step.data.explorerURL)
     }
   })
   
-  // Bridge & Execute 進度
+  // Bridge & Execute progress
   const unsubscribeBridgeExpected = sdk.nexusEvents.on('bridge_execute_expected_steps', (steps) => {
-    console.log('[useNexus] Bridge Execute 預期步驟:', steps)
+    console.log('[useNexus] Bridge Execute expected steps:', steps)
     nexusState.operationSteps = steps
   })
   
   const unsubscribeBridgeCompleted = sdk.nexusEvents.on('bridge_execute_completed_steps', (step) => {
-    console.log('[useNexus] Bridge Execute 完成步驟:', step)
+    console.log('[useNexus] Bridge Execute completed step:', step)
     nexusState.completedSteps.push(step)
   })
   
-  // 返回清理函數
+  // Return cleanup function
   return () => {
     unsubscribeExpected()
     unsubscribeCompleted()
@@ -593,103 +593,103 @@ export function setupProgressTracking() {
   }
 }
 
-// 專門診斷 SDK 網路模式的函數
+// Special diagnostic function for SDK network mode
 export async function diagnoseSDKNetworkMode() {
   try {
-    console.log('=== SDK 網路模式深度診斷 ===')
+    console.log('=== SDK Network Mode Deep Diagnosis ===')
     
-    // 檢查 SDK 創建時的配置
-    console.log('🔧 SDK 創建配置檢查:')
-    console.log('  - SDK 實例存在:', !!sdk)
-    console.log('  - SDK 類型:', typeof sdk)
+    // Check SDK configuration on creation
+    console.log('🔧 SDK creation configuration check:')
+    console.log('  - SDK instance exists:', !!sdk)
+    console.log('  - SDK type:', typeof sdk)
     
     if (!sdk) {
-      return { error: 'SDK 實例不存在' }
+      return { error: 'SDK instance does not exist' }
     }
     
-    // 檢查 SDK 內部可能的配置屬性
-    console.log('🔍 SDK 內部檢查:')
+    // Check SDK internal possible configuration attributes
+    console.log('🔍 SDK internal check:')
     const sdkKeys = Object.keys(sdk)
-    console.log('  - SDK 屬性:', sdkKeys)
+    console.log('  - SDK attributes:', sdkKeys)
     
-    // 嘗試找到網路配置相關的屬性
+    // Try to find network configuration related attributes
     const configKeys = sdkKeys.filter(key => 
       key.toLowerCase().includes('config') || 
       key.toLowerCase().includes('network') ||
       key.toLowerCase().includes('mode')
     )
-    console.log('  - 可能的配置屬性:', configKeys)
+    console.log('  - Possible configuration attributes:', configKeys)
     
     configKeys.forEach(key => {
       try {
         console.log(`  - ${key}:`, sdk[key])
       } catch (error) {
-        console.log(`  - ${key}: 無法存取 (${error.message})`)
+        console.log(`  - ${key}: Unable to access (${error.message})`)
       }
     })
     
-    // 檢查 getSupportedChains 在不同時機的結果
-    console.log('⛓️ getSupportedChains 測試:')
+    // Check getSupportedChains results at different times
+    console.log('⛓️ getSupportedChains test:')
     
     const beforeInitChains = sdk.utils.getSupportedChains()
-    console.log('  - 初始化前:', beforeInitChains)
+    console.log('  - Before initialization:', beforeInitChains)
     
     if (beforeInitChains && beforeInitChains.length > 0) {
       const chainIds = beforeInitChains.map(c => c.id)
       const isMainnet = chainIds.some(id => [1, 137, 42161, 10, 8453].includes(id))
       const isTestnet = chainIds.some(id => [11155420, 80002, 421614, 84532, 11155111, 1014].includes(id))
       
-      console.log('  - 分析結果:')
-      console.log('    * 鏈數量:', chainIds.length)
-      console.log('    * 包含主網鏈:', isMainnet)
-      console.log('    * 包含測試網鏈:', isTestnet)
-      console.log('    * 所有鏈 ID:', chainIds)
+      console.log('  - Analysis results:')
+      console.log('    * Chain count:', chainIds.length)
+      console.log('    * Contains mainnet chains:', isMainnet)
+      console.log('    * Contains testnet chains:', isTestnet)
+      console.log('    * All chain IDs:', chainIds)
       
       if (isMainnet && !isTestnet) {
-        console.log('  ❌ 問題確認: SDK 返回主網鏈，testnet 配置無效')
+        console.log('  ❌ Issue confirmed: SDK returns mainnet chains, testnet configuration invalid')
         return {
           issue: 'SDK_MAINNET_MODE',
-          description: 'SDK 配置為 testnet 但返回主網鏈',
+          description: 'SDK configured as testnet but returns mainnet chains',
           evidence: { chainIds, isMainnet, isTestnet }
         }
       } else if (isTestnet) {
-        console.log('  ✅ SDK 正確配置為 testnet 模式')
+        console.log('  ✅ SDK correctly configured as testnet mode')
         return {
           status: 'OK',
-          description: 'SDK 正確返回測試網鏈',
+          description: 'SDK correctly returns testnet chains',
           evidence: { chainIds, isMainnet, isTestnet }
         }
       }
     }
     
-    return { status: 'UNKNOWN', description: '無法確定 SDK 網路模式' }
+    return { status: 'UNKNOWN', description: 'Unable to determine SDK network mode' }
     
   } catch (error) {
-    console.error('❌ SDK 網路模式診斷失敗:', error)
+    console.error('❌ SDK network mode diagnosis failed:', error)
     return { error: error.message }
   }
 }
 
-// 診斷函數：檢查測試網環境和 USDC 支援（使用官方 SDK utilities）
+// Diagnostic function: check testnet environment and USDC support (using official SDK utilities)
 export async function diagnoseBridgeSupport() {
   try {
-    console.log('=== Nexus 測試網診斷 (使用官方 SDK utilities) ===')
+    console.log('=== Nexus Testnet Diagnosis (using official SDK utilities) ===')
     
     if (!sdk.isInitialized()) {
-      console.log('❌ SDK 未初始化')
-      return { error: 'SDK 未初始化' }
+      console.log('❌ SDK not initialized')
+      return { error: 'SDK not initialized' }
     }
     
-    console.log('✅ SDK 已初始化')
+    console.log('✅ SDK initialized')
     
-    // 使用官方 SDK utilities 檢查基本能力
+    // Use official SDK utilities to check basic capabilities
     const supportedChains = sdk.utils.getSupportedChains()
     const swapSupport = sdk.utils.getSwapSupportedChainsAndTokens()
     
-    console.log('🔗 sdk.utils.getSupportedChains() 結果:', supportedChains)
-    console.log('💱 sdk.utils.getSwapSupportedChainsAndTokens() 結果:', swapSupport)
+    console.log('🔗 sdk.utils.getSupportedChains() result:', supportedChains)
+    console.log('💱 sdk.utils.getSwapSupportedChainsAndTokens() result:', swapSupport)
     
-    // 使用 SDK utilities 檢查代幣支援
+    // Use SDK utilities to check token support
     const tokenSupportResults = {}
     const tokens = ['USDC', 'ETH', 'USDT']
     if (typeof sdk.utils.isSupportedToken === 'function') {
@@ -700,7 +700,7 @@ export async function diagnoseBridgeSupport() {
       })
     }
     
-    // 使用 SDK utilities 檢查鏈支援
+    // Use SDK utilities to check chain support
     const chainSupportResults = {}
     const testnetChainIds = [11155420, 80002, 421614, 84532, 11155111, 1014]
     if (typeof sdk.utils.isSupportedChain === 'function') {
@@ -711,7 +711,7 @@ export async function diagnoseBridgeSupport() {
       })
     }
     
-    // 使用 SDK utilities 獲取鏈的 metadata
+    // Use SDK utilities to get chain metadata
     const chainMetadataResults = {}
     if (typeof sdk.utils.getChainMetadata === 'function') {
       testnetChainIds.forEach(chainId => {
@@ -721,30 +721,30 @@ export async function diagnoseBridgeSupport() {
       })
     }
     
-    // 檢查 USDC 餘額和支援的鏈
+    // Check USDC balance and supported chains
     let usdcChains = []
     try {
       const usdcAsset = await sdk.getUnifiedBalance('USDC')
       if (usdcAsset && usdcAsset.breakdown) {
         usdcChains = usdcAsset.breakdown.map(b => b.chain?.id).filter(Boolean)
-        console.log('💰 USDC 可用鏈 (從 getUnifiedBalance):', usdcChains)
+        console.log('💰 USDC available chains (from getUnifiedBalance):', usdcChains)
       }
     } catch (usdcError) {
-      console.log('❌ USDC 餘額檢查失敗:', usdcError.message)
+      console.log('❌ USDC balance check failed:', usdcError.message)
     }
     
-    // 嘗試對支援的測試網鏈進行模擬（只對 SDK 明確支援的鏈進行測試）
+    // Try to simulate only chains that SDK explicitly supports
     const supportedTestnetChains = testnetChainIds.filter(chainId => 
       chainSupportResults[chainId] === true
     )
     
-    console.log(`🧪 將對以下 SDK 支援的測試網鏈進行模擬:`, supportedTestnetChains)
+    console.log(`🧪 Will simulate the following SDK-supported testnet chains:`, supportedTestnetChains)
     
     const simulationResults = {}
     
     for (const chainId of supportedTestnetChains) {
       try {
-        console.log(`🧪 測試鏈 ${chainId} (SDK 確認支援)...`)
+        console.log(`🧪 Testing chain ${chainId} (SDK confirmed support)...`)
         
         const simulation = await sdk.simulateTransfer({
           token: 'USDC',
@@ -754,21 +754,21 @@ export async function diagnoseBridgeSupport() {
         })
         
         simulationResults[chainId] = { success: true, simulation }
-        console.log(`✅ 鏈 ${chainId} 模擬成功:`, simulation)
+        console.log(`✅ Chain ${chainId} simulation successful:`, simulation)
       } catch (error) {
         simulationResults[chainId] = { success: false, error: error.message }
-        console.log(`❌ 鏈 ${chainId} 模擬失敗:`, error.message)
+        console.log(`❌ Chain ${chainId} simulation failed:`, error.message)
       }
     }
     
-    // 如果沒有 SDK 明確支援的鏈，也測試一下文檔中提到的測試網鏈
+    // If no chains are explicitly supported by SDK, also test chains mentioned in documentation
     if (supportedTestnetChains.length === 0) {
-      console.log('⚠️ SDK 未明確支援任何測試網鏈，嘗試文檔中的測試網鏈')
+      console.log('⚠️ SDK does not explicitly support any testnet chains, trying testnet chains from documentation')
       const fallbackChains = [11155420, 80002, 421614, 84532, 11155111]
       
       for (const chainId of fallbackChains) {
         try {
-          console.log(`🧪 嘗試測試鏈 ${chainId} (備援測試)...`)
+          console.log(`🧪 Attempting to test chain ${chainId} (fallback test)...`)
           
           const simulation = await sdk.simulateTransfer({
             token: 'USDC',
@@ -778,10 +778,10 @@ export async function diagnoseBridgeSupport() {
           })
           
           simulationResults[chainId] = { success: true, simulation }
-          console.log(`✅ 鏈 ${chainId} 備援測試成功`)
+          console.log(`✅ Chain ${chainId} fallback test successful`)
         } catch (error) {
           simulationResults[chainId] = { success: false, error: error.message }
-          console.log(`❌ 鏈 ${chainId} 備援測試失敗:`, error.message)
+          console.log(`❌ Chain ${chainId} fallback test failed:`, error.message)
         }
       }
     }
@@ -799,57 +799,57 @@ export async function diagnoseBridgeSupport() {
       recommendations: []
     }
     
-    // 生成建議
+    // Generate recommendations
     if (usdcChains.length === 0) {
-      summary.recommendations.push('需要先在測試網獲取 USDC 餘額')
+      summary.recommendations.push('Need to get USDC balance on testnet first')
     }
     
     const successfulChains = Object.keys(simulationResults).filter(id => simulationResults[id].success)
     if (successfulChains.length === 0) {
-      summary.recommendations.push('沒有鏈支援 USDC 轉移模擬，可能 testnet 環境需要檢查')
+      summary.recommendations.push('No chains support USDC transfer simulation, testnet environment may need checking')
     } else {
-      summary.recommendations.push(`建議使用支援的鏈: ${successfulChains.join(', ')}`)
+      summary.recommendations.push(`Recommended to use supported chains: ${successfulChains.join(', ')}`)
     }
     
-    // 檢查 SDK 是否正確返回測試網鏈
+    // Check if SDK correctly returns testnet chains
     if (supportedChains && supportedChains.length > 0) {
       const chainIds = supportedChains.map(c => c.id)
       const hasMainnetChains = chainIds.some(id => [1, 137, 42161, 10, 8453].includes(id))
       const hasTestnetChains = chainIds.some(id => [11155420, 80002, 421614, 84532, 11155111, 1014].includes(id))
       
       if (hasMainnetChains && !hasTestnetChains) {
-        summary.recommendations.push('SDK 返回主網鏈而非測試網鏈，可能配置有問題')
+        summary.recommendations.push('SDK returns mainnet chains instead of testnet chains, configuration may have issues')
       } else if (hasTestnetChains) {
-        summary.recommendations.push('SDK 正確返回測試網鏈')
+        summary.recommendations.push('SDK correctly returns testnet chains')
       }
     }
     
-    console.log('📊 完整診斷總結:', summary)
+    console.log('📊 Complete diagnosis summary:', summary)
     return summary
     
   } catch (error) {
-    console.error('❌ 診斷失敗:', error)
+    console.error('❌ Diagnosis failed:', error)
     return { error: error.message }
   }
 }
 
-// ===== Swap 功能實現 =====
+// ===== Swap Function Implementation =====
 
-// 獲取支援的 swap 鏈和代幣
+// Get swap supported chains and tokens
 export async function getSwapSupportedChainsAndTokens() {
   try {
-    if (!sdk.isInitialized()) throw new Error('Nexus SDK 未初始化')
+    if (!sdk.isInitialized()) throw new Error('Nexus SDK not initialized')
     
-    console.log('[useNexus] 獲取 swap 支援的鏈和代幣...')
+    console.log('[useNexus] Getting swap supported chains and tokens...')
     
-    // 使用官方 API 獲取支援的來源鏈和代幣
+    // Use official API to get supported source chains and tokens
     const supportedOptions = sdk.utils.getSwapSupportedChainsAndTokens()
-    console.log('[useNexus] 支援的來源鏈和代幣:', supportedOptions)
+    console.log('[useNexus] Supported source chains and tokens:', supportedOptions)
     
-    // 詳細檢查每個鏈和代幣的數據結構
+    // Detailed check of each chain and token data structure
     if (supportedOptions && Array.isArray(supportedOptions)) {
       supportedOptions.forEach((chain, index) => {
-        console.log(`[useNexus] 鏈 ${index}:`, {
+        console.log(`[useNexus] Chain ${index}:`, {
           id: chain.id,
           name: chain.name,
           logo: chain.logo,
@@ -864,36 +864,36 @@ export async function getSwapSupportedChainsAndTokens() {
       })
     }
     
-    // 按照官方文檔，這返回的是來源鏈和代幣
+    // According to official docs, this returns source chains and tokens
     nexusState.swapSupportedChains = supportedOptions
     
-    // 獲取目標代幣 - 使用官方 DESTINATION_SWAP_TOKENS
+    // Get destination tokens - using official DESTINATION_SWAP_TOKENS
     await getDestinationSwapTokens()
     
-    console.log('[useNexus] 來源鏈和代幣:', nexusState.swapSupportedChains)
-    console.log('[useNexus] 目標代幣清單:', nexusState.destinationTokens)
+    console.log('[useNexus] Source chains and tokens:', nexusState.swapSupportedChains)
+    console.log('[useNexus] Destination token list:', nexusState.destinationTokens)
     
     return nexusState.swapSupportedChains
     
   } catch (error) {
-    console.error('[useNexus] 獲取 swap 支援失敗:', error)
+    console.error('[useNexus] Failed to get swap support:', error)
     return []
   }
 }
 
-// 獲取目標代幣 - 使用官方 DESTINATION_SWAP_TOKENS
+// Get destination tokens - using official DESTINATION_SWAP_TOKENS
 export async function getDestinationSwapTokens() {
   try {
-    if (!sdk.isInitialized()) throw new Error('Nexus SDK 未初始化')
+    if (!sdk.isInitialized()) throw new Error('Nexus SDK not initialized')
     
-    console.log('[useNexus] 獲取目標代幣...')
+    console.log('[useNexus] Getting destination tokens...')
     
-    // 清空現有的目標代幣
+    // Clear existing destination tokens
     nexusState.destinationTokens.clear()
     
-    // 獲取支援的鏈列表
+    // Get supported chain list
     const supportedChains = sdk.utils.getSupportedChains()
-    console.log('[useNexus] 支援的鏈:', supportedChains)
+    console.log('[useNexus] Supported chains:', supportedChains)
     
     // 使用官方 DESTINATION_SWAP_TOKENS
     const { DESTINATION_SWAP_TOKENS } = await import('@avail-project/nexus-core')

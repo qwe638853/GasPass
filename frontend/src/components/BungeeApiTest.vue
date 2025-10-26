@@ -1,6 +1,6 @@
 <template>
   <div class="bungee-api-test">
-    <h3 class="text-xl font-bold text-white mb-4">Bungee API 測試</h3>
+    <h3 class="text-xl font-bold text-white mb-4">Bungee API Test</h3>
     
     <div class="mb-4">
       <button 
@@ -8,22 +8,22 @@
         :disabled="isLoading"
         class="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg transition-colors duration-200 disabled:opacity-50"
       >
-        {{ isLoading ? '測試中...' : '測試 Bungee API' }}
+        {{ isLoading ? 'Testing...' : 'Test Bungee API' }}
       </button>
     </div>
 
     <div v-if="apiResult" class="space-y-4">
       <div class="bg-gray-800 rounded-lg p-4">
-        <h4 class="text-lg font-semibold text-emerald-200 mb-2">API 響應</h4>
+        <h4 class="text-lg font-semibold text-emerald-200 mb-2">API Response</h4>
         <div class="text-sm text-gray-300">
-          <p>成功: {{ apiResult.success }}</p>
-          <p>狀態碼: {{ apiResult.statusCode }}</p>
-          <p>鏈數量: {{ Object.keys(apiResult.result || {}).length }}</p>
+          <p>Success: {{ apiResult.success }}</p>
+          <p>Status Code: {{ apiResult.statusCode }}</p>
+          <p>Chain Count: {{ Object.keys(apiResult.result || {}).length }}</p>
         </div>
       </div>
 
       <div v-if="sampleTokens.length > 0" class="bg-gray-800 rounded-lg p-4">
-        <h4 class="text-lg font-semibold text-emerald-200 mb-2">示例代幣 (前5個)</h4>
+        <h4 class="text-lg font-semibold text-emerald-200 mb-2">Sample Tokens (Top 5)</h4>
         <div class="space-y-2">
           <div v-for="token in sampleTokens" :key="token.address" class="flex items-center gap-3 p-2 bg-gray-700 rounded">
             <img 
@@ -45,7 +45,7 @@
     </div>
 
     <div v-if="error" class="bg-red-900/20 border border-red-500/30 rounded-lg p-4">
-      <h4 class="text-lg font-semibold text-red-200 mb-2">錯誤</h4>
+      <h4 class="text-lg font-semibold text-red-200 mb-2">Error</h4>
       <p class="text-red-300">{{ error }}</p>
     </div>
   </div>
@@ -67,7 +67,7 @@ const testBungeeAPI = async () => {
   sampleTokens.value = [];
 
   try {
-    // 直接調用 Bungee API
+    // Call Bungee API directly
     const response = await fetch('https://public-backend.bungee.exchange/api/v1/tokens/list', {
       headers: {
         'Accept': 'application/json'
@@ -81,7 +81,7 @@ const testBungeeAPI = async () => {
     const data = await response.json();
     apiResult.value = data;
 
-    // 獲取示例代幣
+    // Get sample tokens
     if (data.success && data.result) {
       const allTokens = [];
       Object.values(data.result).forEach(chainTokens => {
@@ -90,9 +90,9 @@ const testBungeeAPI = async () => {
       sampleTokens.value = allTokens.slice(0, 5);
     }
 
-    console.log('Bungee API 測試成功:', data);
+    console.log('Bungee API test successful:', data);
   } catch (err) {
-    console.error('Bungee API 測試失敗:', err);
+    console.error('Bungee API test failed:', err);
     error.value = err.message;
   } finally {
     isLoading.value = false;
@@ -101,7 +101,7 @@ const testBungeeAPI = async () => {
 
 const handleImageError = (event) => {
   console.log('Image load error:', event.target.src);
-  // 設置默認圖標
+  // Set default icon
   event.target.src = 'https://media.socket.tech/networks/ethereum.svg';
 };
 </script>

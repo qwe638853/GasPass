@@ -3,7 +3,7 @@
     <div class="modal-content" @click.stop>
       <div class="modal-header">
         <h2 class="modal-title">
-          {{ isCompleted ? '🎉 兌換完成' : '⏳ 兌換進行中' }}
+          {{ isCompleted ? '🎉 Swap Complete' : '⏳ Swap In Progress' }}
         </h2>
         <button 
           v-if="canClose" 
@@ -44,14 +44,14 @@
           </div>
           
           <div class="swap-route">
-            <span class="route-label">路徑:</span>
-            <span class="route-path">{{ swapData?.quote?.route || '直接兌換' }}</span>
+            <span class="route-label">Route:</span>
+            <span class="route-path">{{ swapData?.quote?.route || 'Direct Swap' }}</span>
           </div>
         </div>
 
         <!-- Progress Steps -->
         <div class="progress-section">
-          <h3 class="progress-title">兌換進度</h3>
+          <h3 class="progress-title">Swap Progress</h3>
           <div class="progress-steps">
             <div 
               v-for="(step, index) in progressSteps" 
@@ -96,14 +96,14 @@
           <div class="error-card">
             <div class="error-icon">❌</div>
             <div class="error-content">
-              <h4 class="error-title">兌換失敗</h4>
+              <h4 class="error-title">Swap Failed</h4>
               <p class="error-message">{{ errorMessage }}</p>
               <div class="error-actions">
                 <button @click="retrySwap" class="retry-btn">
-                  🔄 重試
+                  🔄 Retry
                 </button>
                 <button @click="$emit('close')" class="close-error-btn">
-                  關閉
+                  Close
                 </button>
               </div>
             </div>
@@ -115,29 +115,29 @@
           <div class="success-card">
             <div class="success-icon">🎉</div>
             <div class="success-content">
-              <h4 class="success-title">兌換成功完成！</h4>
+              <h4 class="success-title">Swap Successfully Completed!</h4>
               <p class="success-message">
-                您已成功將 {{ swapData?.fromAmount }} {{ getChainSymbol(swapData?.fromChainId) }} 
-                兌換為 {{ actualReceived || swapData?.toAmount }} {{ getChainSymbol(swapData?.toChainId) }}
+                You successfully swapped {{ swapData?.fromAmount }} {{ getChainSymbol(swapData?.fromChainId) }} 
+                for {{ actualReceived || swapData?.toAmount }} {{ getChainSymbol(swapData?.toChainId) }}
               </p>
               
               <div class="success-stats">
                 <div class="stat-item">
-                  <span class="stat-label">總費用:</span>
+                  <span class="stat-label">Total Cost:</span>
                   <span class="stat-value">${{ totalFee }} USDC</span>
                 </div>
                 <div class="stat-item">
-                  <span class="stat-label">完成時間:</span>
+                  <span class="stat-label">Completed:</span>
                   <span class="stat-value">{{ completionTime }}</span>
                 </div>
               </div>
               
               <div class="success-actions">
                 <button @click="viewInExplorer" class="explorer-btn">
-                  🔍 查看交易
+                  🔍 View Transaction
                 </button>
                 <button @click="addToWallet" class="add-token-btn">
-                  💳 添加代幣
+                  💳 Add Token
                 </button>
               </div>
             </div>
@@ -147,25 +147,25 @@
         <!-- Estimated Time -->
         <div v-if="!isCompleted && !errorMessage" class="time-estimate">
           <div class="estimate-item">
-            <span class="estimate-label">預計剩餘時間:</span>
+            <span class="estimate-label">Estimated Time Remaining:</span>
             <span class="estimate-value">{{ estimatedTimeRemaining }}</span>
           </div>
           <div class="estimate-item">
-            <span class="estimate-label">總預計時間:</span>
-            <span class="estimate-value">{{ swapData?.quote?.estimatedTime || '3-5 分鐘' }}</span>
+            <span class="estimate-label">Total Estimated Time:</span>
+            <span class="estimate-value">{{ swapData?.quote?.estimatedTime || '3-5 minutes' }}</span>
           </div>
         </div>
 
         <!-- Action Buttons -->
         <div v-if="isCompleted" class="action-buttons">
           <button @click="shareSwap" class="share-btn">
-            📤 分享
+            📤 Share
           </button>
           <button @click="newSwap" class="new-swap-btn">
-            🔄 新兌換
+            🔄 New Swap
           </button>
           <button @click="$emit('close')" class="done-btn">
-            ✅ 完成
+            ✅ Complete
           </button>
         </div>
       </div>
@@ -197,26 +197,26 @@ const timer = ref(null)
 
 const progressSteps = ref([
   { 
-    title: '準備交易', 
-    description: '驗證參數和餘額',
+    title: 'Prepare Transaction', 
+    description: 'Verify parameters and balance',
     txHash: null,
     chainId: null
   },
   { 
-    title: '源鏈交易', 
-    description: '在源鏈上執行交易',
+    title: 'Source Chain Transaction', 
+    description: 'Execute transaction on source chain',
     txHash: null,
     chainId: null
   },
   { 
-    title: '跨鏈橋接', 
-    description: '通過橋接協議轉移資產',
+    title: 'Cross-Chain Bridge', 
+    description: 'Transfer assets through bridge protocol',
     txHash: null,
     chainId: null
   },
   { 
-    title: '目標鏈確認', 
-    description: '在目標鏈上確認接收',
+    title: 'Target Chain Confirmation', 
+    description: 'Confirm reception on target chain',
     txHash: null,
     chainId: null
   }

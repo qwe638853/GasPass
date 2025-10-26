@@ -1,6 +1,6 @@
 /**
- * 代幣圖標 Composable
- * 提供在 Vue 組件中使用的代幣圖標功能
+ * Token Icons Composable
+ * Provides token icon functionality for use in Vue components
  */
 
 import { ref, computed, onMounted, onUnmounted } from 'vue';
@@ -11,10 +11,10 @@ export function useTokenIcons() {
   const iconCache = ref(new Map());
 
   /**
-   * 獲取代幣圖標
-   * @param {string} address - 代幣地址
-   * @param {number} chainId - 鏈ID
-   * @param {string} symbol - 代幣符號
+   * Get token icon
+   * @param {string} address - Token address
+   * @param {number} chainId - Chain ID
+   * @param {string} symbol - Token symbol
    * @returns {Object} { iconUrl, isLoading, error }
    */
   const getTokenIcon = (address, chainId, symbol = null) => {
@@ -22,7 +22,7 @@ export function useTokenIcons() {
     const isLoading = computed(() => loadingIcons.value.has(cacheKey));
     const error = ref(null);
     
-    // 如果已經在緩存中，直接返回
+    // If already in cache, return directly
     if (iconCache.value.has(cacheKey)) {
       return {
         iconUrl: computed(() => iconCache.value.get(cacheKey)),
@@ -31,7 +31,7 @@ export function useTokenIcons() {
       };
     }
 
-    // 開始加載
+    // Start loading
     loadingIcons.value.add(cacheKey);
     
     tokenIconService.getTokenIcon(address, chainId, symbol)
@@ -43,7 +43,7 @@ export function useTokenIcons() {
         console.error('Failed to load token icon:', err);
         error.value = err;
         loadingIcons.value.delete(cacheKey);
-        // 設置默認圖標
+        // Set default icon
         iconCache.value.set(cacheKey, tokenIconService.getDefaultTokenIcon());
       });
 
@@ -55,26 +55,26 @@ export function useTokenIcons() {
   };
 
   /**
-   * 獲取原生代幣圖標
-   * @param {number} chainId - 鏈ID
-   * @returns {string} 原生代幣圖標URL
+   * Get native token icon
+   * @param {number} chainId - Chain ID
+   * @returns {string} Native token icon URL
    */
   const getNativeTokenIcon = (chainId) => {
     return tokenIconService.getNativeTokenIcon(chainId);
   };
 
   /**
-   * 獲取鏈圖標
-   * @param {number} chainId - 鏈ID
-   * @returns {string} 鏈圖標URL
+   * Get chain icon
+   * @param {number} chainId - Chain ID
+   * @returns {string} Chain icon URL
    */
   const getChainIcon = (chainId) => {
     return tokenIconService.getChainIcon(chainId);
   };
 
   /**
-   * 批量獲取代幣圖標
-   * @param {Array} tokens - 代幣數組
+   * Batch get token icons
+   * @param {Array} tokens - Token array
    * @returns {Object} { icons, isLoading, error }
    */
   const getTokenIconsBatch = (tokens) => {
@@ -86,7 +86,7 @@ export function useTokenIcons() {
       .then(iconMap => {
         icons.value = iconMap;
         isLoading.value = false;
-        // 更新緩存
+        // Update cache
         iconMap.forEach((url, key) => {
           iconCache.value.set(key, url);
         });
@@ -105,8 +105,8 @@ export function useTokenIcons() {
   };
 
   /**
-   * 預載入常用代幣圖標
-   * @param {number} chainId - 鏈ID
+   * Preload common token icons
+   * @param {number} chainId - Chain ID
    */
   const preloadCommonTokens = async (chainId) => {
     try {
@@ -117,7 +117,7 @@ export function useTokenIcons() {
   };
 
   /**
-   * 清除緩存
+   * Clear cache
    */
   const clearCache = () => {
     iconCache.value.clear();
@@ -126,10 +126,10 @@ export function useTokenIcons() {
   };
 
   /**
-   * 檢查圖標是否正在加載
-   * @param {string} address - 代幣地址
-   * @param {number} chainId - 鏈ID
-   * @returns {boolean} 是否正在加載
+   * Check if icon is loading
+   * @param {string} address - Token address
+   * @param {number} chainId - Chain ID
+   * @returns {boolean} Whether it's loading
    */
   const isIconLoading = (address, chainId) => {
     const cacheKey = `${chainId}-${address.toLowerCase()}`;
@@ -137,17 +137,17 @@ export function useTokenIcons() {
   };
 
   /**
-   * 獲取圖標URL（同步）
-   * @param {string} address - 代幣地址
-   * @param {number} chainId - 鏈ID
-   * @returns {string|null} 圖標URL
+   * Get icon URL (synchronous)
+   * @param {string} address - Token address
+   * @param {number} chainId - Chain ID
+   * @returns {string|null} Icon URL
    */
   const getCachedIcon = (address, chainId) => {
     const cacheKey = `${chainId}-${address.toLowerCase()}`;
     return iconCache.value.get(cacheKey) || null;
   };
 
-  // 組件卸載時清理
+  // Clean up when component unmounts
   onUnmounted(() => {
     clearCache();
   });
@@ -161,7 +161,7 @@ export function useTokenIcons() {
     clearCache,
     isIconLoading,
     getCachedIcon,
-    // 狀態
+    // State
     loadingIcons: computed(() => loadingIcons.value),
     iconCache: computed(() => iconCache.value)
   };

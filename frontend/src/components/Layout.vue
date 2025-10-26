@@ -540,12 +540,12 @@ watch(isConnected, (newConnected, oldConnected) => {
   @apply w-full bg-white/10 hover:bg-white/20 text-white/90 font-semibold py-2 px-4 rounded-xl transition-all duration-300;
 }
 
-/* Web3Modal 樣式 - 完全重寫 */
+/* Web3Modal styles - completely rewritten */
 .web3modal-container {
   @apply relative;
 }
 
-/* 完全覆蓋 Web3Modal 按鈕樣式 */
+/* Completely override Web3Modal button styles */
 .web3modal-container :deep(w3m-button) {
   background: linear-gradient(135deg, #f59e0b, #d97706) !important;
   border: none !important;
@@ -565,7 +565,7 @@ watch(isConnected, (newConnected, oldConnected) => {
   transform: translateY(-2px) scale(1.02) !important;
 }
 
-/* 移除所有內層元素樣式 */
+/* Remove all inner element styles */
 .web3modal-container :deep(w3m-button) * {
   background: transparent !important;
   border: none !important;
@@ -574,7 +574,7 @@ watch(isConnected, (newConnected, oldConnected) => {
   font-weight: 600 !important;
 }
 
-/* 確保按鈕內容樣式 */
+/* Ensure button content styles */
 .web3modal-container :deep(w3m-button) span,
 .web3modal-container :deep(w3m-button) div,
 .web3modal-container :deep(w3m-button) p {
@@ -587,7 +587,7 @@ watch(isConnected, (newConnected, oldConnected) => {
   padding: 0 !important;
 }
 
-/* 移除任何可能的內層容器 */
+/* Remove any possible inner containers */
 .web3modal-container :deep(w3m-button) > div,
 .web3modal-container :deep(w3m-button) > span {
   background: transparent !important;
@@ -596,7 +596,7 @@ watch(isConnected, (newConnected, oldConnected) => {
   display: inline !important;
 }
 
-/* 自定義連接按鈕樣式 */
+/* Custom connect button styles */
 .custom-connect-btn {
   @apply flex items-center justify-center gap-2 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-amber-500/30 focus:ring-offset-2 shadow-lg hover:shadow-xl hover:scale-105;
   background: linear-gradient(135deg, #f59e0b, #d97706);

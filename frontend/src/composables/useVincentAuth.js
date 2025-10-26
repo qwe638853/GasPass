@@ -10,7 +10,7 @@ import {
   validatePkpAddress
 } from '../services/vincentAuthService.js'
 
-// Vincent App ID - 硬編碼以解決 JWT 驗證問題
+// Vincent App ID - Hardcoded to resolve JWT validation issues
 const VINCENT_APP_ID = 6140907850
 const APP_ID_FROM_ENV = typeof import.meta !== 'undefined' && import.meta.env ? import.meta.env.VITE_VINCENT_APP_ID : VINCENT_APP_ID
 const DEFAULT_AUDIENCE = typeof window !== 'undefined' ? window.location.origin : ''
@@ -31,23 +31,23 @@ export function useVincentAuth(appIdProvider) {
     const { jwtStr, decodedJWT } = getStoredVincentAuth()
     vincentJwt.value = jwtStr
     vincentDecoded.value = decodedJWT
-    // 參考 testScript 的邏輯：優先從 localStorage 讀取，回退到 JWT 解析
+    // Reference testScript logic: prefer reading from localStorage, fallback to JWT parsing
     vincentPkpEthAddress.value = getStoredPkpEthAddress() || getPkpEthAddress(decodedJWT)
   }
 
   const ensureAuth = async (audience = DEFAULT_AUDIENCE, { allowRedirect = true } = {}) => {
     const appId = getAppId()
-    if (!appId) throw new Error('缺少 Vincent App ID')
+    if (!appId) throw new Error('Missing Vincent App ID')
     const result = await ensureVincentAuth(appId, audience, { allowRedirect })
     if (result.redirected) {
       vincentRedirecting.value = true
       return { redirected: true }
     }
-    // 參考 testScript 的邏輯：更新所有狀態
+    // Reference testScript logic: update all state
     if (result.jwtStr) {
       vincentJwt.value = result.jwtStr
       vincentDecoded.value = result.decodedJWT
-      // 參考 testScript：優先使用 payload.pkpInfo.ethAddress，回退到 pkp.ethAddress
+      // Reference testScript: prefer payload.pkpInfo.ethAddress, fallback to pkp.ethAddress
       const pkpAddr = result.decodedJWT?.payload?.pkpInfo?.ethAddress ?? result.decodedJWT?.pkp?.ethAddress
       if (pkpAddr) {
         vincentPkpEthAddress.value = pkpAddr
@@ -63,10 +63,10 @@ export function useVincentAuth(appIdProvider) {
     vincentRedirecting,
     loadFromStorage,
     ensureAuth,
-    debugVincentStorage, // 調試函數
-    setPkpEthAddress, // 手動設置 PKP 地址
-    extractAndSetPkpFromJWT, // 從 JWT 提取並設置 PKP 地址
-    validatePkpAddress, // 驗證 PKP 地址
+    debugVincentStorage, // Debug function
+    setPkpEthAddress, // Manually set PKP address
+    extractAndSetPkpFromJWT, // Extract and set PKP address from JWT
+    validatePkpAddress, // Validate PKP address
   }
 }
 
