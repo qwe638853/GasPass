@@ -2,7 +2,8 @@
 
 ｜GasPass — An ERC-3525-based stored-value “gas card” that automatically or manually refuels gas across multiple EVM chains.
 
-![Uploading image.png…]()
+<img width="342" height="258" alt="image" src="https://github.com/user-attachments/assets/7e7b21f4-5f59-4bfc-a8af-8b2c7f6dcfa1" />
+
 
 ---
 ## Table of Contents
